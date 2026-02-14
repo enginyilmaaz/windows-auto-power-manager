@@ -82,6 +82,11 @@
             // 
             this.numericUpDown_value.Font = new System.Drawing.Font("Trebuchet MS", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.numericUpDown_value.Location = new System.Drawing.Point(170, 126);
+            this.numericUpDown_value.Maximum = new decimal(new int[] {
+            99999,
+            0,
+            0,
+            0});
             this.numericUpDown_value.Minimum = new decimal(new int[] {
             1,
             0,
