@@ -1,6 +1,9 @@
-﻿using System;
+using System;
 using System.Drawing;
+using System.IO;
+using System.Text.Json;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using WindowsShutdownHelper.functions;
 
 namespace WindowsShutdownHelper
@@ -9,74 +12,101 @@ namespace WindowsShutdownHelper
     {
         public static language language = languageSelector.languageFile();
         public ActionModel action = new ActionModel();
-        private Point dragCursorPoint;
-        private Point dragFormPoint;
-        private bool dragging;
+        public string messageTitle;
         public string messageContentCountdownNotify, messageContentCountdownNotify_2;
+        public string messageContentActionType;
+        public string messageContentYouCanThat;
         public int showTimeSecond;
         public Timer timer = new Timer();
 
-        public actionCountdownNotifier(string messageTitle, string _messageContentCountdownNotify,
+        private bool _webViewReady;
+        private Point dragStartCursor;
+        private Point dragStartForm;
+        private bool dragging;
+
+        public actionCountdownNotifier(string _messageTitle, string _messageContentCountdownNotify,
             string _messageContentCountdownNotify_2,
             string _messageContentActionType,
             string _messageContentYouCanThat, int _showTimeSecond,
-            Image messageIconFile, ActionModel _action)
+            ActionModel _action)
         {
             InitializeComponent();
-            showTimeSecond = 0;
             action = _action;
             showTimeSecond = _showTimeSecond;
+            messageTitle = _messageTitle;
             messageContentCountdownNotify = _messageContentCountdownNotify;
             messageContentCountdownNotify_2 = _messageContentCountdownNotify_2;
-            label_contentCountdownNotify.Text = messageContentCountdownNotify + " " + showTimeSecond + " " +
-                                                messageContentCountdownNotify_2;
-            label_contentActionType.Text = _messageContentActionType;
-            label_contentYouCanThat.Text = _messageContentYouCanThat;
+            messageContentActionType = _messageContentActionType;
+            messageContentYouCanThat = _messageContentYouCanThat;
+        }
+
+        private async void actionCountdownNotifier_Load(object sender, EventArgs e)
+        {
+            await InitializeWebView();
+        }
+
+        private async System.Threading.Tasks.Task InitializeWebView()
+        {
+            var env = await CoreWebView2Environment.CreateAsync(null, Path.GetTempPath());
+            await webView.EnsureCoreWebView2Async(env);
+
+            string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "app.local", wwwrootPath,
+                CoreWebView2HostResourceAccessKind.Allow);
+
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
+
+            webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+            webView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+
+            webView.CoreWebView2.Navigate("https://app.local/countdown.html");
+        }
+
+        private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            _webViewReady = true;
+
+            bool enableIgnore = true;
+            bool enableDelete = action.triggerType == config.triggerTypes.fromNow ||
+                                action.triggerType == config.triggerTypes.certainTime;
+            bool enableSkip = action.triggerType == config.triggerTypes.certainTime;
+
+            var initData = new
+            {
+                title = messageTitle,
+                countdownText1 = messageContentCountdownNotify,
+                countdownText2 = messageContentCountdownNotify_2,
+                actionType = messageContentActionType,
+                infoText = messageContentYouCanThat,
+                seconds = showTimeSecond,
+                btnDelete = language.actionCountdownNotifier_button_delete ?? "Delete",
+                btnIgnore = language.actionCountdownNotifier_button_ignore ?? "Ignore",
+                btnSkip = language.actionCountdownNotifier_button_skip ?? "Skip",
+                enableIgnore = enableIgnore,
+                enableDelete = enableDelete,
+                enableSkip = enableSkip
+            };
+
+            PostMessage("initCountdown", initData);
+
+            // Start countdown timer
             timer.Interval = 1000;
             timer.Tick += timerTick;
             timer.Start();
-
-
-            pictureBox_main.Image = messageIconFile;
-            label_title.Text = messageTitle;
-
-
-            if (action.triggerType == config.triggerTypes.systemIdle)
-            {
-                button_Ignore.Enabled = true;
-                button_skip.Enabled = false;
-                button_delete.Enabled = false;
-            }
-
-            if (action.triggerType == config.triggerTypes.fromNow)
-            {
-                button_Ignore.Enabled = true;
-                button_skip.Enabled = false;
-                button_delete.Enabled = true;
-            }
-
-            if (action.triggerType == config.triggerTypes.certainTime)
-            {
-                button_Ignore.Enabled = true;
-                button_skip.Enabled = true;
-                button_delete.Enabled = true;
-            }
         }
 
-
-        private void actionCountdownNotifier_Load(object sender, EventArgs e)
+        private void PostMessage(string type, object data)
         {
-            button_Ignore.Text = language.actionCountdownNotifier_button_ignore;
-            button_delete.Text = language.actionCountdownNotifier_button_delete;
-            button_skip.Text = language.actionCountdownNotifier_button_skip;
+            if (!_webViewReady || webView.CoreWebView2 == null) return;
+            var msg = JsonSerializer.Serialize(new { type, data });
+            webView.CoreWebView2.PostWebMessageAsJson(msg);
         }
 
         private void timerTick(object sender, EventArgs e)
         {
-            label_contentCountdownNotify.Text = messageContentCountdownNotify + " " + showTimeSecond + " " +
-                                                messageContentCountdownNotify_2;
-
-
             if (showTimeSecond == 0)
             {
                 timer.Stop();
@@ -95,76 +125,70 @@ namespace WindowsShutdownHelper
                 }
             }
 
-
             --showTimeSecond;
+            PostMessage("updateCountdown", new { seconds = showTimeSecond });
         }
 
-
-        private void button_Skip_Click(object sender, EventArgs e)
+        private void OnWebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
         {
-            timer.Stop();
-            Close();
-        }
+            string json = e.WebMessageAsJson;
+            var doc = JsonDocument.Parse(json);
+            string msgJson = doc.RootElement.GetString();
+            var msg = JsonDocument.Parse(msgJson);
+            string type = msg.RootElement.GetProperty("type").GetString();
 
-        private void button_delete_Click(object sender, EventArgs e)
-        {
-            timer.Stop();
-            mainForm.actionList.Remove(action);
-            mainForm.isDeletedFromNotifier = true;
-            jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json", true,
-                mainForm.actionList);
-
-            Close();
-        }
-
-        private void panel_main_MouseDown(object sender, MouseEventArgs e)
-        {
-            dragging = true;
-            dragCursorPoint = Cursor.Position;
-            dragFormPoint = Location;
-        }
-
-        private void panel_main_MouseUp(object sender, MouseEventArgs e)
-        {
-            dragging = false;
-        }
-
-        private void panel_main_MouseMove(object sender, MouseEventArgs e)
-        {
-            if (dragging)
+            switch (type)
             {
-                Point dif = Point.Subtract(Cursor.Position, new Size(dragCursorPoint));
-                Location = Point.Add(dragFormPoint, new Size(dif));
+                case "ignore":
+                    timer.Stop();
+                    Close();
+                    break;
+                case "delete":
+                    timer.Stop();
+                    mainForm.actionList.Remove(action);
+                    mainForm.isDeletedFromNotifier = true;
+                    jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json", true,
+                        mainForm.actionList);
+                    Close();
+                    break;
+                case "skip":
+                    timer.Stop();
+                    mainForm.isSkippedCertainTimeAction = true;
+                    Close();
+                    break;
+                case "dragStart":
+                    var data = msg.RootElement.GetProperty("data");
+                    int sx = data.GetProperty("x").GetInt32();
+                    int sy = data.GetProperty("y").GetInt32();
+                    StartDrag(sx, sy);
+                    break;
             }
         }
 
-        private void button_skip_Click(object sender, EventArgs e)
+        private void StartDrag(int screenX, int screenY)
         {
-            timer.Stop();
-            mainForm.isSkippedCertainTimeAction = true;
-            Close();
+            dragging = true;
+            dragStartCursor = new Point(screenX, screenY);
+            dragStartForm = Location;
+
+            this.MouseMove += DragMouseMove;
+            this.MouseUp += DragMouseUp;
         }
 
-        private void label_contentIfYouDontWant_Click(object sender, EventArgs e)
+        private void DragMouseMove(object sender, MouseEventArgs e)
         {
+            if (dragging)
+            {
+                Point dif = Point.Subtract(Cursor.Position, new Size(dragStartCursor));
+                Location = Point.Add(dragStartForm, new Size(dif));
+            }
         }
 
-        private void label_contentActionType_Click(object sender, EventArgs e)
+        private void DragMouseUp(object sender, MouseEventArgs e)
         {
-        }
-
-        private void label_contentCountdownNotify_Click(object sender, EventArgs e)
-        {
-        }
-
-        private void panel_main_borderPaint(object sender, PaintEventArgs e)
-        {
-            e.Graphics.DrawRectangle(Pens.Gray,
-                e.ClipRectangle.Left,
-                e.ClipRectangle.Top,
-                e.ClipRectangle.Width - 1,
-                e.ClipRectangle.Height - 1);
-            base.OnPaint(e);
+            dragging = false;
+            this.MouseMove -= DragMouseMove;
+            this.MouseUp -= DragMouseUp;
         }
     }
 }

@@ -79,7 +79,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: WindowsShutdownHelper_Portable
-          path: bin/Release/Windows Shutdown Helper.exe
+          path: |
+            bin/Release/Windows Shutdown Helper.exe
+            bin/Release/wwwroot/
 
       - name: Upload Installer (dev)
         if: github.ref_name != 'master'
@@ -98,4 +100,3 @@ jobs:
           make_latest: true
           files: |
             installer_output/${{ steps.version.outputs.setup_name }}.exe
-            bin/Release/Windows Shutdown Helper.exe

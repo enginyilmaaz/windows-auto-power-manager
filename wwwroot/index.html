@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows Shutdown Helper</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app">
+        <nav id="nav-bar">
+            <span id="nav-title">Windows Shutdown Helper</span>
+            <div id="nav-links">
+                <a href="#" data-page="main" class="nav-link active" id="nav-main"></a>
+                <a href="#" data-page="settings" class="nav-link" id="nav-settings"></a>
+                <a href="#" data-page="logs" class="nav-link" id="nav-logs"></a>
+            </div>
+        </nav>
+
+        <div id="page-container">
+            <!-- Pages are rendered here by router -->
+        </div>
+
+        <footer id="status-bar">
+            <span id="status-time"></span>
+        </footer>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <script src="js/bridge.js"></script>
+    <script src="js/components/toast.js"></script>
+    <script src="js/pages/main.js"></script>
+    <script src="js/pages/settings.js"></script>
+    <script src="js/pages/logs.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

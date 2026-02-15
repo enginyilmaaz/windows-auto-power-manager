@@ -117,6 +117,15 @@
     </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
+    <Reference Include="Microsoft.Web.WebView2.Core, Version=1.0.2792.45, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Web.WebView2.1.0.2792.45\lib\net45\Microsoft.Web.WebView2.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.WebView2.WinForms, Version=1.0.2792.45, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Web.WebView2.1.0.2792.45\lib\net45\Microsoft.Web.WebView2.WinForms.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.Web.WebView2.Wpf, Version=1.0.2792.45, Culture=neutral, PublicKeyToken=2a8ab48044d2601e, processorArchitecture=MSIL">
+      <HintPath>packages\Microsoft.Web.WebView2.1.0.2792.45\lib\net45\Microsoft.Web.WebView2.Wpf.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="config\actionTypes.cs" />
@@ -138,12 +147,6 @@
     <Compile Include="config\languageINI.cs" />
     <Compile Include="config\lang\lang_en.cs" />
     <Compile Include="config\lang\lang_tr.cs" />
-    <Compile Include="logViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="logViewer.Designer.cs">
-      <DependentUpon>logViewer.cs</DependentUpon>
-    </Compile>
     <Compile Include="mainForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -156,36 +159,18 @@
     <Compile Include="actionCountdownNotifier.Designer.cs">
       <DependentUpon>actionCountdownNotifier.cs</DependentUpon>
     </Compile>
-    <Compile Include="popUpViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="popUpViewer.Designer.cs">
-      <DependentUpon>popUpViewer.cs</DependentUpon>
-    </Compile>
     <Compile Include="BuildInfo.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="functions\systemIdleDetector.cs" />
     <Compile Include="functions\Actions.cs" />
     <Compile Include="settings.cs" />
-    <Compile Include="settingsForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="settingsForm.Designer.cs">
-      <DependentUpon>settingsForm.cs</DependentUpon>
-    </Compile>
     <Compile Include="config\settingsINI.cs" />
-    <EmbeddedResource Include="logViewer.resx">
-      <DependentUpon>logViewer.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="mainForm.resx">
       <DependentUpon>mainForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="actionCountdownNotifier.resx">
       <DependentUpon>actionCountdownNotifier.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="popUpViewer.resx">
-      <DependentUpon>popUpViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -197,9 +182,6 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="settingsForm.resx">
-      <DependentUpon>settingsForm.cs</DependentUpon>
-    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -232,6 +214,11 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="wwwroot\**\*">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.7">

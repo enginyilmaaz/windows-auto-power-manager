@@ -44,6 +44,7 @@ Name: "startupentry"; Description: "Windows ile birlikte baslat / Start with Win
 
 [Files]
 Source: "bin\Release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "bin\Release\wwwroot\*"; DestDir: "{app}\wwwroot"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
 Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -61,3 +62,4 @@ Type: files; Name: "{app}\settings.json"
 Type: files; Name: "{app}\actionList.json"
 Type: files; Name: "{app}\logs.json"
 Type: filesandordirs; Name: "{app}\lang"
+Type: filesandordirs; Name: "{app}\wwwroot"

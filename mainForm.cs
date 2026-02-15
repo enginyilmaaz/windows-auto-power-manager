@@ -1,28 +1,27 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
+using Microsoft.Web.WebView2.Core;
 using WindowsShutdownHelper.Enums;
 using WindowsShutdownHelper.functions;
-using WindowsShutdownHelper.Properties;
 
 namespace WindowsShutdownHelper
 {
     public partial class mainForm : Form
     {
-
-
         public static language language = languageSelector.languageFile();
         public static List<ActionModel> actionList = new List<ActionModel>();
-        public static List<ActionModel> actionListTemp = new List<ActionModel>();
         public static settings settings = new settings();
         public static bool isDeletedFromNotifier;
         public static bool isSkippedCertainTimeAction;
         public static Timer timer = new Timer();
         public static int runInTaskbarCounter;
+
+        private bool _webViewReady;
 
         public mainForm()
         {
@@ -32,7 +31,6 @@ namespace WindowsShutdownHelper
         protected override void OnLoad(EventArgs e)
         {
             string[] args = Environment.GetCommandLineArgs();
-
 
             foreach (string arg in args)
             {
@@ -46,11 +44,6 @@ namespace WindowsShutdownHelper
 
             base.OnLoad(e);
         }
-
-
-
-
-
 
         public void deleteExpriedAction()
         {
@@ -68,14 +61,11 @@ namespace WindowsShutdownHelper
             }
         }
 
-        private void mainForm_Load(object sender, EventArgs e)
+        private async void mainForm_Load(object sender, EventArgs e)
         {
             Logger.doLog(config.actionTypes.appStarted);
             Text = language.main_FormName;
-            toolStripStatusLabel_CurrentTime.Text = language.main_statusBar_currentTime + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
             notifyIcon_main.Text = language.main_FormName + " " + language.notifyIcon_main;
-            numericUpDown_value.TextAlign = HorizontalAlignment.Center;
-
 
             detectScreen.manuelLockingActionLogger();
             if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json"))
@@ -83,197 +73,453 @@ namespace WindowsShutdownHelper
                 actionList =
                     JsonSerializer.Deserialize<List<ActionModel>>(
                         File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json"));
-                actionListTemp =
-                    JsonSerializer.Deserialize<List<ActionModel>>(
-                        File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json"));
             }
 
             deleteExpriedAction();
 
-            timer.Interval = 1000; // 1 sec
+            // Setup timer
+            timer.Interval = 1000;
             timer.Tick += timerTick;
             timer.Start();
 
-
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_chooseAction);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_shutdownComputer);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_restartComputer);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_logOffWindows);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_sleepComputer);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_lockComputer);
-            comboBox_actionType.Items.Add(language.main_cbox_ActionType_Item_turnOffMonitor);
-            comboBox_actionType.SelectedIndex = 0;
-
-            comboBox_triggerType.Items.Add(language.main_cbox_TriggerType_Item_chooseTrigger);
-            comboBox_triggerType.Items.Add(language.main_cbox_TriggerType_Item_systemIdle);
-            comboBox_triggerType.Items.Add(language.main_cbox_TriggerType_Item_fromNow);
-            comboBox_triggerType.Items.Add(language.main_cbox_TriggerType_Item_certainTime);
-            comboBox_triggerType.SelectedIndex = 0;
-
-            comboBox_timeUnit.Items.Add(language.main_timeUnit_seconds ?? "Seconds");
-            comboBox_timeUnit.Items.Add(language.main_timeUnit_minutes ?? "Minutes");
-            comboBox_timeUnit.Items.Add(language.main_timeUnit_hours ?? "Hours");
-            comboBox_timeUnit.SelectedIndex = 1;
-
-            label_trigger.Text = language.main_label_trigger + " : ";
-            label_value.Text = language.main_label_value + " : ";
-            label_firstly_choose_a_trigger.Text = language.label_firstly_choose_a_trigger;
-            label_actionType.Text = language.main_label_actionType + " : ";
-            button_AddAction.Text = language.main_button_addAction;
-            groupBox_newAction.Text = language.main_groupbox_newAction;
-            groupBox_actionList.Text = language.main_groupBox_actionList;
-
-
-            contextMenuStrip_mainGrid.Items[(int)enum_cmStrip_mainGrid.DeleteAllAction].Text =
-                language.contextMenuStrip_mainGrid_deleteAllAction;
-            contextMenuStrip_mainGrid.Items[(int)enum_cmStrip_mainGrid.DeleteSelectedAction].Text =
-                language.contextMenuStrip_mainGrid_deleteSelectedAction;
-
-
-
-
+            // Setup notify icon context menu text
             contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.AddNewAction].Text =
                 language.contextMenuStrip_notifyIcon_addNewAction;
-
             contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ExitTheProgram].Text =
                 language.contextMenuStrip_notifyIcon_exitProgram;
-
             contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.Settings].Text =
                 language.contextMenuStrip_notifyIcon_showSettings;
-
             contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ShowLogs].Text =
                 language.contextMenuStrip_notifyIcon_showLogs;
 
-
-
-            contextMenuStrip_MainForm.Items[(int)enum_cmStrip_MainForm.Settings].Text =
-                language.contextMenuStrip_notifyIcon_showSettings;
-
-            contextMenuStrip_MainForm.Items[(int)enum_cmStrip_MainForm.ShowLogs].Text =
-                language.contextMenuStrip_notifyIcon_showLogs;
-
-            contextMenuStrip_MainForm.Items[(int)enum_cmStrip_MainForm.ExitTheProgram].Text =
-                language.contextMenuStrip_notifyIcon_exitProgram;
-
-
-            toolTip.SetToolTip(pictureBox_logs, language.toolTip_showLogs);
-            toolTip.SetToolTip(pictureBox_settings, language.toolTip_settings);
-
-
-            dateTimePicker_time.MinDate = DateTime.Now.AddMinutes(1);
-            refreshActionList();
-
-
-            dataGridView_taskList.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
-            dataGridView_taskList.SelectionMode = DataGridViewSelectionMode.FullRowSelect;
+            // Initialize WebView2
+            await InitializeWebView();
         }
 
-
-        public void refreshActionList()
+        private async System.Threading.Tasks.Task InitializeWebView()
         {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json"))
-            {
-                actionListTemp =
-                    JsonSerializer.Deserialize<List<ActionModel>>(
-                        File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json"));
-            }
+            var env = await CoreWebView2Environment.CreateAsync(null, Path.GetTempPath());
+            await webView.EnsureCoreWebView2Async(env);
 
-            foreach (ActionModel act in actionListTemp)
-            {
-                if (act.actionType == config.actionTypes.logOffWindows)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_logOffWindows;
-                }
+            string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
+            webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
+                "app.local", wwwrootPath,
+                CoreWebView2HostResourceAccessKind.Allow);
 
-                if (act.actionType == config.actionTypes.lockComputer)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_lockComputer;
-                }
+            webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
+            webView.CoreWebView2.Settings.AreDevToolsEnabled = false;
+            webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
 
-                if (act.actionType == config.actionTypes.shutdownComputer)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_shutdownComputer;
-                }
+            webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
+            webView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
 
-                if (act.actionType == config.actionTypes.restartComputer)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_restartComputer;
-                }
-
-                if (act.actionType == config.actionTypes.turnOffMonitor)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_turnOffMonitor;
-                }
-
-                if (act.actionType == config.actionTypes.sleepComputer)
-                {
-                    act.actionType = language.main_cbox_ActionType_Item_sleepComputer;
-                }
-
-                if (act.triggerType == config.triggerTypes.systemIdle)
-                {
-                    act.triggerType = language.main_cbox_TriggerType_Item_systemIdle;
-                }
-
-                if (act.triggerType == config.triggerTypes.certainTime)
-                {
-                    act.triggerType = language.main_cbox_TriggerType_Item_certainTime;
-                }
-
-                if (act.triggerType == config.triggerTypes.fromNow)
-                {
-                    act.triggerType = language.main_cbox_TriggerType_Item_fromNow;
-                }
-
-                if (act.valueUnit == "seconds")
-                {
-                    act.valueUnit = language.main_timeUnit_seconds ?? "Seconds";
-                }
-                else if (string.IsNullOrEmpty(act.valueUnit))
-                {
-                    act.valueUnit = language.main_timeUnit_minutes ?? "Minutes";
-                }
-            }
-
-            dataGridView_taskList.DataSource = null;
-            dataGridView_taskList.DataSource = actionListTemp;
-            dataGridView_taskList.Columns["triggerType"].HeaderText = language.main_datagrid_main_triggerType;
-            dataGridView_taskList.Columns["actionType"].HeaderText = language.main_datagrid_main_actionType;
-            dataGridView_taskList.Columns["value"].HeaderText = language.main_datagrid_main_value;
-            dataGridView_taskList.Columns["valueUnit"].HeaderText = language.main_datagrid_main_valueUnit ?? "Unit";
-            dataGridView_taskList.Columns["createdDate"].HeaderText = language.main_datagrid_main_createdDate;
-            dataGridView_taskList.Columns["triggerType"].DefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleCenter;
-            dataGridView_taskList.Columns["actionType"].DefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleCenter;
-            dataGridView_taskList.Columns["value"].DefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleCenter;
-            dataGridView_taskList.Columns["valueUnit"].DefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleCenter;
-            dataGridView_taskList.Columns["createdDate"].DefaultCellStyle.Alignment =
-                DataGridViewContentAlignment.MiddleCenter;
+            webView.CoreWebView2.Navigate("https://app.local/index.html");
         }
 
+        private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        {
+            _webViewReady = true;
+            SendInitData();
+        }
+
+        private void SendInitData()
+        {
+            if (!_webViewReady) return;
+
+            // Serialize language object via reflection
+            var langDict = new Dictionary<string, string>();
+            foreach (PropertyInfo prop in typeof(language).GetProperties())
+            {
+                var val = prop.GetValue(language);
+                if (val != null) langDict[prop.Name] = val.ToString();
+            }
+
+            // Build translated actions for display
+            var displayActions = GetTranslatedActions();
+
+            var initData = new
+            {
+                language = langDict,
+                actions = displayActions,
+                settings = LoadSettings()
+            };
+
+            PostMessage("init", initData);
+        }
+
+        private List<Dictionary<string, string>> GetTranslatedActions()
+        {
+            var list = new List<Dictionary<string, string>>();
+            foreach (var act in actionList)
+            {
+                var d = new Dictionary<string, string>
+                {
+                    ["triggerType"] = TranslateTrigger(act.triggerType),
+                    ["actionType"] = TranslateAction(act.actionType),
+                    ["value"] = act.value ?? "",
+                    ["valueUnit"] = TranslateUnit(act.valueUnit),
+                    ["createdDate"] = act.createdDate ?? ""
+                };
+                list.Add(d);
+            }
+            return list;
+        }
+
+        private string TranslateAction(string raw)
+        {
+            if (raw == config.actionTypes.lockComputer) return language.main_cbox_ActionType_Item_lockComputer;
+            if (raw == config.actionTypes.shutdownComputer) return language.main_cbox_ActionType_Item_shutdownComputer;
+            if (raw == config.actionTypes.restartComputer) return language.main_cbox_ActionType_Item_restartComputer;
+            if (raw == config.actionTypes.logOffWindows) return language.main_cbox_ActionType_Item_logOffWindows;
+            if (raw == config.actionTypes.sleepComputer) return language.main_cbox_ActionType_Item_sleepComputer;
+            if (raw == config.actionTypes.turnOffMonitor) return language.main_cbox_ActionType_Item_turnOffMonitor;
+            return raw;
+        }
+
+        private string TranslateTrigger(string raw)
+        {
+            if (raw == config.triggerTypes.systemIdle) return language.main_cbox_TriggerType_Item_systemIdle;
+            if (raw == config.triggerTypes.certainTime) return language.main_cbox_TriggerType_Item_certainTime;
+            if (raw == config.triggerTypes.fromNow) return language.main_cbox_TriggerType_Item_fromNow;
+            return raw;
+        }
+
+        private string TranslateUnit(string raw)
+        {
+            if (raw == "seconds") return language.main_timeUnit_seconds ?? "Seconds";
+            if (string.IsNullOrEmpty(raw)) return language.main_timeUnit_minutes ?? "Minutes";
+            return raw;
+        }
+
+        private settings LoadSettings()
+        {
+            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json"))
+            {
+                return JsonSerializer.Deserialize<settings>(
+                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json"));
+            }
+            return config.settingsINI.defaulSettingFile();
+        }
+
+        private void PostMessage(string type, object data)
+        {
+            if (!_webViewReady || webView.CoreWebView2 == null) return;
+            var msg = JsonSerializer.Serialize(new { type, data });
+            webView.CoreWebView2.PostWebMessageAsJson(msg);
+        }
+
+        // =============== WebMessage Handler ===============
+
+        private void OnWebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
+        {
+            string json = e.WebMessageAsJson;
+            var doc = JsonDocument.Parse(json);
+            string msgJson = doc.RootElement.GetString();
+            var msg = JsonDocument.Parse(msgJson);
+            string type = msg.RootElement.GetProperty("type").GetString();
+            var data = msg.RootElement.GetProperty("data");
+
+            switch (type)
+            {
+                case "addAction":
+                    HandleAddAction(data);
+                    break;
+                case "deleteAction":
+                    HandleDeleteAction(data);
+                    break;
+                case "clearAllActions":
+                    HandleClearAllActions();
+                    break;
+                case "saveSettings":
+                    HandleSaveSettings(data);
+                    break;
+                case "loadSettings":
+                    HandleLoadSettings();
+                    break;
+                case "loadLogs":
+                    HandleLoadLogs();
+                    break;
+                case "clearLogs":
+                    HandleClearLogs();
+                    break;
+                case "getLanguageList":
+                    HandleGetLanguageList();
+                    break;
+                case "exitApp":
+                    Logger.doLog(config.actionTypes.appTerminated);
+                    Application.ExitThread();
+                    break;
+            }
+        }
+
+        private void HandleAddAction(JsonElement data)
+        {
+            string actionType = data.GetProperty("actionType").GetString();
+            string triggerType = data.GetProperty("triggerType").GetString();
+
+            if (actionType == "0" || triggerType == "0")
+            {
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_warn,
+                    message = language.messageContent_actionChoose,
+                    type = "warn",
+                    duration = 2000
+                });
+                return;
+            }
+
+            if (actionList.Count >= 5)
+            {
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_warn,
+                    message = language.messageContent_maxActionWarn,
+                    type = "warn",
+                    duration = 2000
+                });
+                return;
+            }
+
+            var newAction = new ActionModel
+            {
+                createdDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
+                actionType = actionType
+            };
+
+            if (triggerType == "fromNow")
+            {
+                newAction.triggerType = config.triggerTypes.fromNow;
+                double inputValue = Convert.ToDouble(data.GetProperty("value").GetString());
+                int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
+                DateTime targetTime;
+                if (unitIdx == 0) targetTime = DateTime.Now.AddSeconds(inputValue);
+                else if (unitIdx == 2) targetTime = DateTime.Now.AddHours(inputValue);
+                else targetTime = DateTime.Now.AddMinutes(inputValue);
+                newAction.value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
+            }
+            else if (triggerType == "systemIdle")
+            {
+                newAction.triggerType = config.triggerTypes.systemIdle;
+                int inputValue = Convert.ToInt32(data.GetProperty("value").GetString());
+                int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
+                int valueInSeconds;
+                if (unitIdx == 0) valueInSeconds = inputValue;
+                else if (unitIdx == 2) valueInSeconds = inputValue * 3600;
+                else valueInSeconds = inputValue * 60;
+                newAction.value = valueInSeconds.ToString();
+                newAction.valueUnit = "seconds";
+            }
+            else if (triggerType == "certainTime")
+            {
+                newAction.triggerType = config.triggerTypes.certainTime;
+                string timeStr = data.GetProperty("time").GetString();
+                if (!string.IsNullOrEmpty(timeStr))
+                {
+                    newAction.value = timeStr + ":00";
+                }
+                else
+                {
+                    newAction.value = DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
+                }
+            }
+
+            actionList.Add(newAction);
+            writeJsonToActionList();
+
+            PostMessage("showToast", new
+            {
+                title = language.messageTitle_success,
+                message = language.messageContent_actionCreated,
+                type = "success",
+                duration = 2000
+            });
+        }
+
+        private void HandleDeleteAction(JsonElement data)
+        {
+            int index = data.GetProperty("index").GetInt32();
+            if (index >= 0 && index < actionList.Count)
+            {
+                actionList.RemoveAt(index);
+                writeJsonToActionList();
+
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_success,
+                    message = language.messageContent_actionDeleted,
+                    type = "success",
+                    duration = 2000
+                });
+            }
+        }
+
+        private void HandleClearAllActions()
+        {
+            actionList.Clear();
+            writeJsonToActionList();
+
+            PostMessage("showToast", new
+            {
+                title = language.messageTitle_success,
+                message = language.messageContent_actionAllDeleted,
+                type = "success",
+                duration = 2000
+            });
+        }
+
+        private void HandleSaveSettings(JsonElement data)
+        {
+            var newSettings = new settings
+            {
+                logsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
+                startWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
+                runInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
+                isCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
+                countdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
+                language = data.GetProperty("language").GetString()
+            };
+
+            string currentLang = LoadSettings().language;
+            jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json", true, newSettings);
+
+            if (newSettings.startWithWindows)
+                startWithWindows.AddStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+            else
+                startWithWindows.DeleteStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+
+            if (currentLang != newSettings.language)
+            {
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_success,
+                    message = language.messageContent_settingSavedWithLangChanged,
+                    type = "info",
+                    duration = 4000
+                });
+            }
+            else
+            {
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_success,
+                    message = language.messageContent_settingsSaved,
+                    type = "success",
+                    duration = 2000
+                });
+            }
+        }
+
+        private void HandleLoadSettings()
+        {
+            PostMessage("settingsLoaded", LoadSettings());
+        }
+
+        private void HandleLoadLogs()
+        {
+            string logPath = AppDomain.CurrentDomain.BaseDirectory + "\\logs.json";
+            if (File.Exists(logPath))
+            {
+                var rawLogs = JsonSerializer.Deserialize<List<logSystem>>(File.ReadAllText(logPath));
+                var logs = rawLogs.OrderByDescending(a => a.actionExecutedDate).Take(250)
+                    .Select(l => new
+                    {
+                        actionExecutedDate = l.actionExecutedDate,
+                        actionType = TranslateLogAction(l.actionType),
+                        actionTypeRaw = l.actionType
+                    }).ToList();
+                PostMessage("logsLoaded", logs);
+            }
+            else
+            {
+                PostMessage("logsLoaded", new List<object>());
+            }
+        }
+
+        private string TranslateLogAction(string raw)
+        {
+            if (raw == config.actionTypes.lockComputer) return language.logViewerForm_lockComputer;
+            if (raw == config.actionTypes.lockComputerManually) return language.logViewerForm_lockComputerManually;
+            if (raw == config.actionTypes.unlockComputer) return language.logViewerForm_unlockComputer;
+            if (raw == config.actionTypes.shutdownComputer) return language.logViewerForm_shutdownComputer;
+            if (raw == config.actionTypes.restartComputer) return language.logViewerForm_restartComputer;
+            if (raw == config.actionTypes.logOffWindows) return language.logViewerForm_logOffWindows;
+            if (raw == config.actionTypes.sleepComputer) return language.logViewerForm_sleepComputer;
+            if (raw == config.actionTypes.turnOffMonitor) return language.logViewerForm_turnOffMonitor;
+            if (raw == config.actionTypes.appStarted) return language.logViewerForm_appStarted;
+            if (raw == config.actionTypes.appTerminated) return language.logViewerForm_appTerminated;
+            return raw;
+        }
+
+        private void HandleClearLogs()
+        {
+            string logPath = AppDomain.CurrentDomain.BaseDirectory + "\\logs.json";
+            if (File.Exists(logPath)) File.Delete(logPath);
+
+            PostMessage("showToast", new
+            {
+                title = language.messageTitle_success,
+                message = language.messageContent_clearedLogs,
+                type = "success",
+                duration = 2000
+            });
+        }
+
+        private void HandleGetLanguageList()
+        {
+            var list = new List<object>();
+            list.Add(new { langCode = "auto", langName = (language.settingsForm_combobox_auto_lang ?? "Auto") });
+
+            string langDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "lang");
+            if (Directory.Exists(langDir))
+            {
+                foreach (string file in Directory.GetFiles(langDir, "lang_*.json"))
+                {
+                    string code = Path.GetFileNameWithoutExtension(file).Replace("lang_", "");
+                    try
+                    {
+                        var langObj = JsonSerializer.Deserialize<language>(File.ReadAllText(file));
+                        string name = langObj?.main_FormName ?? code.ToUpper();
+                        list.Add(new { langCode = code, langName = code.ToUpper() + " - " + name });
+                    }
+                    catch
+                    {
+                        list.Add(new { langCode = code, langName = code.ToUpper() });
+                    }
+                }
+            }
+
+            PostMessage("languageList", list);
+        }
+
+        // =============== Action List Persistence ===============
 
         public void writeJsonToActionList()
         {
             jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "\\actionList.json", true,
                 actionList.ToList());
-            refreshActionList();
+            RefreshActionsInUI();
         }
+
+        private void RefreshActionsInUI()
+        {
+            PostMessage("refreshActions", GetTranslatedActions());
+        }
+
+        // =============== Timer & Action Execution ===============
 
         private void doAction(ActionModel action, uint idleTimeMin)
         {
             uint actionValueSeconds = string.IsNullOrEmpty(action.valueUnit)
                 ? Convert.ToUInt32(action.value) * 60
                 : Convert.ToUInt32(action.value);
+
             if (action.triggerType == config.triggerTypes.systemIdle && idleTimeMin == actionValueSeconds)
             {
                 Actions.doActionByTypes(action);
             }
 
-            if (action.triggerType == config.triggerTypes.certainTime && action.value == DateTime.Now.ToString("HH:mm:ss")
-            )
+            if (action.triggerType == config.triggerTypes.certainTime && action.value == DateTime.Now.ToString("HH:mm:ss"))
             {
                 if (isSkippedCertainTimeAction == false)
                 {
@@ -293,10 +539,11 @@ namespace WindowsShutdownHelper
             }
         }
 
-
         private void timerTick(object sender, EventArgs e)
         {
-            toolStripStatusLabel_CurrentTime.Text = language.main_statusBar_currentTime + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
+            // Update time in UI
+            string timeText = (language.main_statusBar_currentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
+            PostMessage("updateTime", timeText);
 
             uint idleTimeMin = systemIdleDetector.GetLastInputTime();
 
@@ -317,253 +564,10 @@ namespace WindowsShutdownHelper
             {
                 doAction(action, idleTimeMin);
                 notifySystem.showNotification(action, idleTimeMin);
-            } //foreach
-        }
-
-
-        private void deleteAction()
-        {
-            if (Application.OpenForms.OfType<popUpViewer>().Any() == false)
-            {
-                if (dataGridView_taskList.Rows.Count > 0)
-                {
-                    if (dataGridView_taskList.CurrentRow != null)
-                    {
-                        popUpViewer popUpViewer = new popUpViewer(language.messageTitle_success,
-                            language.messageContent_actionDeleted, 2,
-                            Resources.success, Location.X, Location.Y, Width, Height);
-                        popUpViewer.ShowDialog();
-                        popUpViewer.Focus();
-                        actionList.RemoveAt(dataGridView_taskList.CurrentCell.RowIndex);
-                        writeJsonToActionList();
-                    }
-                    else
-                    {
-                        popUpViewer popUpViewer = new popUpViewer(language.messageTitle_warn,
-                            language.messageContent_datagridMain_actionChoose, 2,
-                            Resources.warn, Location.X, Location.Y, Width, Height);
-                        popUpViewer.ShowDialog();
-                        popUpViewer.Focus();
-                    }
-                }
             }
         }
 
-
-
-        private void button_AddToList_Click(object sender, EventArgs e)
-        {
-            if (actionList.Count < 5)
-            {
-                if (comboBox_actionType.SelectedIndex > 0 && comboBox_triggerType.SelectedIndex > 0)
-                {
-                    ActionModel newAction = new ActionModel
-                    {
-                        createdDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")
-                    };
-
-
-                    if (comboBox_triggerType.SelectedIndex == (int)enum_combobox_triggerType.FromNow)
-                    {
-                        newAction.triggerType = config.triggerTypes.fromNow;
-                        double inputValue = Convert.ToDouble(numericUpDown_value.Value);
-                        DateTime targetTime;
-                        if (comboBox_timeUnit.SelectedIndex == 0)
-                            targetTime = DateTime.Now.AddSeconds(inputValue);
-                        else if (comboBox_timeUnit.SelectedIndex == 2)
-                            targetTime = DateTime.Now.AddHours(inputValue);
-                        else
-                            targetTime = DateTime.Now.AddMinutes(inputValue);
-                        newAction.value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
-                    }
-
-
-                    else if (comboBox_triggerType.SelectedIndex == (int)enum_combobox_triggerType.SystemIdleTime)
-                    {
-                        newAction.triggerType = config.triggerTypes.systemIdle;
-                        int inputValue = Convert.ToInt32(numericUpDown_value.Value);
-                        int valueInSeconds;
-                        if (comboBox_timeUnit.SelectedIndex == 0)
-                            valueInSeconds = inputValue;
-                        else if (comboBox_timeUnit.SelectedIndex == 2)
-                            valueInSeconds = inputValue * 3600;
-                        else
-                            valueInSeconds = inputValue * 60;
-                        newAction.value = valueInSeconds.ToString();
-                        newAction.valueUnit = "seconds";
-                    }
-
-
-                    else if (comboBox_triggerType.SelectedIndex == (int)enum_combobox_triggerType.CertainTime)
-                    {
-                        newAction.triggerType = config.triggerTypes.certainTime;
-                        newAction.value = dateTimePicker_time.Value.ToString("HH:mm:00");
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.LockComputer)
-                    {
-                        newAction.actionType = config.actionTypes.lockComputer;
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.LogOff)
-                    {
-                        newAction.actionType = config.actionTypes.logOffWindows;
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.Restart)
-                    {
-                        newAction.actionType = config.actionTypes.restartComputer;
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.Shutdown)
-                    {
-                        newAction.actionType = config.actionTypes.shutdownComputer;
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.Sleep)
-                    {
-                        newAction.actionType = config.actionTypes.sleepComputer;
-                    }
-
-                    if (comboBox_actionType.SelectedIndex == (int)enum_combobox_actionType.TurnOffMonitor)
-                    {
-                        newAction.actionType = config.actionTypes.turnOffMonitor;
-                    }
-
-                    if (Application.OpenForms.OfType<popUpViewer>().Any() == false)
-                    {
-                        popUpViewer popUpViewer = new popUpViewer(language.messageTitle_success,
-                            language.messageContent_actionCreated,
-                            2, Resources.success, Location.X,
-                            Location.Y, Width, Height);
-                        popUpViewer.ShowDialog();
-                        popUpViewer.Focus();
-                        numericUpDown_value.Text = "1";
-
-                        actionList.Add(newAction);
-
-                        writeJsonToActionList();
-                    }
-                }
-
-                else
-                {
-                    if (Application.OpenForms.OfType<popUpViewer>().Any() == false)
-                    {
-                        popUpViewer popUpViewer = new popUpViewer(language.messageTitle_warn,
-                            language.messageContent_actionChoose,
-                            2, Resources.warn, Location.X,
-                            Location.Y, Width, Height);
-                        popUpViewer.ShowDialog();
-                        popUpViewer.Focus();
-                    }
-                }
-            }
-
-            else if (actionList.Count >= 5)
-            {
-                if (Application.OpenForms.OfType<popUpViewer>().Any() == false)
-                {
-                    popUpViewer popUpViewer = new popUpViewer(language.messageTitle_warn, language.messageContent_maxActionWarn,
-                        2, Resources.warn, Location.X,
-                        Location.Y, Width, Height);
-                    popUpViewer.ShowDialog();
-                    popUpViewer.Focus();
-                }
-            }
-        }
-
-
-        private void comboBox_trigger_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (comboBox_triggerType.SelectedIndex == 0)
-            {
-                label_firstly_choose_a_trigger.Visible = true;
-                numericUpDown_value.Visible = false;
-                comboBox_timeUnit.Visible = false;
-                dateTimePicker_time.Visible = false;
-            }
-
-            if (comboBox_triggerType.SelectedIndex == 1 || comboBox_triggerType.SelectedIndex == 2)
-            {
-                label_firstly_choose_a_trigger.Visible = false;
-                numericUpDown_value.Visible = true;
-                comboBox_timeUnit.Visible = true;
-                dateTimePicker_time.Visible = false;
-                label_value.Text = language.main_label_value_duration + " : ";
-            }
-            else if (comboBox_triggerType.SelectedIndex == 3)
-            {
-                label_firstly_choose_a_trigger.Visible = false;
-
-                numericUpDown_value.Visible = false;
-                comboBox_timeUnit.Visible = false;
-                dateTimePicker_time.Visible = true;
-                label_value.Text = language.main_label_value_time + " : ";
-            }
-        }
-
-        private void deleteSelectedTaskToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            deleteAction();
-        }
-
-        private void dataGridView_taskList_CellContentClick(object sender, DataGridViewCellEventArgs e)
-        {
-        }
-
-        private void dataGridView_taskList_RowsAdded(object sender, DataGridViewRowsAddedEventArgs e)
-        {
-            if (dataGridView_taskList.Rows.Count > 0)
-            {
-                dataGridView_taskList.ContextMenuStrip = contextMenuStrip_mainGrid;
-            }
-        }
-
-        private void dataGridView_taskList_RowsRemoved(object sender, DataGridViewRowsRemovedEventArgs e)
-        {
-            if (dataGridView_taskList.Rows.Count == 0)
-            {
-                dataGridView_taskList.ContextMenuStrip = null;
-            }
-        }
-
-        private void comboBox_actionType_SelectedIndexChanged(object sender, EventArgs e)
-        {
-        }
-
-        private void pictureBox_logs_Click(object sender, EventArgs e)
-        {
-            showLogs();
-        }
-
-        private void pictureBox_settings_Click(object sender, EventArgs e)
-        {
-            settingsFormOpen();
-        }
-
-
-
-        public void settingsFormOpen()
-        {
-            settingsForm settingsForm = new settingsForm(Location.X, Location.Y, Width, Height);
-            if (Application.OpenForms.OfType<settingsForm>().Any() == false)
-            {
-                settingsForm.Show();
-                settingsForm.Focus();
-            }
-            else if (Application.OpenForms.OfType<settingsForm>().Any())
-            {
-                popUpViewer popUpViewer = new popUpViewer(language.messageTitle_info, language.messageContent_another + " '" +
-                                                                              language.settingsForm_Name + "' " +
-                                                                              language.messageContent_windowAlredyOpen,
-                    3,
-                    Resources.info, Location.X, Location.Y, Width, Height);
-
-                popUpViewer.ShowDialog();
-                popUpViewer.Focus();
-            }
-        }
+        // =============== System Tray & Window Events ===============
 
         public void showMain()
         {
@@ -589,8 +593,12 @@ namespace WindowsShutdownHelper
                     e.Cancel = true;
                     Hide();
                 }
-
             }
+        }
+
+        private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            Logger.doLog(config.actionTypes.appTerminated);
         }
 
         private void exitTheProgramToolStripMenuItem_Click(object sender, EventArgs e)
@@ -606,104 +614,14 @@ namespace WindowsShutdownHelper
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            settingsFormOpen();
+            showMain();
+            PostMessage("navigate", "settings");
         }
 
         private void showTheLogsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            showLogs();
+            showMain();
+            PostMessage("navigate", "logs");
         }
-
-        private void clearAllActionToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            actionList.Clear();
-            writeJsonToActionList();
-
-            if (Application.OpenForms.OfType<popUpViewer>().Any() == false)
-            {
-                popUpViewer popUpViewer = new popUpViewer(language.messageTitle_success,
-                    language.messageContent_actionAllDeleted, 2, Resources.success,
-                    Location.X,
-                    Location.Y, Width, Height);
-                popUpViewer.ShowDialog();
-                popUpViewer.Focus();
-            }
-        }
-
-
-        public void showLogs()
-        {
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\logs.json"))
-            {
-                List<logSystem> logList = JsonSerializer
-                    .Deserialize<List<logSystem>>(
-                        File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\logs.json"))
-                    .OrderByDescending(a => a.actionExecutedDate).Take(250).ToList();
-                if (logList.Count > 0)
-                {
-                    logViewer logViewerForm = new logViewer(logList, Location.X, Location.Y, Width, Height);
-                    if (Application.OpenForms.OfType<logViewer>().Any() == false)
-                    {
-                        logViewerForm.Show();
-                    }
-                    else if (Application.OpenForms.OfType<logViewer>().Any())
-                    {
-                        popUpViewer popUpViewer = new popUpViewer(language.messageTitle_info,
-                            language.messageContent_another + " '" +
-                            language.logViewerForm_Name + "' " + language.messageContent_windowAlredyOpen, 3,
-                            Resources.info, Location.X, Location.Y, Width, Height);
-
-                        popUpViewer.ShowDialog();
-                        popUpViewer.Focus();
-                    }
-                }
-
-                else
-                {
-                    popUpViewer popUpViewer = new popUpViewer(language.messageTitle_warn, language.messageContent_noLog, 3,
-                        Resources.warn, Location.X,
-                        Location.Y, Width, Height);
-                    popUpViewer.ShowDialog();
-                    popUpViewer.Focus();
-                }
-            }
-
-            else
-            {
-                popUpViewer popUpViewer = new popUpViewer(language.messageTitle_warn, language.messageContent_noLog, 3,
-                    Resources.warn, Location.X,
-                    Location.Y, Width, Height);
-                popUpViewer.ShowDialog();
-                popUpViewer.Focus();
-            }
-        }
-
-        private void contextMenuStrip_notifyIcon_Opening(object sender, CancelEventArgs e)
-        {
-        }
-
-        private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            Logger.doLog(config.actionTypes.appTerminated);
-        }
-
-        private void toolStripMenuItem_showSetting_Click(object sender, EventArgs e)
-        {
-            settingsFormOpen();
-        }
-
-        private void toolStripMenuItem_showLog_Click(object sender, EventArgs e)
-        {
-            showLogs();
-        }
-
-        private void toolStripMenuItem_exit_Click(object sender, EventArgs e)
-        {
-            Logger.doLog(config.actionTypes.appTerminated);
-            Application.ExitThread();
-        }
-
-
-        ////
     }
 }

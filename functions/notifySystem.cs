@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
-using WindowsShutdownHelper.Properties;
 
 namespace WindowsShutdownHelper.functions
 {
@@ -54,7 +53,7 @@ namespace WindowsShutdownHelper.functions
                                 language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
                                 actionTypeName, language.messageContent_cancelForSystemIdle,
                                 settings.countdownNotifierSeconds,
-                                Resources.info, action);
+                                action);
 
                             actionCountdownNotifier.Show();
                             actionCountdownNotifier.Focus();
@@ -77,7 +76,7 @@ namespace WindowsShutdownHelper.functions
                                 language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
                                 actionTypeName, language.messageContent_youCanThat,
                                 settings.countdownNotifierSeconds,
-                                Resources.info, action);
+                                action);
 
                             actionCountdownNotifier.Show();
                             actionCountdownNotifier.Focus();
@@ -101,7 +100,7 @@ namespace WindowsShutdownHelper.functions
                                 language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
                                 actionTypeName, language.messageContent_youCanThat,
                                 settings.countdownNotifierSeconds,
-                                Resources.info, action);
+                                action);
 
                             actionCountdownNotifier.Show();
                             actionCountdownNotifier.Focus();
