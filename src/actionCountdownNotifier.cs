@@ -42,7 +42,20 @@ namespace WindowsShutdownHelper
 
         private async void actionCountdownNotifier_Load(object sender, EventArgs e)
         {
-            await InitializeWebView();
+            try
+            {
+                await InitializeWebView();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(
+                    this,
+                    "Arayuz acilamadi.\r\n\r\nDetay: " + ex.Message,
+                    language?.messageTitle_error ?? "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                Close();
+            }
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()

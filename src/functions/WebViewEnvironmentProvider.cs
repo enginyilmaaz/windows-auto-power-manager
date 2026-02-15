@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 
@@ -8,27 +7,34 @@ namespace WindowsShutdownHelper.functions
 {
     internal static class WebViewEnvironmentProvider
     {
-        private static readonly Lazy<Task<CoreWebView2Environment>> _sharedEnvironment =
-            new Lazy<Task<CoreWebView2Environment>>(CreateEnvironmentAsync, LazyThreadSafetyMode.ExecutionAndPublication);
+        private static readonly object _syncRoot = new object();
+        private static Task<CoreWebView2Environment> _sharedEnvironmentTask;
 
         public static Task<CoreWebView2Environment> GetAsync()
         {
-            return _sharedEnvironment.Value;
+            lock (_syncRoot)
+            {
+                if (_sharedEnvironmentTask == null ||
+                    _sharedEnvironmentTask.IsFaulted ||
+                    _sharedEnvironmentTask.IsCanceled)
+                {
+                    _sharedEnvironmentTask = CreateEnvironmentAsync();
+                }
+
+                return _sharedEnvironmentTask;
+            }
         }
 
         public static void Prewarm()
         {
-            _ = Task.Run(async () =>
+            // Keep initialization on the current (UI/STA) thread.
+            // Running in Task.Run may force MTA and cause RPC_E_CHANGED_MODE.
+            var task = GetAsync();
+            task.ContinueWith(t =>
             {
-                try
-                {
-                    await _sharedEnvironment.Value.ConfigureAwait(false);
-                }
-                catch
-                {
-                    // Ignore prewarm failures; initialization will retry on first real use.
-                }
-            });
+                // Observe task exceptions to avoid UnobservedTaskException.
+                var _ = t.Exception;
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         private static Task<CoreWebView2Environment> CreateEnvironmentAsync()
