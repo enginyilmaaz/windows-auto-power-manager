@@ -27,7 +27,7 @@ jobs:
         uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
-        run: nuget restore "Windows Shutdown Helper.sln"
+        run: nuget restore "Windows Shutdown Helper.sln" -PackagesDirectory "packages"
 
       - name: Determine version and commit info
         id: version
