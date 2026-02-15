@@ -7,7 +7,7 @@
         public string LangName { get; set; }
     }
 
-    public class language
+    public class Language
     {
         public string main_FormName { get; set; }
         public string langNativeName { get; set; }

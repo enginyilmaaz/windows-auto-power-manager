@@ -2,9 +2,9 @@
 {
     public static class lang_en
     {
-        public static language lang_english()
+        public static Language lang_english()
         {
-            language lang = new language
+            Language lang = new Language
             {
                 main_FormName = "Shutdown Helper for Windows",
                 langNativeName = "English",

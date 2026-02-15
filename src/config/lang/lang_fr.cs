@@ -2,9 +2,9 @@ namespace WindowsShutdownHelper.lang
 {
     public static class lang_fr
     {
-        public static language lang_french()
+        public static Language lang_french()
         {
-            language lang = new language
+            Language lang = new Language
             {
                 main_FormName = "Assistant d'arrêt Windows",
                 langNativeName = "Français",

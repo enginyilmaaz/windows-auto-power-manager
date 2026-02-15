@@ -10,7 +10,7 @@ namespace WindowsShutdownHelper.functions
 {
     internal class notifySystem
     {
-        public static language language = languageSelector.languageFile();
+        public static Language language = languageSelector.languageFile();
         public static string actionTypeName;
         private static HashSet<string> _notifiedIdleActions = new HashSet<string>();
 
@@ -21,11 +21,11 @@ namespace WindowsShutdownHelper.functions
 
         public static void showNotification(ActionModel action, uint idleTimeMin)
         {
-            settings settings = new settings();
+            Settings settings = new Settings();
 
             if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
             {
-                settings = JsonSerializer.Deserialize<settings>(
+                settings = JsonSerializer.Deserialize<Settings>(
                     File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
             }
             else

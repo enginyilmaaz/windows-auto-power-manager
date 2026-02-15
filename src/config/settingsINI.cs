@@ -2,9 +2,9 @@
 {
     public static class settingsINI
     {
-        public static settings defaulSettingFile()
+        public static Settings defaulSettingFile()
         {
-            settings setting = new settings
+            Settings setting = new Settings
             {
                 logsEnabled = true,
                 startWithWindows = false,

@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public class settings
+    public class Settings
     {
         public bool logsEnabled { get; set; }
         public bool startWithWindows { get; set; }

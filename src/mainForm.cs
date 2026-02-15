@@ -14,9 +14,9 @@ namespace WindowsShutdownHelper
 {
     public partial class mainForm : Form
     {
-        public static language language = languageSelector.languageFile();
+        public static Language language = languageSelector.languageFile();
         public static List<ActionModel> actionList = new List<ActionModel>();
-        public static settings settings = new settings();
+        public static Settings settings = new Settings();
         public static bool isDeletedFromNotifier;
         public static bool isSkippedCertainTimeAction;
         public static bool isApplicationExiting;
@@ -28,7 +28,7 @@ namespace WindowsShutdownHelper
         private bool _initSent;
         private bool _isPaused;
         private DateTime? _pauseUntilTime;
-        private settings _cachedSettings;
+        private Settings _cachedSettings;
         private Dictionary<string, SubWindow> _subWindows = new Dictionary<string, SubWindow>();
         private Panel _loadingOverlay;
         private Label _loadingLabel;
@@ -235,7 +235,7 @@ namespace WindowsShutdownHelper
 
             // Serialize language object via reflection
             var langDict = new Dictionary<string, string>();
-            foreach (PropertyInfo prop in typeof(language).GetProperties())
+            foreach (PropertyInfo prop in typeof(Language).GetProperties())
             {
                 var val = prop.GetValue(language);
                 if (val != null) langDict[prop.Name] = val.ToString();
@@ -310,11 +310,11 @@ namespace WindowsShutdownHelper
             return raw;
         }
 
-        private settings LoadSettings()
+        private Settings LoadSettings()
         {
             if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
             {
-                return JsonSerializer.Deserialize<settings>(
+                return JsonSerializer.Deserialize<Settings>(
                     File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
             }
             return config.settingsINI.defaulSettingFile();
@@ -520,7 +520,7 @@ namespace WindowsShutdownHelper
 
         private void HandleSaveSettings(JsonElement data)
         {
-            var newSettings = new settings
+            var newSettings = new Settings
             {
                 logsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
                 startWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
@@ -877,7 +877,7 @@ namespace WindowsShutdownHelper
         {
             if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
             {
-                settings = JsonSerializer.Deserialize<settings>(
+                settings = JsonSerializer.Deserialize<Settings>(
                     File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
 
                 if (settings.runInTaskbarWhenClosed)

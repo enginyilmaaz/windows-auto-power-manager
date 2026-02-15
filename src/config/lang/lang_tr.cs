@@ -2,9 +2,9 @@
 {
     public static class lang_tr
     {
-        public static language lang_turkish()
+        public static Language lang_turkish()
         {
-            language lang = new language
+            Language lang = new Language
             {
                 main_FormName = "Sistem Güç Yardımcısı",
                 langNativeName = "Türkçe",

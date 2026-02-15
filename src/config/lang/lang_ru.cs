@@ -2,9 +2,9 @@ namespace WindowsShutdownHelper.lang
 {
     public static class lang_ru
     {
-        public static language lang_russian()
+        public static Language lang_russian()
         {
-            language lang = new language
+            Language lang = new Language
             {
                 main_FormName = "Помощник выключения Windows",
                 langNativeName = "Русский",

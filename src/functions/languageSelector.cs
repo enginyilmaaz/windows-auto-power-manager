@@ -13,7 +13,7 @@ namespace WindowsShutdownHelper.functions
     internal class languageSelector
 
     {
-        private static language getDefaults(string langCode)
+        private static Language getDefaults(string langCode)
         {
             switch (langCode)
             {
@@ -29,13 +29,13 @@ namespace WindowsShutdownHelper.functions
 
         private static readonly string[] _supportedLangs = { "en", "tr", "it", "de", "fr", "ru" };
 
-        public static language languageFile()
+        public static Language languageFile()
         {
-            settings settings = new settings();
+            Settings settings = new Settings();
             string settingsPath = AppContext.BaseDirectory + "\\settings.json";
             if (File.Exists(settingsPath))
             {
-                settings = JsonSerializer.Deserialize<settings>(File.ReadAllText(settingsPath));
+                settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settingsPath));
             }
 
             // Determine language code
@@ -51,7 +51,7 @@ namespace WindowsShutdownHelper.functions
             }
 
             // Use C# object directly - no JSON round-trip
-            language result = getDefaults(langCode);
+            Language result = getDefaults(langCode);
 
             // Write lang JSON files in background (for settings dropdown)
             Task.Run(() => EnsureLangFilesExist());
@@ -76,7 +76,7 @@ namespace WindowsShutdownHelper.functions
             catch { }
         }
 
-        private static void WriteLangIfMissing(string langDir, string code, language lang)
+        private static void WriteLangIfMissing(string langDir, string code, Language lang)
         {
             string path = Path.Combine(langDir, "lang_" + code + ".json");
             if (!File.Exists(path))
@@ -88,7 +88,7 @@ namespace WindowsShutdownHelper.functions
         public static List<languageNames> GetLanguageNames()
         {
             var list = new List<languageNames>();
-            var langs = new (string code, language lang)[]
+            var langs = new (string code, Language lang)[]
             {
                 ("en", lang_en.lang_english()),
                 ("tr", lang_tr.lang_turkish()),

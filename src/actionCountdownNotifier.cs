@@ -10,7 +10,7 @@ namespace WindowsShutdownHelper
 {
     public partial class actionCountdownNotifier : Form
     {
-        public static language language = languageSelector.languageFile();
+        public static Language language = languageSelector.languageFile();
         public ActionModel action = new ActionModel();
         public string messageTitle;
         public string messageContentCountdownNotify, messageContentCountdownNotify_2;

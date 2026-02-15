@@ -137,7 +137,7 @@ namespace WindowsShutdownHelper
             if (!_webViewReady) return;
 
             var langDict = new Dictionary<string, string>();
-            foreach (PropertyInfo prop in typeof(language).GetProperties())
+            foreach (PropertyInfo prop in typeof(Language).GetProperties())
             {
                 var val = prop.GetValue(mainForm.language);
                 if (val != null) langDict[prop.Name] = val.ToString();
@@ -367,7 +367,7 @@ namespace WindowsShutdownHelper
 
         private void HandleSaveSettings(JsonElement data)
         {
-            var newSettings = new settings
+            var newSettings = new Settings
             {
                 logsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
                 startWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
@@ -463,11 +463,11 @@ namespace WindowsShutdownHelper
 
         // =============== Helpers ===============
 
-        private settings LoadSettings()
+        private Settings LoadSettings()
         {
             if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
             {
-                return JsonSerializer.Deserialize<settings>(
+                return JsonSerializer.Deserialize<Settings>(
                     File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
             }
             return config.settingsINI.defaulSettingFile();
