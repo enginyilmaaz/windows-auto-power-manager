@@ -51,33 +51,34 @@ namespace WindowsShutdownHelper
                 this.exitTheProgramToolStripMenuItem
             });
             this.contextMenuStrip_notifyIcon.Name = "contextMenuStrip_notifyIcon";
-            this.contextMenuStrip_notifyIcon.Size = new System.Drawing.Size(163, 92);
+            this.contextMenuStrip_notifyIcon.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.contextMenuStrip_notifyIcon.Size = new System.Drawing.Size(200, 120);
 
             // addNewActionToolStripMenuItem
             this.addNewActionToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.add;
             this.addNewActionToolStripMenuItem.Name = "addNewActionToolStripMenuItem";
-            this.addNewActionToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.addNewActionToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.addNewActionToolStripMenuItem.Text = "Add new action";
             this.addNewActionToolStripMenuItem.Click += new System.EventHandler(this.addNewActionToolStripMenuItem_Click);
 
             // settingsToolStripMenuItem
             this.settingsToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.settings;
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
 
             // showTheLogsToolStripMenuItem
             this.showTheLogsToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.logs;
             this.showTheLogsToolStripMenuItem.Name = "showTheLogsToolStripMenuItem";
-            this.showTheLogsToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.showTheLogsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.showTheLogsToolStripMenuItem.Text = "Show logs";
             this.showTheLogsToolStripMenuItem.Click += new System.EventHandler(this.showTheLogsToolStripMenuItem_Click);
 
             // exitTheProgramToolStripMenuItem
             this.exitTheProgramToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.exit;
             this.exitTheProgramToolStripMenuItem.Name = "exitTheProgramToolStripMenuItem";
-            this.exitTheProgramToolStripMenuItem.Size = new System.Drawing.Size(162, 22);
+            this.exitTheProgramToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.exitTheProgramToolStripMenuItem.Text = "Exit the program";
             this.exitTheProgramToolStripMenuItem.Click += new System.EventHandler(this.exitTheProgramToolStripMenuItem_Click);
 
