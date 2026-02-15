@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 using WindowsShutdownHelper.lang;
 
 namespace WindowsShutdownHelper.functions
@@ -25,96 +26,62 @@ namespace WindowsShutdownHelper.functions
             }
         }
 
-        private static language mergeWithDefaults(language loaded, language defaults)
-        {
-            foreach (PropertyInfo prop in typeof(language).GetProperties())
-            {
-                if (prop.GetValue(loaded) == null && prop.GetValue(defaults) != null)
-                {
-                    prop.SetValue(loaded, prop.GetValue(defaults));
-                }
-            }
-            return loaded;
-        }
+        private static readonly string[] _supportedLangs = { "en", "tr", "it", "de", "fr", "ru" };
 
         public static language languageFile()
         {
             settings settings = new settings();
-            if (File.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json"))
+            string settingsPath = AppDomain.CurrentDomain.BaseDirectory + "\\settings.json";
+            if (File.Exists(settingsPath))
             {
-                settings = JsonSerializer.Deserialize<settings>(
-                    File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json"));
+                settings = JsonSerializer.Deserialize<settings>(File.ReadAllText(settingsPath));
             }
 
-            Directory.CreateDirectory(AppDomain.CurrentDomain.BaseDirectory + "\\lang");
-            if (Directory.Exists(AppDomain.CurrentDomain.BaseDirectory + "\\lang"))
+            // Determine language code
+            string langCode;
+            if (settings.language == "auto" || string.IsNullOrEmpty(settings.language))
             {
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_en.json", true,
-                    lang_en.lang_english());
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_tr.json", true,
-                    lang_tr.lang_turkish());
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_it.json", true,
-                    lang_it.lang_italian());
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_de.json", true,
-                    lang_de.lang_german());
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_fr.json", true,
-                    lang_fr.lang_french());
-                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_ru.json", true,
-                    lang_ru.lang_russian());
-
-                System.Collections.Generic.List<string> existLanguages = Directory
-                    .GetFiles(AppDomain.CurrentDomain.BaseDirectory + "lang\\", "lang_??.json")
-                    .Select(Path.GetFileNameWithoutExtension)
-                    .ToList();
-
-                string currentCultureLangCode = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
-
-
-                foreach (string lang in existLanguages)
-                {
-                    string langCode = lang.Substring(lang.Length - 2);
-                    if (settings.language == "auto")
-                    {
-                        if (currentCultureLangCode == langCode)
-                        {
-                            language loaded = JsonSerializer.Deserialize<language>(
-                                File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_" + langCode +
-                                                 ".json"));
-                            return mergeWithDefaults(loaded, getDefaults(langCode));
-                        }
-                    }
-                    else
-                    {
-                        language loaded = JsonSerializer.Deserialize<language>(
-                            File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_" + settings.language +
-                                             ".json"));
-                        return mergeWithDefaults(loaded, getDefaults(settings.language));
-                    }
-                }
-
-                foreach (string lang in existLanguages)
-                {
-
-                    if (settings.language == "auto")
-                    {
-                        if (currentCultureLangCode != lang)
-                        {
-                            language loaded = JsonSerializer.Deserialize<language>(
-                                File.ReadAllText(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_" + "en" +
-                                                 ".json"));
-                            return mergeWithDefaults(loaded, getDefaults("en"));
-                        }
-                    }
-                }
-
-
-                return null;
+                string systemLang = CultureInfo.CurrentCulture.TwoLetterISOLanguageName;
+                langCode = Array.Exists(_supportedLangs, l => l == systemLang) ? systemLang : "en";
+            }
+            else
+            {
+                langCode = Array.Exists(_supportedLangs, l => l == settings.language) ? settings.language : "en";
             }
 
-            return null;
+            // Use C# object directly - no JSON round-trip
+            language result = getDefaults(langCode);
+
+            // Write lang JSON files in background (for settings dropdown)
+            Task.Run(() => EnsureLangFilesExist());
+
+            return result;
         }
 
+        public static void EnsureLangFilesExist()
+        {
+            try
+            {
+                string langDir = AppDomain.CurrentDomain.BaseDirectory + "\\lang";
+                Directory.CreateDirectory(langDir);
 
+                WriteLangIfMissing(langDir, "en", lang_en.lang_english());
+                WriteLangIfMissing(langDir, "tr", lang_tr.lang_turkish());
+                WriteLangIfMissing(langDir, "it", lang_it.lang_italian());
+                WriteLangIfMissing(langDir, "de", lang_de.lang_german());
+                WriteLangIfMissing(langDir, "fr", lang_fr.lang_french());
+                WriteLangIfMissing(langDir, "ru", lang_ru.lang_russian());
+            }
+            catch { }
+        }
 
+        private static void WriteLangIfMissing(string langDir, string code, language lang)
+        {
+            string path = Path.Combine(langDir, "lang_" + code + ".json");
+            if (!File.Exists(path))
+            {
+                jsonWriter.WriteJson(path, true, lang);
+            }
+        }
     }
 }
