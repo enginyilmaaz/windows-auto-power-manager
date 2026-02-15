@@ -1,10 +1,10 @@
 // Toast notification component
 const Toast = {
     _icons: {
-        success: '\u2714',
-        warn: '\u26A0',
-        info: '\u2139',
-        error: '\u2716'
+        success: '\ue86c',
+        warn: '\ue002',
+        info: '\ue88e',
+        error: '\ue5c9'
     },
 
     show(title, message, type, duration) {
