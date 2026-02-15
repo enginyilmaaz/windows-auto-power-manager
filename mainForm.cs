@@ -92,6 +92,15 @@ namespace WindowsShutdownHelper
             contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ShowLogs].Text =
                 language.contextMenuStrip_notifyIcon_showLogs;
 
+            // Apply modern tray menu renderer based on theme
+            var currentSettings = LoadSettings();
+            bool isDark = DetermineIfDark(currentSettings.theme);
+            contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
+            contextMenuStrip_notifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
+            BackColor = isDark
+                ? System.Drawing.Color.FromArgb(26, 27, 46)
+                : System.Drawing.Color.FromArgb(240, 242, 245);
+
             // Initialize WebView2
             await InitializeWebView();
         }
@@ -377,11 +386,19 @@ namespace WindowsShutdownHelper
                 runInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
                 isCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 countdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
-                language = data.GetProperty("language").GetString()
+                language = data.GetProperty("language").GetString(),
+                theme = data.GetProperty("theme").GetString()
             };
 
             string currentLang = LoadSettings().language;
             jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "\\settings.json", true, newSettings);
+
+            // Update tray menu renderer and form BackColor based on theme
+            bool isDark = DetermineIfDark(newSettings.theme);
+            contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
+            BackColor = isDark
+                ? System.Drawing.Color.FromArgb(26, 27, 46)
+                : System.Drawing.Color.FromArgb(240, 242, 245);
 
             if (newSettings.startWithWindows)
                 startWithWindows.AddStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
@@ -622,6 +639,33 @@ namespace WindowsShutdownHelper
         {
             showMain();
             PostMessage("navigate", "logs");
+        }
+
+        // =============== Theme Helpers ===============
+
+        private static bool IsSystemDarkTheme()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        var val = key.GetValue("AppsUseLightTheme");
+                        if (val != null) return (int)val == 0;
+                    }
+                }
+            }
+            catch { }
+            return true;
+        }
+
+        private bool DetermineIfDark(string theme)
+        {
+            if (theme == "dark") return true;
+            if (theme == "light") return false;
+            return IsSystemDarkTheme();
         }
     }
 }

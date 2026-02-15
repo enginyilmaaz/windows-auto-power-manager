@@ -8,5 +8,6 @@
         public bool isCountdownNotifierEnabled { get; set; }
         public int countdownNotifierSeconds { get; set; }
         public string language { get; set; }
+        public string theme { get; set; }
     }
 }

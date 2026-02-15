@@ -114,6 +114,11 @@
                 main_timeUnit_minutes = "Minutes",
                 main_timeUnit_hours = "Hours",
 
+                settingsForm_label_theme = "Theme",
+                settingsForm_theme_dark = "Dark",
+                settingsForm_theme_light = "Light",
+                settingsForm_theme_system = "System Default",
+
             };
             return lang;
         }

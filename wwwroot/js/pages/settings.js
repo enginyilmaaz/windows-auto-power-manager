@@ -11,6 +11,15 @@ const SettingsPage = {
             '<div class="card-title">' + (L('settingsForm_Name') || 'Settings') + '</div>' +
 
             '<div class="settings-row">' +
+                '<span class="settings-label">' + (L('settingsForm_label_theme') || 'Theme') + '</span>' +
+                '<select id="set-theme" class="form-select" style="max-width:200px">' +
+                    '<option value="system"' + (s.theme === 'system' || !s.theme ? ' selected' : '') + '>' + (L('settingsForm_theme_system') || 'System Default') + '</option>' +
+                    '<option value="dark"' + (s.theme === 'dark' ? ' selected' : '') + '>' + (L('settingsForm_theme_dark') || 'Dark') + '</option>' +
+                    '<option value="light"' + (s.theme === 'light' ? ' selected' : '') + '>' + (L('settingsForm_theme_light') || 'Light') + '</option>' +
+                '</select>' +
+            '</div>' +
+
+            '<div class="settings-row">' +
                 '<span class="settings-label">' + (L('settingsForm_label_language') || 'Language') + '</span>' +
                 '<select id="set-lang" class="form-select" style="max-width:200px"></select>' +
             '</div>' +
@@ -68,6 +77,8 @@ const SettingsPage = {
 
         Bridge.on('settingsLoaded', function (s) {
             var el;
+            el = document.getElementById('set-theme');
+            if (el) el.value = s.theme || 'system';
             el = document.getElementById('set-logs');
             if (el) el.checked = !!s.logsEnabled;
             el = document.getElementById('set-startup');
@@ -96,6 +107,11 @@ const SettingsPage = {
             }
         });
 
+        // Live theme preview
+        document.getElementById('set-theme').addEventListener('change', function () {
+            Bridge.applyTheme(this.value);
+        });
+
         document.getElementById('set-save').addEventListener('click', function () {
             Bridge.send('saveSettings', {
                 logsEnabled: document.getElementById('set-logs').checked,
@@ -103,7 +119,8 @@ const SettingsPage = {
                 runInTaskbarWhenClosed: document.getElementById('set-taskbar').checked,
                 isCountdownNotifierEnabled: document.getElementById('set-countdown').checked,
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
-                language: document.getElementById('set-lang').value
+                language: document.getElementById('set-lang').value,
+                theme: document.getElementById('set-theme').value
             });
         });
 

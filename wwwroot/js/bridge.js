@@ -26,11 +26,20 @@ const Bridge = {
         }
     },
 
+    // Apply theme to document
+    applyTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme || 'system');
+    },
+
     // Initialize: called when C# sends init data
     init(data) {
         this._language = data.language || {};
         this._actions = data.actions || [];
         this._settings = data.settings || {};
+
+        // Apply theme on init
+        this.applyTheme(this._settings.theme || 'system');
+
         this._emit('init', data);
     },
 
@@ -75,6 +84,9 @@ if (window.chrome && window.chrome.webview) {
                 break;
             case 'navigate':
                 Bridge._emit('navigate', msg.data);
+                break;
+            case 'themeChanged':
+                Bridge.applyTheme(msg.data);
                 break;
         }
     });

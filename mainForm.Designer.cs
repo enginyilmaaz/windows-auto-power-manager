@@ -26,6 +26,7 @@ namespace WindowsShutdownHelper
             this.addNewActionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showTheLogsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitTheProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
             ((System.ComponentModel.ISupportInitialize)(this.webView)).BeginInit();
@@ -46,6 +47,7 @@ namespace WindowsShutdownHelper
                 this.addNewActionToolStripMenuItem,
                 this.settingsToolStripMenuItem,
                 this.showTheLogsToolStripMenuItem,
+                this.toolStripSeparator1,
                 this.exitTheProgramToolStripMenuItem
             });
             this.contextMenuStrip_notifyIcon.Name = "contextMenuStrip_notifyIcon";
@@ -115,6 +117,7 @@ namespace WindowsShutdownHelper
         private System.Windows.Forms.ToolStripMenuItem addNewActionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showTheLogsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripMenuItem exitTheProgramToolStripMenuItem;
     }
 }

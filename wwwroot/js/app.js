@@ -1,4 +1,4 @@
-// SPA Router and main application
+// Tab-based navigation and main application
 const App = {
     _currentPage: 'main',
     _pages: {
@@ -6,39 +6,20 @@ const App = {
         settings: SettingsPage,
         logs: LogsPage
     },
+    _initialized: {},
 
     init() {
         var self = this;
 
-        // Hamburger menu toggle
-        var menuBtn = document.getElementById('menu-btn');
-        var overlay = document.getElementById('menu-overlay');
-
-        menuBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            overlay.classList.toggle('hidden');
-        });
-
-        overlay.addEventListener('click', function (e) {
-            if (e.target === overlay) {
-                overlay.classList.add('hidden');
-            }
-        });
-
-        // Menu item clicks
-        document.querySelectorAll('.menu-item[data-page]').forEach(function (item) {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
-                var page = this.getAttribute('data-page');
-                self.navigate(page);
-                overlay.classList.add('hidden');
+        // Tab clicks
+        document.querySelectorAll('.tab-btn[data-page]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                self.navigate(btn.getAttribute('data-page'));
             });
         });
 
         // Exit button
-        document.getElementById('mi-exit').addEventListener('click', function (e) {
-            e.preventDefault();
-            overlay.classList.add('hidden');
+        document.getElementById('tab-exit').addEventListener('click', function () {
             Bridge.send('exitApp', {});
         });
 
@@ -66,35 +47,42 @@ const App = {
         var title = document.getElementById('header-title');
         if (title) title.textContent = L('main_FormName') || 'Windows Shutdown Helper';
 
-        var miMain = document.getElementById('mi-main-text');
-        if (miMain) miMain.textContent = L('main_groupbox_newAction') || 'Actions';
+        var tabMain = document.getElementById('tab-main-text');
+        if (tabMain) tabMain.textContent = L('main_groupbox_newAction') || 'Actions';
 
-        var miSettings = document.getElementById('mi-settings-text');
-        if (miSettings) miSettings.textContent = L('settingsForm_Name') || 'Settings';
+        var tabSettings = document.getElementById('tab-settings-text');
+        if (tabSettings) tabSettings.textContent = L('settingsForm_Name') || 'Settings';
 
-        var miLogs = document.getElementById('mi-logs-text');
-        if (miLogs) miLogs.textContent = L('logViewerForm_Name') || 'Logs';
+        var tabLogs = document.getElementById('tab-logs-text');
+        if (tabLogs) tabLogs.textContent = L('logViewerForm_Name') || 'Logs';
 
-        var miExit = document.getElementById('mi-exit-text');
-        if (miExit) miExit.textContent = L('contextMenuStrip_notifyIcon_exitTheProgram') || 'Exit';
+        var tabExit = document.getElementById('tab-exit-text');
+        if (tabExit) tabExit.textContent = L('contextMenuStrip_notifyIcon_exitTheProgram') || 'Exit';
     },
 
     navigate(page) {
         if (!this._pages[page]) return;
         this._currentPage = page;
 
-        // Update menu active state
-        document.querySelectorAll('.menu-item[data-page]').forEach(function (item) {
-            item.classList.toggle('active', item.getAttribute('data-page') === page);
+        // Update tab active state
+        document.querySelectorAll('.tab-btn[data-page]').forEach(function (btn) {
+            btn.classList.toggle('active', btn.getAttribute('data-page') === page);
         });
 
-        // Render page
-        var container = document.getElementById('page-container');
-        container.innerHTML = this._pages[page].render();
+        // Show/hide panels
+        document.querySelectorAll('.page-panel').forEach(function (panel) {
+            panel.classList.remove('active');
+        });
+        var target = document.getElementById('panel-' + page);
+        if (target) target.classList.add('active');
 
-        // Call afterRender
-        if (this._pages[page].afterRender) {
-            this._pages[page].afterRender();
+        // Render if not initialized
+        if (!this._initialized[page]) {
+            target.innerHTML = this._pages[page].render();
+            if (this._pages[page].afterRender) {
+                this._pages[page].afterRender();
+            }
+            this._initialized[page] = true;
         }
     }
 };

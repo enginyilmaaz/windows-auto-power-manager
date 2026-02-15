@@ -17,6 +17,10 @@ namespace WindowsShutdownHelper.functions
             {
                 case "tr": return lang_tr.lang_turkish();
                 case "en": return lang_en.lang_english();
+                case "it": return lang_it.lang_italian();
+                case "de": return lang_de.lang_german();
+                case "fr": return lang_fr.lang_french();
+                case "ru": return lang_ru.lang_russian();
                 default: return lang_en.lang_english();
             }
         }
@@ -49,6 +53,14 @@ namespace WindowsShutdownHelper.functions
                     lang_en.lang_english());
                 jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_tr.json", true,
                     lang_tr.lang_turkish());
+                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_it.json", true,
+                    lang_it.lang_italian());
+                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_de.json", true,
+                    lang_de.lang_german());
+                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_fr.json", true,
+                    lang_fr.lang_french());
+                jsonWriter.WriteJson(AppDomain.CurrentDomain.BaseDirectory + "lang\\lang_ru.json", true,
+                    lang_ru.lang_russian());
 
                 System.Collections.Generic.List<string> existLanguages = Directory
                     .GetFiles(AppDomain.CurrentDomain.BaseDirectory + "lang\\", "lang_??.json")

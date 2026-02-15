@@ -147,6 +147,11 @@
     <Compile Include="config\languageINI.cs" />
     <Compile Include="config\lang\lang_en.cs" />
     <Compile Include="config\lang\lang_tr.cs" />
+    <Compile Include="config\lang\lang_it.cs" />
+    <Compile Include="config\lang\lang_de.cs" />
+    <Compile Include="config\lang\lang_fr.cs" />
+    <Compile Include="config\lang\lang_ru.cs" />
+    <Compile Include="functions\ModernMenuRenderer.cs" />
     <Compile Include="mainForm.cs">
       <SubType>Form</SubType>
     </Compile>

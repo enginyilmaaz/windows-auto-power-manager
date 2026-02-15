@@ -113,7 +113,12 @@
 
                 main_timeUnit_seconds = "Saniye",
                 main_timeUnit_minutes = "Dakika",
-                main_timeUnit_hours = "Saat"
+                main_timeUnit_hours = "Saat",
+
+                settingsForm_label_theme = "Tema",
+                settingsForm_theme_dark = "Koyu",
+                settingsForm_theme_light = "Açık",
+                settingsForm_theme_system = "Sistem Varsayılanı",
 
             };
 

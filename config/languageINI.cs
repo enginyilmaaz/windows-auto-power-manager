@@ -125,5 +125,10 @@
         public string main_timeUnit_minutes { get; set; }
         public string main_timeUnit_hours { get; set; }
 
+        public string settingsForm_label_theme { get; set; }
+        public string settingsForm_theme_dark { get; set; }
+        public string settingsForm_theme_light { get; set; }
+        public string settingsForm_theme_system { get; set; }
+
     }
 }
