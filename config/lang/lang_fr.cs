@@ -124,6 +124,38 @@ namespace WindowsShutdownHelper.lang
                 about_label_buildId = "ID de build",
                 about_label_author = "Auteur",
 
+                // Toolbar
+                toolbar_addAction = "Nouvelle Action",
+                toolbar_pause = "Pause",
+                toolbar_resume = "Reprendre",
+                toolbar_search = "Rechercher...",
+
+                // Tabs
+                tab_all = "Tout",
+                tab_shutdown = "Arrêter",
+                tab_restart = "Redémarrer",
+                tab_sleep = "Veille",
+                tab_lock = "Verrouiller",
+                tab_monitor = "Moniteur",
+                tab_logoff = "Déconnecter",
+
+                // Pause
+                pause_30min = "30 minutes",
+                pause_1hour = "1 heure",
+                pause_2hours = "2 heures",
+                pause_4hours = "4 heures",
+                pause_untilEndOfDay = "Jusqu'à la fin du jour",
+                pause_custom = "Durée personnalisée...",
+                pause_banner = "Actions en pause",
+                pause_remaining = "restant",
+                pause_customTitle = "Durée de pause (minutes)",
+                pause_customPlaceholder = "Entrez les minutes...",
+                pause_paused = "Actions mises en pause avec succès",
+                pause_resumed = "Actions reprises",
+
+                // Modal
+                modal_title_newAction = "Nouvelle Action",
+
             };
             return lang;
         }

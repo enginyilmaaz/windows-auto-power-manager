@@ -1,12 +1,14 @@
-// Main Page - Action creation and list
+// Main Page - Action list (table only), form moved to modal
 const MainPage = {
     _selectedRow: -1,
+    _currentFilter: 'all',
+    _searchQuery: '',
+    _rawActions: [],
 
-    render() {
-        const L = Bridge.lang.bind(Bridge);
+    // Render the form HTML (used inside modal)
+    renderForm() {
+        var L = Bridge.lang.bind(Bridge);
         return '' +
-        '<div class="card">' +
-            '<div class="card-title">' + L('main_groupbox_newAction') + '</div>' +
             '<div class="form-row">' +
                 '<span class="form-label">' + L('main_label_actionType') + '</span>' +
                 '<select id="sel-action" class="form-select">' +
@@ -39,31 +41,19 @@ const MainPage = {
                 '</select>' +
                 '<input type="time" id="inp-time" class="form-input form-input-small" style="display:none">' +
             '</div>' +
-            '<button class="btn btn-primary" id="btn-add">' + L('main_button_addAction') + '</button>' +
-        '</div>' +
-        '<div class="card">' +
-            '<div class="card-title">' + L('main_groupBox_actionList') + '</div>' +
-            '<div id="action-table-wrap"></div>' +
-        '</div>' +
-        '<div class="context-menu" id="ctx-menu">' +
-            '<div class="context-menu-item" id="ctx-delete">' + L('contextMenuStrip_mainGrid_deleteSelectedAction') + '</div>' +
-            '<div class="context-menu-item danger" id="ctx-clear">' + L('contextMenuStrip_mainGrid_deleteAllAction') + '</div>' +
-            '<div class="context-menu-item" id="ctx-about">About</div>' +
-        '</div>';
+            '<button class="btn btn-primary" id="btn-add">' + L('main_button_addAction') + '</button>';
     },
 
-    afterRender() {
-        var self = this;
-        self._selectedRow = -1;
-
+    // Bind form events (called after modal body is populated)
+    afterRenderForm(container) {
         // Trigger change -> toggle value inputs
-        document.getElementById('sel-trigger').addEventListener('change', function () {
+        container.querySelector('#sel-trigger').addEventListener('change', function () {
             var v = this.value;
-            var hint = document.getElementById('hint-trigger');
-            var inp = document.getElementById('inp-value');
-            var unit = document.getElementById('sel-unit');
-            var time = document.getElementById('inp-time');
-            var lbl = document.getElementById('lbl-value');
+            var hint = container.querySelector('#hint-trigger');
+            var inp = container.querySelector('#inp-value');
+            var unit = container.querySelector('#sel-unit');
+            var time = container.querySelector('#inp-time');
+            var lbl = container.querySelector('#lbl-value');
             var L = Bridge.lang.bind(Bridge);
 
             if (v === '0') {
@@ -87,12 +77,12 @@ const MainPage = {
         });
 
         // Add action
-        document.getElementById('btn-add').addEventListener('click', function () {
-            var action = document.getElementById('sel-action').value;
-            var trigger = document.getElementById('sel-trigger').value;
-            var value = document.getElementById('inp-value').value;
-            var unit = document.getElementById('sel-unit').value;
-            var time = document.getElementById('inp-time').value;
+        container.querySelector('#btn-add').addEventListener('click', function () {
+            var action = container.querySelector('#sel-action').value;
+            var trigger = container.querySelector('#sel-trigger').value;
+            var value = container.querySelector('#inp-value').value;
+            var unit = container.querySelector('#sel-unit').value;
+            var time = container.querySelector('#inp-time').value;
 
             Bridge.send('addAction', {
                 actionType: action,
@@ -101,7 +91,29 @@ const MainPage = {
                 timeUnit: unit,
                 time: time
             });
+
+            // Close modal after adding
+            App.closeModal();
         });
+    },
+
+    // Page render - only table + context menu
+    render() {
+        var L = Bridge.lang.bind(Bridge);
+        return '' +
+        '<div class="card">' +
+            '<div class="card-title">' + L('main_groupBox_actionList') + '</div>' +
+            '<div id="action-table-wrap"></div>' +
+        '</div>' +
+        '<div class="context-menu" id="ctx-menu">' +
+            '<div class="context-menu-item" id="ctx-delete">' + L('contextMenuStrip_mainGrid_deleteSelectedAction') + '</div>' +
+            '<div class="context-menu-item danger" id="ctx-clear">' + L('contextMenuStrip_mainGrid_deleteAllAction') + '</div>' +
+        '</div>';
+    },
+
+    afterRender() {
+        var self = this;
+        self._selectedRow = -1;
 
         // Context menu
         document.addEventListener('click', function () {
@@ -109,19 +121,21 @@ const MainPage = {
             if (ctx) ctx.classList.remove('show');
         });
 
-        document.getElementById('ctx-delete').addEventListener('click', function () {
-            if (self._selectedRow >= 0) {
-                Bridge.send('deleteAction', { index: self._selectedRow });
-            }
-        });
+        var ctxDelete = document.getElementById('ctx-delete');
+        if (ctxDelete) {
+            ctxDelete.addEventListener('click', function () {
+                if (self._selectedRow >= 0) {
+                    Bridge.send('deleteAction', { index: self._selectedRow });
+                }
+            });
+        }
 
-        document.getElementById('ctx-clear').addEventListener('click', function () {
-            Bridge.send('clearAllActions', {});
-        });
-
-        document.getElementById('ctx-about').addEventListener('click', function () {
-            Bridge.send('openWindow', { page: 'about' });
-        });
+        var ctxClear = document.getElementById('ctx-clear');
+        if (ctxClear) {
+            ctxClear.addEventListener('click', function () {
+                Bridge.send('clearAllActions', {});
+            });
+        }
 
         // Render table
         this.renderTable(Bridge._actions);
@@ -139,7 +153,39 @@ const MainPage = {
 
         var L = Bridge.lang.bind(Bridge);
 
-        if (!actions || actions.length === 0) {
+        // Store raw actions for filtering
+        self._rawActions = actions || [];
+
+        // Apply filter
+        var filtered = self._rawActions;
+        if (self._currentFilter && self._currentFilter !== 'all') {
+            var filterMap = {
+                'shutdownComputer': L('main_cbox_ActionType_Item_shutdownComputer'),
+                'restartComputer': L('main_cbox_ActionType_Item_restartComputer'),
+                'sleepComputer': L('main_cbox_ActionType_Item_sleepComputer'),
+                'lockComputer': L('main_cbox_ActionType_Item_lockComputer'),
+                'turnOffMonitor': L('main_cbox_ActionType_Item_turnOffMonitor'),
+                'logOffWindows': L('main_cbox_ActionType_Item_logOffWindows')
+            };
+            var filterText = filterMap[self._currentFilter] || self._currentFilter;
+            filtered = filtered.filter(function (a) {
+                return a.actionType === filterText || a.actionType === self._currentFilter;
+            });
+        }
+
+        // Apply search
+        if (self._searchQuery) {
+            var q = self._searchQuery;
+            filtered = filtered.filter(function (a) {
+                return (a.triggerType || '').toLowerCase().indexOf(q) >= 0 ||
+                       (a.actionType || '').toLowerCase().indexOf(q) >= 0 ||
+                       (a.value || '').toLowerCase().indexOf(q) >= 0 ||
+                       (a.valueUnit || '').toLowerCase().indexOf(q) >= 0 ||
+                       (a.createdDate || '').toLowerCase().indexOf(q) >= 0;
+            });
+        }
+
+        if (!filtered || filtered.length === 0) {
             wrap.innerHTML = '<div class="table-empty">' + (L('messageContent_noLog') || 'No actions yet') + '</div>';
             return;
         }
@@ -152,9 +198,11 @@ const MainPage = {
             '<th>' + L('main_datagrid_main_createdDate') + '</th>' +
             '</tr></thead><tbody>';
 
-        for (var i = 0; i < actions.length; i++) {
-            var a = actions[i];
-            html += '<tr data-idx="' + i + '">' +
+        for (var i = 0; i < filtered.length; i++) {
+            var a = filtered[i];
+            // Find original index for delete
+            var origIdx = self._rawActions.indexOf(a);
+            html += '<tr data-idx="' + origIdx + '">' +
                 '<td>' + (a.triggerType || '') + '</td>' +
                 '<td>' + (a.actionType || '') + '</td>' +
                 '<td>' + (a.value || '') + '</td>' +
@@ -166,7 +214,7 @@ const MainPage = {
         html += '</tbody></table>';
         wrap.innerHTML = html;
 
-        // Row selection
+        // Row selection + context menu
         wrap.querySelectorAll('tr[data-idx]').forEach(function (row) {
             row.addEventListener('click', function () {
                 wrap.querySelectorAll('tr.selected').forEach(function (r) { r.classList.remove('selected'); });
@@ -180,9 +228,11 @@ const MainPage = {
                 row.classList.add('selected');
                 self._selectedRow = parseInt(row.getAttribute('data-idx'));
                 var ctx = document.getElementById('ctx-menu');
-                ctx.style.left = e.clientX + 'px';
-                ctx.style.top = e.clientY + 'px';
-                ctx.classList.add('show');
+                if (ctx) {
+                    ctx.style.left = e.clientX + 'px';
+                    ctx.style.top = e.clientY + 'px';
+                    ctx.classList.add('show');
+                }
             });
         });
     }

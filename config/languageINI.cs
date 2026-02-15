@@ -136,5 +136,37 @@
         public string about_label_buildId { get; set; }
         public string about_label_author { get; set; }
 
+        // Toolbar
+        public string toolbar_addAction { get; set; }
+        public string toolbar_pause { get; set; }
+        public string toolbar_resume { get; set; }
+        public string toolbar_search { get; set; }
+
+        // Tabs
+        public string tab_all { get; set; }
+        public string tab_shutdown { get; set; }
+        public string tab_restart { get; set; }
+        public string tab_sleep { get; set; }
+        public string tab_lock { get; set; }
+        public string tab_monitor { get; set; }
+        public string tab_logoff { get; set; }
+
+        // Pause
+        public string pause_30min { get; set; }
+        public string pause_1hour { get; set; }
+        public string pause_2hours { get; set; }
+        public string pause_4hours { get; set; }
+        public string pause_untilEndOfDay { get; set; }
+        public string pause_custom { get; set; }
+        public string pause_banner { get; set; }
+        public string pause_remaining { get; set; }
+        public string pause_customTitle { get; set; }
+        public string pause_customPlaceholder { get; set; }
+        public string pause_paused { get; set; }
+        public string pause_resumed { get; set; }
+
+        // Modal
+        public string modal_title_newAction { get; set; }
+
     }
 }

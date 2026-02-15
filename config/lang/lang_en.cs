@@ -124,6 +124,38 @@
                 about_label_buildId = "Build ID",
                 about_label_author = "Author",
 
+                // Toolbar
+                toolbar_addAction = "New Action",
+                toolbar_pause = "Pause",
+                toolbar_resume = "Resume",
+                toolbar_search = "Search...",
+
+                // Tabs
+                tab_all = "All",
+                tab_shutdown = "Shutdown",
+                tab_restart = "Restart",
+                tab_sleep = "Sleep",
+                tab_lock = "Lock",
+                tab_monitor = "Monitor",
+                tab_logoff = "Log Off",
+
+                // Pause
+                pause_30min = "30 minutes",
+                pause_1hour = "1 hour",
+                pause_2hours = "2 hours",
+                pause_4hours = "4 hours",
+                pause_untilEndOfDay = "Until end of day",
+                pause_custom = "Custom duration...",
+                pause_banner = "Actions paused",
+                pause_remaining = "remaining",
+                pause_customTitle = "Pause duration (minutes)",
+                pause_customPlaceholder = "Enter minutes...",
+                pause_paused = "Actions paused successfully",
+                pause_resumed = "Actions resumed",
+
+                // Modal
+                modal_title_newAction = "New Action",
+
             };
             return lang;
         }

@@ -8,14 +8,75 @@
 </head>
 <body>
     <div id="app">
+        <!-- Toolbar -->
         <header id="header">
-            <button id="menu-btn" class="menu-btn" title="Menu">
-                <span class="mi">menu</span>
-            </button>
-            <span id="header-title">Windows Shutdown Helper</span>
-            <span id="header-time"></span>
+            <div class="toolbar-left">
+                <button id="btn-toolbar-add" class="toolbar-btn toolbar-btn-add" title="New Action">
+                    <span class="mi">add</span>
+                </button>
+                <div class="toolbar-separator"></div>
+                <button id="btn-toolbar-resume" class="toolbar-btn" title="Resume">
+                    <span class="mi">play_arrow</span>
+                </button>
+                <button id="btn-toolbar-pause" class="toolbar-btn" title="Pause">
+                    <span class="mi">pause</span>
+                </button>
+            </div>
+            <div class="toolbar-center">
+                <div class="toolbar-search">
+                    <span class="mi toolbar-search-icon">search</span>
+                    <input type="text" id="toolbar-search-input" class="toolbar-search-input" placeholder="Search...">
+                </div>
+            </div>
+            <div class="toolbar-right">
+                <button id="menu-btn" class="toolbar-btn" title="Menu">
+                    <span class="mi">menu</span>
+                </button>
+            </div>
         </header>
 
+        <!-- Pause Banner -->
+        <div id="pause-banner" class="pause-banner hidden">
+            <span class="mi pause-banner-icon">pause_circle</span>
+            <span id="pause-banner-text">Actions paused</span>
+            <span id="pause-banner-time" class="pause-banner-time"></span>
+            <button id="pause-banner-resume" class="pause-banner-btn">
+                <span class="mi">play_arrow</span>
+            </button>
+        </div>
+
+        <!-- Pause Dropdown -->
+        <div id="pause-dropdown" class="pause-dropdown hidden">
+            <div class="pause-dropdown-item" data-minutes="30" id="pause-opt-30">30 minutes</div>
+            <div class="pause-dropdown-item" data-minutes="60" id="pause-opt-60">1 hour</div>
+            <div class="pause-dropdown-item" data-minutes="120" id="pause-opt-120">2 hours</div>
+            <div class="pause-dropdown-item" data-minutes="240" id="pause-opt-240">4 hours</div>
+            <div class="pause-dropdown-item" data-minutes="eod" id="pause-opt-eod">Until end of day</div>
+            <div class="pause-dropdown-divider"></div>
+            <div class="pause-dropdown-custom" id="pause-custom-section">
+                <span class="pause-dropdown-label" id="pause-custom-label">Custom duration (min)</span>
+                <div class="pause-custom-row">
+                    <input type="number" id="pause-custom-input" class="pause-custom-input" min="1" max="9999" placeholder="Enter minutes...">
+                    <button id="pause-custom-btn" class="pause-custom-btn">
+                        <span class="mi">check</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Bar -->
+        <div id="tab-bar" class="tab-bar">
+            <button class="tab-item active" data-filter="all" id="tab-all">All</button>
+            <button class="tab-item" data-filter="shutdownComputer" id="tab-shutdown">Shutdown</button>
+            <button class="tab-item" data-filter="restartComputer" id="tab-restart">Restart</button>
+            <button class="tab-item" data-filter="sleepComputer" id="tab-sleep">Sleep</button>
+            <button class="tab-item" data-filter="lockComputer" id="tab-lock">Lock</button>
+            <button class="tab-item" data-filter="turnOffMonitor" id="tab-monitor">Monitor</button>
+            <button class="tab-item" data-filter="logOffWindows" id="tab-logoff">Log Off</button>
+            <button class="tab-item tab-item-add" id="tab-add-btn" title="New Action">+</button>
+        </div>
+
+        <!-- Menu Overlay -->
         <div id="menu-overlay" class="menu-overlay hidden">
             <nav id="menu-panel" class="menu-panel">
                 <a data-page="main" class="menu-item active" id="mi-main">
@@ -40,6 +101,19 @@
                     <span id="mi-exit-text">Exit</span>
                 </a>
             </nav>
+        </div>
+
+        <!-- Modal: New Action -->
+        <div id="modal-overlay" class="modal-overlay hidden">
+            <div class="modal-dialog" id="modal-dialog">
+                <div class="modal-header">
+                    <span class="modal-title" id="modal-title">New Action</span>
+                    <button class="modal-close" id="modal-close">
+                        <span class="mi">close</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modal-body"></div>
+            </div>
         </div>
 
         <div id="page-container"></div>

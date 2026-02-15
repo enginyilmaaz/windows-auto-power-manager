@@ -124,6 +124,38 @@ namespace WindowsShutdownHelper.lang
                 about_label_buildId = "ID сборки",
                 about_label_author = "Автор",
 
+                // Toolbar
+                toolbar_addAction = "Новое действие",
+                toolbar_pause = "Пауза",
+                toolbar_resume = "Продолжить",
+                toolbar_search = "Поиск...",
+
+                // Tabs
+                tab_all = "Все",
+                tab_shutdown = "Выключение",
+                tab_restart = "Перезагрузка",
+                tab_sleep = "Сон",
+                tab_lock = "Блокировка",
+                tab_monitor = "Монитор",
+                tab_logoff = "Выход",
+
+                // Pause
+                pause_30min = "30 минут",
+                pause_1hour = "1 час",
+                pause_2hours = "2 часа",
+                pause_4hours = "4 часа",
+                pause_untilEndOfDay = "До конца дня",
+                pause_custom = "Произвольная длительность...",
+                pause_banner = "Действия приостановлены",
+                pause_remaining = "осталось",
+                pause_customTitle = "Длительность паузы (минуты)",
+                pause_customPlaceholder = "Введите минуты...",
+                pause_paused = "Действия успешно приостановлены",
+                pause_resumed = "Действия возобновлены",
+
+                // Modal
+                modal_title_newAction = "Новое действие",
+
             };
             return lang;
         }

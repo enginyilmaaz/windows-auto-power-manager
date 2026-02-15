@@ -125,6 +125,38 @@
                 about_label_buildId = "Yapı Kimliği",
                 about_label_author = "Geliştirici",
 
+                // Toolbar
+                toolbar_addAction = "Yeni Görev",
+                toolbar_pause = "Durdur",
+                toolbar_resume = "Devam Et",
+                toolbar_search = "Ara...",
+
+                // Tabs
+                tab_all = "Tümü",
+                tab_shutdown = "Kapat",
+                tab_restart = "Y. Başlat",
+                tab_sleep = "Uyku",
+                tab_lock = "Kilitle",
+                tab_monitor = "Monitör",
+                tab_logoff = "Oturum Kapat",
+
+                // Pause
+                pause_30min = "30 dakika",
+                pause_1hour = "1 saat",
+                pause_2hours = "2 saat",
+                pause_4hours = "4 saat",
+                pause_untilEndOfDay = "Gün sonuna kadar",
+                pause_custom = "Özel süre...",
+                pause_banner = "Görevler duraklatıldı",
+                pause_remaining = "kalan",
+                pause_customTitle = "Duraklatma süresi (dakika)",
+                pause_customPlaceholder = "Dakika girin...",
+                pause_paused = "Görevler başarıyla duraklatıldı",
+                pause_resumed = "Görevler devam ettiriliyor",
+
+                // Modal
+                modal_title_newAction = "Yeni Görev",
+
             };
 
 

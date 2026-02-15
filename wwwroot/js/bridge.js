@@ -4,6 +4,8 @@ const Bridge = {
     _actions: [],
     _settings: {},
     _handlers: {},
+    _isPaused: false,
+    _pauseRemainingSeconds: 0,
 
     // Send message to C#
     send(type, data) {
@@ -84,6 +86,11 @@ if (window.chrome && window.chrome.webview) {
                 break;
             case 'navigate':
                 Bridge._emit('navigate', msg.data);
+                break;
+            case 'pauseStatus':
+                Bridge._isPaused = msg.data.isPaused;
+                Bridge._pauseRemainingSeconds = msg.data.remainingSeconds || 0;
+                Bridge._emit('pauseStatus', msg.data);
                 break;
             case 'themeChanged':
                 Bridge.applyTheme(msg.data);

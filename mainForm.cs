@@ -22,6 +22,8 @@ namespace WindowsShutdownHelper
         public static int runInTaskbarCounter;
 
         private bool _webViewReady;
+        private bool _isPaused;
+        private DateTime? _pauseUntilTime;
         private settings _cachedSettings;
         private Dictionary<string, SubWindow> _subWindows = new Dictionary<string, SubWindow>();
 
@@ -287,6 +289,12 @@ namespace WindowsShutdownHelper
                         UseShellExecute = true
                     });
                     break;
+                case "pauseActions":
+                    HandlePauseActions(data);
+                    break;
+                case "resumeActions":
+                    HandleResumeActions();
+                    break;
                 case "exitApp":
                     Logger.doLog(config.actionTypes.appTerminated);
                     Application.ExitThread();
@@ -528,6 +536,54 @@ namespace WindowsShutdownHelper
             PostMessage("languageList", list);
         }
 
+        // =============== Pause / Resume ===============
+
+        private void HandlePauseActions(JsonElement data)
+        {
+            int minutes = data.GetProperty("minutes").GetInt32();
+            _isPaused = true;
+            _pauseUntilTime = DateTime.Now.AddMinutes(minutes);
+
+            PostMessage("showToast", new
+            {
+                title = language.messageTitle_success,
+                message = language.pause_paused ?? "Actions paused successfully",
+                type = "info",
+                duration = 2000
+            });
+
+            SendPauseStatus();
+        }
+
+        private void HandleResumeActions()
+        {
+            _isPaused = false;
+            _pauseUntilTime = null;
+
+            PostMessage("showToast", new
+            {
+                title = language.messageTitle_success,
+                message = language.pause_resumed ?? "Actions resumed",
+                type = "success",
+                duration = 2000
+            });
+
+            SendPauseStatus();
+        }
+
+        private void SendPauseStatus()
+        {
+            var status = new
+            {
+                isPaused = _isPaused,
+                pauseUntil = _pauseUntilTime?.ToString("dd.MM.yyyy HH:mm:ss") ?? "",
+                remainingSeconds = _isPaused && _pauseUntilTime.HasValue
+                    ? Math.Max(0, (_pauseUntilTime.Value - DateTime.Now).TotalSeconds)
+                    : 0
+            };
+            PostMessage("pauseStatus", status);
+        }
+
         // =============== Action List Persistence ===============
 
         public void writeJsonToActionList()
@@ -630,6 +686,28 @@ namespace WindowsShutdownHelper
             // Update time in UI
             string timeText = (language.main_statusBar_currentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
             PostMessage("updateTime", timeText);
+
+            // Check pause expiration
+            if (_isPaused && _pauseUntilTime.HasValue && DateTime.Now >= _pauseUntilTime.Value)
+            {
+                _isPaused = false;
+                _pauseUntilTime = null;
+                SendPauseStatus();
+                PostMessage("showToast", new
+                {
+                    title = language.messageTitle_info ?? "Info",
+                    message = language.pause_resumed ?? "Actions resumed",
+                    type = "info",
+                    duration = 2000
+                });
+            }
+
+            // Send pause status every tick for countdown display
+            if (_isPaused)
+            {
+                SendPauseStatus();
+                return;
+            }
 
             uint idleTimeMin = systemIdleDetector.GetLastInputTime();
 
