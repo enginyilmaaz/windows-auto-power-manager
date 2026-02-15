@@ -53,7 +53,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup>
-    <ApplicationIcon>setup.ico</ApplicationIcon>
+    <ApplicationIcon>src\setup.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -128,107 +128,108 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="config\actionTypes.cs" />
-    <Compile Include="config\triggerTypes.cs" />
-    <Compile Include="Enums\enum_logViewerForm_Sortings.cs" />
-    <Compile Include="Enums\enum_cmStrip_notifyIcon.cs" />
-    <Compile Include="Enums\enum_combobox_actionType.cs" />
-    <Compile Include="Enums\enum_combobox_triggerType.cs" />
-    <Compile Include="Enums\enum_cmStrip_MainForm.cs" />
-    <Compile Include="Enums\enum_cmStrip_mainGrid.cs" />
-    <Compile Include="Enums\enum_logViewerForm_Filterings.cs" />
-    <Compile Include="functions\detectScreen.cs" />
-    <Compile Include="functions\jsonWriter.cs" />
-    <Compile Include="functions\languageSelector.cs" />
-    <Compile Include="functions\Logger.cs" />
-    <Compile Include="functions\logSystem.cs" />
-    <Compile Include="functions\WebViewEnvironmentProvider.cs" />
-    <Compile Include="functions\notifySystem.cs" />
-    <Compile Include="functions\startWithWindows.cs" />
-    <Compile Include="config\languageINI.cs" />
-    <Compile Include="config\lang\lang_en.cs" />
-    <Compile Include="config\lang\lang_tr.cs" />
-    <Compile Include="config\lang\lang_it.cs" />
-    <Compile Include="config\lang\lang_de.cs" />
-    <Compile Include="config\lang\lang_fr.cs" />
-    <Compile Include="config\lang\lang_ru.cs" />
-    <Compile Include="functions\ModernMenuRenderer.cs" />
-    <Compile Include="mainForm.cs">
+    <Compile Include="src\config\actionTypes.cs" />
+    <Compile Include="src\config\triggerTypes.cs" />
+    <Compile Include="src\enums\enum_logViewerForm_Sortings.cs" />
+    <Compile Include="src\enums\enum_cmStrip_notifyIcon.cs" />
+    <Compile Include="src\enums\enum_combobox_actionType.cs" />
+    <Compile Include="src\enums\enum_combobox_triggerType.cs" />
+    <Compile Include="src\enums\enum_cmStrip_MainForm.cs" />
+    <Compile Include="src\enums\enum_cmStrip_mainGrid.cs" />
+    <Compile Include="src\enums\enum_logViewerForm_Filterings.cs" />
+    <Compile Include="src\functions\detectScreen.cs" />
+    <Compile Include="src\functions\jsonWriter.cs" />
+    <Compile Include="src\functions\languageSelector.cs" />
+    <Compile Include="src\functions\Logger.cs" />
+    <Compile Include="src\functions\logSystem.cs" />
+    <Compile Include="src\functions\WebViewEnvironmentProvider.cs" />
+    <Compile Include="src\functions\notifySystem.cs" />
+    <Compile Include="src\functions\startWithWindows.cs" />
+    <Compile Include="src\config\languageINI.cs" />
+    <Compile Include="src\config\lang\lang_en.cs" />
+    <Compile Include="src\config\lang\lang_tr.cs" />
+    <Compile Include="src\config\lang\lang_it.cs" />
+    <Compile Include="src\config\lang\lang_de.cs" />
+    <Compile Include="src\config\lang\lang_fr.cs" />
+    <Compile Include="src\config\lang\lang_ru.cs" />
+    <Compile Include="src\functions\ModernMenuRenderer.cs" />
+    <Compile Include="src\mainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="mainForm.Designer.cs">
+    <Compile Include="src\mainForm.Designer.cs">
       <DependentUpon>mainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="actionCountdownNotifier.cs">
+    <Compile Include="src\actionCountdownNotifier.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="actionCountdownNotifier.Designer.cs">
+    <Compile Include="src\actionCountdownNotifier.Designer.cs">
       <DependentUpon>actionCountdownNotifier.cs</DependentUpon>
     </Compile>
-    <Compile Include="SubWindow.cs">
+    <Compile Include="src\SubWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="SubWindow.Designer.cs">
+    <Compile Include="src\SubWindow.Designer.cs">
       <DependentUpon>SubWindow.cs</DependentUpon>
     </Compile>
-    <Compile Include="BuildInfo.cs" />
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="functions\systemIdleDetector.cs" />
-    <Compile Include="functions\Actions.cs" />
-    <Compile Include="settings.cs" />
-    <Compile Include="config\settingsINI.cs" />
-    <EmbeddedResource Include="mainForm.resx">
+    <Compile Include="src\BuildInfo.cs" />
+    <Compile Include="src\Program.cs" />
+    <Compile Include="src\properties\AssemblyInfo.cs" />
+    <Compile Include="src\functions\systemIdleDetector.cs" />
+    <Compile Include="src\functions\Actions.cs" />
+    <Compile Include="src\settings.cs" />
+    <Compile Include="src\config\settingsINI.cs" />
+    <EmbeddedResource Include="src\mainForm.resx">
       <DependentUpon>mainForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="actionCountdownNotifier.resx">
+    <EmbeddedResource Include="src\actionCountdownNotifier.resx">
       <DependentUpon>actionCountdownNotifier.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Properties\Resources.resx">
+    <EmbeddedResource Include="src\properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
+    <Compile Include="src\properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <None Include="packages.config" />
-    <None Include="Properties\Settings.settings">
+    <None Include="src\packages.config" />
+    <None Include="src\properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <Compile Include="Properties\Settings.Designer.cs">
+    <Compile Include="src\properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="src\App.config" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
-    <None Include="content\images\logs.png" />
+    <None Include="src\content\images\logs.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="content\images\exit.png" />
-    <None Include="content\images\settings.png" />
-    <None Include="content\images\add.png" />
-    <None Include="content\images\success.png" />
-    <None Include="content\images\error.png" />
-    <None Include="content\images\info.png" />
-    <None Include="content\images\warn.png" />
-    <None Include="content\images\delete.png" />
-    <None Include="content\images\clear.png" />
-    <Content Include="setup.ico" />
+    <None Include="src\content\images\exit.png" />
+    <None Include="src\content\images\settings.png" />
+    <None Include="src\content\images\add.png" />
+    <None Include="src\content\images\success.png" />
+    <None Include="src\content\images\error.png" />
+    <None Include="src\content\images\info.png" />
+    <None Include="src\content\images\warn.png" />
+    <None Include="src\content\images\delete.png" />
+    <None Include="src\content\images\clear.png" />
+    <Content Include="src\setup.ico" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="wwwroot\**\*">
+    <Content Include="src\wwwroot\**\*">
+      <TargetPath>wwwroot\%(RecursiveDir)%(Filename)%(Extension)</TargetPath>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -149,7 +149,7 @@ if (-not $SkipRestore) {
 
 # --- Step 5: Inject Build Info ---
 Write-Step "Injecting Build Info"
-$buildInfoFile = Join-Path $projectRoot "BuildInfo.cs"
+$buildInfoFile = Join-Path $projectRoot "src/BuildInfo.cs"
 if (Test-Path $buildInfoFile) {
     $commitHash = git -C $projectRoot rev-parse --short=6 HEAD 2>$null
     if ($commitHash) {
