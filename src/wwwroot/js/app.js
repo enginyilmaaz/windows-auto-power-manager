@@ -52,10 +52,6 @@ const App = {
             self.openNewActionModal();
         });
 
-        // Tab bar add button
-        document.getElementById('tab-add-btn').addEventListener('click', function () {
-            self.openNewActionModal();
-        });
 
         // ─── Toolbar: Pause button → toggle dropdown ───
         document.getElementById('btn-toolbar-pause').addEventListener('click', function (e) {

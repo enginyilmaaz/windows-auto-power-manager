@@ -452,19 +452,7 @@ body {
     border-bottom-color: var(--accent-blue);
 }
 
-.tab-item-add {
-    color: var(--accent-blue);
-    font-size: 16px;
-    font-weight: 700;
-    padding: 6px 12px;
-    border-radius: 6px;
-    border-bottom: none;
-    margin-left: auto;
-}
 
-.tab-item-add:hover {
-    background: var(--accent-blue-bg);
-}
 
 /* ─── Pause Banner ─── */
 .pause-banner {
