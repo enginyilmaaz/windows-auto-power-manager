@@ -61,7 +61,7 @@ jobs:
       - name: Inject Build ID
         shell: pwsh
         run: |
-          $file = "BuildInfo.cs"
+          $file = "src/BuildInfo.cs"
           (Get-Content $file) -replace 'public const string CommitId = "dev"', "public const string CommitId = ""${{ steps.version.outputs.commit_short }}""" | Set-Content $file
 
       - name: Build Release
