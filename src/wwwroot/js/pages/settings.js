@@ -125,7 +125,7 @@ window.SettingsPage = {
         });
 
         document.getElementById('set-cancel').addEventListener('click', function () {
-            App.navigate('main');
+            Bridge.send('closeWindow', {});
         });
     }
 };
