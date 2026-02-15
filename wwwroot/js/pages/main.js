@@ -5,8 +5,8 @@ const MainPage = {
     render() {
         const L = Bridge.lang.bind(Bridge);
         return '' +
-        '<div class="section-box">' +
-            '<div class="section-title">' + L('main_groupbox_newAction') + '</div>' +
+        '<div class="card">' +
+            '<div class="card-title">' + L('main_groupbox_newAction') + '</div>' +
             '<div class="form-row">' +
                 '<span class="form-label">' + L('main_label_actionType') + '</span>' +
                 '<select id="sel-action" class="form-select">' +
@@ -41,8 +41,8 @@ const MainPage = {
             '</div>' +
             '<button class="btn btn-primary" id="btn-add">' + L('main_button_addAction') + '</button>' +
         '</div>' +
-        '<div class="section-box">' +
-            '<div class="section-title">' + L('main_groupBox_actionList') + '</div>' +
+        '<div class="card">' +
+            '<div class="card-title">' + L('main_groupBox_actionList') + '</div>' +
             '<div id="action-table-wrap"></div>' +
         '</div>' +
         '<div class="context-menu" id="ctx-menu">' +

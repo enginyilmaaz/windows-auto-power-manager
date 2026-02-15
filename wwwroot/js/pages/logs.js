@@ -7,8 +7,8 @@ const LogsPage = {
         var L = Bridge.lang.bind(Bridge);
 
         return '' +
-        '<div class="section-box">' +
-            '<div class="section-title">' + (L('logViewerForm_Name') || 'Logs') + '</div>' +
+        '<div class="card">' +
+            '<div class="card-title">' + (L('logViewerForm_Name') || 'Logs') + '</div>' +
             '<div class="logs-toolbar">' +
                 '<span class="form-label">' + (L('logViewerForm_label_filtering') || 'Filter') + '</span>' +
                 '<select id="log-filter" class="form-select">' +

@@ -7,8 +7,8 @@ const SettingsPage = {
         var s = Bridge._settings || {};
 
         return '' +
-        '<div class="section-box">' +
-            '<div class="section-title">' + (L('settingsForm_Name') || 'Settings') + '</div>' +
+        '<div class="card">' +
+            '<div class="card-title">' + (L('settingsForm_Name') || 'Settings') + '</div>' +
 
             '<div class="settings-row">' +
                 '<span class="settings-label">' + (L('settingsForm_label_language') || 'Language') + '</span>' +
