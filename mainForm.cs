@@ -26,10 +26,13 @@ namespace WindowsShutdownHelper
         private DateTime? _pauseUntilTime;
         private settings _cachedSettings;
         private Dictionary<string, SubWindow> _subWindows = new Dictionary<string, SubWindow>();
+        private Panel _loadingOverlay;
+        private Label _loadingLabel;
 
         public mainForm()
         {
             InitializeComponent();
+            InitializeLoadingOverlay();
         }
 
         protected override void OnLoad(EventArgs e)
@@ -69,6 +72,8 @@ namespace WindowsShutdownHelper
 
         private async void mainForm_Load(object sender, EventArgs e)
         {
+            ShowLoadingOverlay();
+
             // Initialize WebView2 first - this is the slowest operation
             await InitializeWebView();
 
@@ -117,8 +122,7 @@ namespace WindowsShutdownHelper
 
         private async System.Threading.Tasks.Task InitializeWebView()
         {
-            string userDataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2Data");
-            var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+            var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
             string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
@@ -139,7 +143,44 @@ namespace WindowsShutdownHelper
         private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             _webViewReady = true;
+            HideLoadingOverlay();
             SendInitData();
+        }
+
+        private void InitializeLoadingOverlay()
+        {
+            _loadingLabel = new Label
+            {
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.SemiBold),
+                ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
+                Text = language?.common_loading ?? "Yükleniyor..."
+            };
+
+            _loadingOverlay = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = System.Drawing.Color.FromArgb(240, 242, 245)
+            };
+
+            _loadingOverlay.Controls.Add(_loadingLabel);
+            Controls.Add(_loadingOverlay);
+            _loadingOverlay.BringToFront();
+        }
+
+        private void ShowLoadingOverlay()
+        {
+            if (_loadingOverlay == null) return;
+            _loadingLabel.Text = language?.common_loading ?? "Yükleniyor...";
+            _loadingOverlay.Visible = true;
+            _loadingOverlay.BringToFront();
+        }
+
+        private void HideLoadingOverlay()
+        {
+            if (_loadingOverlay == null) return;
+            _loadingOverlay.Visible = false;
         }
 
         private void SendInitData()

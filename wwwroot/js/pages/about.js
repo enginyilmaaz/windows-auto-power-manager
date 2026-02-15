@@ -1,5 +1,5 @@
 // About Page
-const AboutPage = {
+window.AboutPage = {
     render() {
         var L = Bridge.lang.bind(Bridge);
         var version = Bridge._settings.appVersion || '1.0.0.0';

@@ -124,6 +124,7 @@
                 about_label_version = "Sürüm",
                 about_label_buildId = "Yapı Kimliği",
                 about_label_author = "Geliştirici",
+                common_loading = "Yükleniyor...",
 
                 // Toolbar
                 toolbar_addAction = "Yeni Görev",

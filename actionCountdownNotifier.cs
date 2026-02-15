@@ -47,7 +47,7 @@ namespace WindowsShutdownHelper
 
         private async System.Threading.Tasks.Task InitializeWebView()
         {
-            var env = await CoreWebView2Environment.CreateAsync(null, Path.GetTempPath());
+            var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
             string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");

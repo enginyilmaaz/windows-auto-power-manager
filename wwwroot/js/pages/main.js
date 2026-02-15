@@ -1,5 +1,5 @@
 // Main Page - Action list (table only), form moved to modal
-const MainPage = {
+window.MainPage = {
     _selectedRow: -1,
     _currentFilter: 'all',
     _searchQuery: '',

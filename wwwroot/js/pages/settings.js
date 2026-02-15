@@ -1,5 +1,5 @@
 // Settings Page
-const SettingsPage = {
+window.SettingsPage = {
     _languageList: [],
 
     render() {

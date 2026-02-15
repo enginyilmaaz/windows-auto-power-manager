@@ -1,11 +1,14 @@
 // SPA Router and main application
 const App = {
     _currentPage: 'main',
-    _pages: {
-        main: MainPage,
-        settings: SettingsPage,
-        logs: LogsPage,
-        about: AboutPage
+    _pages: {},
+    _pageLoadPromises: {},
+    _navigationToken: 0,
+    _pageConfig: {
+        main: { scriptPath: 'js/pages/main.js', globalName: 'MainPage' },
+        settings: { scriptPath: 'js/pages/settings.js', globalName: 'SettingsPage' },
+        logs: { scriptPath: 'js/pages/logs.js', globalName: 'LogsPage' },
+        about: { scriptPath: 'js/pages/about.js', globalName: 'AboutPage' }
     },
 
     init() {
@@ -127,18 +130,23 @@ const App = {
             tab.addEventListener('click', function () {
                 document.querySelectorAll('.tab-item').forEach(function (t) { t.classList.remove('active'); });
                 this.classList.add('active');
+
+                var mainPage = self._getPage('main');
+                if (!mainPage || !mainPage.renderTable) return;
+
                 var filter = this.getAttribute('data-filter');
-                if (MainPage._currentFilter !== undefined || filter) {
-                    MainPage._currentFilter = filter;
-                    MainPage.renderTable(Bridge._actions);
-                }
+                mainPage._currentFilter = filter;
+                mainPage.renderTable(Bridge._actions);
             });
         });
 
         // ─── Search ───
         document.getElementById('toolbar-search-input').addEventListener('input', function () {
-            MainPage._searchQuery = this.value.toLowerCase();
-            MainPage.renderTable(Bridge._actions);
+            var mainPage = self._getPage('main');
+            if (!mainPage || !mainPage.renderTable) return;
+
+            mainPage._searchQuery = this.value.toLowerCase();
+            mainPage.renderTable(Bridge._actions);
         });
 
         // ─── Modal close ───
@@ -168,6 +176,87 @@ const App = {
         Bridge.on('navigate', function (page) {
             self.navigate(page);
         });
+    },
+
+    _getPage(page) {
+        if (this._pages[page]) {
+            return this._pages[page];
+        }
+
+        var config = this._pageConfig[page];
+        if (!config) {
+            return null;
+        }
+
+        var pageObject = window[config.globalName];
+        if (pageObject) {
+            this._pages[page] = pageObject;
+            return pageObject;
+        }
+
+        return null;
+    },
+
+    ensurePageLoaded(page) {
+        var existing = this._getPage(page);
+        if (existing) {
+            return Promise.resolve(existing);
+        }
+
+        if (this._pageLoadPromises[page]) {
+            return this._pageLoadPromises[page];
+        }
+
+        var config = this._pageConfig[page];
+        if (!config) {
+            return Promise.reject(new Error('Unknown page: ' + page));
+        }
+
+        var self = this;
+        this._pageLoadPromises[page] = new Promise(function (resolve, reject) {
+            var script = document.createElement('script');
+            script.src = config.scriptPath;
+            script.async = true;
+
+            script.onload = function () {
+                var pageObject = self._getPage(page);
+                if (!pageObject) {
+                    delete self._pageLoadPromises[page];
+                    reject(new Error('Page object not found after loading: ' + config.globalName));
+                    return;
+                }
+
+                resolve(pageObject);
+            };
+
+            script.onerror = function () {
+                delete self._pageLoadPromises[page];
+                reject(new Error('Failed to load page script: ' + config.scriptPath));
+            };
+
+            document.head.appendChild(script);
+        });
+
+        return this._pageLoadPromises[page];
+    },
+
+    _getLoadingText() {
+        var L = Bridge.lang.bind(Bridge);
+        return L('common_loading') || 'Yükleniyor...';
+    },
+
+    _showPageLoading() {
+        var container = document.getElementById('page-container');
+        if (!container) return;
+        container.innerHTML = '<div class="table-empty">' + this._getLoadingText() + '</div>';
+    },
+
+    _showPageLoadError() {
+        var container = document.getElementById('page-container');
+        if (!container) return;
+
+        var L = Bridge.lang.bind(Bridge);
+        container.innerHTML = '<div class="table-empty">' + (L('messageTitle_error') || 'Error') + '</div>';
     },
 
     _applyLanguage() {
@@ -278,15 +367,22 @@ const App = {
     },
 
     openNewActionModal() {
-        var L = Bridge.lang.bind(Bridge);
-        var modalTitle = document.getElementById('modal-title');
-        modalTitle.textContent = L('modal_title_newAction') || 'New Action';
+        var self = this;
+        this.ensurePageLoaded('main').then(function (mainPage) {
+            if (!mainPage || !mainPage.renderForm || !mainPage.afterRenderForm) return;
 
-        var modalBody = document.getElementById('modal-body');
-        modalBody.innerHTML = MainPage.renderForm();
-        MainPage.afterRenderForm(modalBody);
+            var L = Bridge.lang.bind(Bridge);
+            var modalTitle = document.getElementById('modal-title');
+            modalTitle.textContent = L('modal_title_newAction') || 'New Action';
 
-        document.getElementById('modal-overlay').classList.remove('hidden');
+            var modalBody = document.getElementById('modal-body');
+            modalBody.innerHTML = mainPage.renderForm();
+            mainPage.afterRenderForm(modalBody);
+
+            document.getElementById('modal-overlay').classList.remove('hidden');
+        }).catch(function () {
+            self._showPageLoadError();
+        });
     },
 
     closeModal() {
@@ -294,7 +390,8 @@ const App = {
     },
 
     navigate(page) {
-        if (!this._pages[page]) return;
+        if (!this._pageConfig[page]) return;
+
         this._currentPage = page;
 
         // Update menu active state
@@ -302,16 +399,33 @@ const App = {
             item.classList.toggle('active', item.getAttribute('data-page') === page);
         });
 
-        // Render page
-        var container = document.getElementById('page-container');
-        container.innerHTML = this._pages[page].render();
+        var token = ++this._navigationToken;
+        var self = this;
+        this._showPageLoading();
 
-        // Call afterRender
-        if (this._pages[page].afterRender) {
-            this._pages[page].afterRender();
-        }
+        this.ensurePageLoaded(page)
+            .then(function (pageObject) {
+                if (token !== self._navigationToken) return;
+
+                var container = document.getElementById('page-container');
+                if (!container) return;
+
+                container.innerHTML = pageObject.render();
+                if (pageObject.afterRender) {
+                    pageObject.afterRender();
+                }
+            })
+            .catch(function (err) {
+                if (token !== self._navigationToken) return;
+                self._showPageLoadError();
+                if (window.console && window.console.error) {
+                    window.console.error(err);
+                }
+            });
     }
 };
+
+window.App = App;
 
 // Start app
 App.init();

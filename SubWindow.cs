@@ -14,23 +14,26 @@ namespace WindowsShutdownHelper
     {
         private readonly string _pageName;
         private bool _webViewReady;
+        private Panel _loadingOverlay;
+        private Label _loadingLabel;
 
         public SubWindow(string pageName, string title)
         {
             InitializeComponent();
             _pageName = pageName;
             Text = title;
+            InitializeLoadingOverlay();
         }
 
         private async void SubWindow_Load(object sender, EventArgs e)
         {
+            ShowLoadingOverlay();
             await InitializeWebView();
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()
         {
-            string userDataFolder = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "WebView2Data");
-            var env = await CoreWebView2Environment.CreateAsync(null, userDataFolder);
+            var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
             string wwwrootPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "wwwroot");
@@ -51,7 +54,44 @@ namespace WindowsShutdownHelper
         private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
         {
             _webViewReady = true;
+            HideLoadingOverlay();
             SendInitData();
+        }
+
+        private void InitializeLoadingOverlay()
+        {
+            _loadingLabel = new Label
+            {
+                Dock = DockStyle.Fill,
+                TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
+                Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.SemiBold),
+                ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
+                Text = mainForm.language?.common_loading ?? "Yükleniyor..."
+            };
+
+            _loadingOverlay = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = System.Drawing.Color.FromArgb(240, 242, 245)
+            };
+
+            _loadingOverlay.Controls.Add(_loadingLabel);
+            Controls.Add(_loadingOverlay);
+            _loadingOverlay.BringToFront();
+        }
+
+        private void ShowLoadingOverlay()
+        {
+            if (_loadingOverlay == null) return;
+            _loadingLabel.Text = mainForm.language?.common_loading ?? "Yükleniyor...";
+            _loadingOverlay.Visible = true;
+            _loadingOverlay.BringToFront();
+        }
+
+        private void HideLoadingOverlay()
+        {
+            if (_loadingOverlay == null) return;
+            _loadingOverlay.Visible = false;
         }
 
         private void SendInitData()

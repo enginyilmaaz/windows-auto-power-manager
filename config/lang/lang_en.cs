@@ -123,6 +123,7 @@
                 about_label_version = "Version",
                 about_label_buildId = "Build ID",
                 about_label_author = "Author",
+                common_loading = "Loading...",
 
                 // Toolbar
                 toolbar_addAction = "New Action",

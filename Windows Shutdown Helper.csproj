@@ -142,6 +142,7 @@
     <Compile Include="functions\languageSelector.cs" />
     <Compile Include="functions\Logger.cs" />
     <Compile Include="functions\logSystem.cs" />
+    <Compile Include="functions\WebViewEnvironmentProvider.cs" />
     <Compile Include="functions\notifySystem.cs" />
     <Compile Include="functions\startWithWindows.cs" />
     <Compile Include="config\languageINI.cs" />

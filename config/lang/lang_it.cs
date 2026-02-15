@@ -123,6 +123,7 @@ namespace WindowsShutdownHelper.lang
                 about_label_version = "Versione",
                 about_label_buildId = "ID build",
                 about_label_author = "Autore",
+                common_loading = "Caricamento...",
 
                 // Toolbar
                 toolbar_addAction = "Nuova Azione",

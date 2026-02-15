@@ -1,5 +1,5 @@
 // Logs Page
-const LogsPage = {
+window.LogsPage = {
     _logs: [],
     _allLogs: [],
 
