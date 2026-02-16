@@ -13,6 +13,8 @@ namespace WindowsShutdownHelper.Functions
         public static Language Language = LanguageSelector.LanguageFile();
         public static string ActionTypeName;
         private static HashSet<string> _notifiedIdleActions = new HashSet<string>();
+        private static HashSet<string> _notifiedFromNowActions = new HashSet<string>();
+        private static Dictionary<string, DateTime> _notifiedCertainTimeDates = new Dictionary<string, DateTime>();
         private static ActionCountdownNotifier _sharedCountdownNotifier;
 
         public static void ResetIdleNotifications()
@@ -111,16 +113,25 @@ namespace WindowsShutdownHelper.Functions
                         return;
                     }
 
-                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.CountdownNotifierSeconds);
-                    string nowDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
-                    string executionDate = actionExecuteDate.ToString("dd.MM.yyyy HH:mm:ss");
+                    DateTime now = DateTime.Now;
+                    DateTime notificationTime = actionExecuteDate.AddSeconds(-settings.CountdownNotifierSeconds);
+                    string actionKey = BuildActionKey(action);
 
-                    if (executionDate == nowDate)
+                    if (now >= actionExecuteDate)
                     {
-                        ShowCountdownNotification(
+                        return;
+                    }
+
+                    if (now >= notificationTime && !_notifiedFromNowActions.Contains(actionKey))
+                    {
+                        bool shown = ShowCountdownNotification(
                             Language.MessageContentYouCanThat,
                             settings.CountdownNotifierSeconds,
                             action);
+                        if (shown)
+                        {
+                            _notifiedFromNowActions.Add(actionKey);
+                        }
                     }
                 }
 
@@ -137,19 +148,40 @@ namespace WindowsShutdownHelper.Functions
                         return;
                     }
 
-                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.CountdownNotifierSeconds);
-                    string nowDate = DateTime.Now.ToString("HH:mm:ss");
-                    string executionDate = actionExecuteDate.ToString("HH:mm:ss");
+                    DateTime now = DateTime.Now;
+                    DateTime executionToday = now.Date.Add(actionExecuteDate.TimeOfDay);
+                    DateTime notificationTime = executionToday.AddSeconds(-settings.CountdownNotifierSeconds);
+                    string actionKey = BuildActionKey(action);
+                    bool isInNotificationWindow = now >= notificationTime && now < executionToday;
+                    bool isNotifiedToday = _notifiedCertainTimeDates.TryGetValue(actionKey, out DateTime notifiedDate) &&
+                                           notifiedDate.Date == now.Date;
 
-                    if (executionDate == nowDate)
+                    if (isInNotificationWindow && !isNotifiedToday)
                     {
-                        ShowCountdownNotification(
+                        bool shown = ShowCountdownNotification(
                             Language.MessageContentYouCanThat,
                             settings.CountdownNotifierSeconds,
                             action);
+                        if (shown)
+                        {
+                            _notifiedCertainTimeDates[actionKey] = now.Date;
+                        }
                     }
                 }
             }
+        }
+
+        private static string BuildActionKey(ActionModel action)
+        {
+            if (action == null)
+            {
+                return string.Empty;
+            }
+
+            return (action.CreatedDate ?? string.Empty) + "|" +
+                   (action.TriggerType ?? string.Empty) + "|" +
+                   (action.ActionType ?? string.Empty) + "|" +
+                   (action.Value ?? string.Empty);
         }
 
         private static bool TryGetSystemIdleSeconds(ActionModel action, out int seconds)

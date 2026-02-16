@@ -45,6 +45,8 @@ namespace WindowsShutdownHelper
             "logs",
             "about"
         };
+        private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
+        private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
         private bool _lastPageRestored;
@@ -1052,7 +1054,22 @@ namespace WindowsShutdownHelper
         {
             JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true,
                 ActionList.ToList());
+            CleanupActionExecutionState();
             RefreshActionsInUI();
+        }
+
+        private void CleanupActionExecutionState()
+        {
+            var validKeys = new HashSet<string>(ActionList.Select(BuildActionExecutionKey));
+            _executedIdleActionKeys.RemoveWhere(key => !validKeys.Contains(key));
+
+            foreach (string key in _certainTimeLastExecutionDates.Keys.ToList())
+            {
+                if (!validKeys.Contains(key))
+                {
+                    _certainTimeLastExecutionDates.Remove(key);
+                }
+            }
         }
 
         private void RefreshActionsInUI()
@@ -1131,18 +1148,21 @@ namespace WindowsShutdownHelper
         private void DoAction(ActionModel action, uint idleTimeMin)
         {
             if (action == null) return;
+            string actionKey = BuildActionExecutionKey(action);
 
             if (action.TriggerType == Config.TriggerTypes.SystemIdle)
             {
                 if (!TryGetSystemIdleSeconds(action, out uint actionValueSeconds)) return;
-                if (idleTimeMin == actionValueSeconds)
+                if (idleTimeMin >= actionValueSeconds && !_executedIdleActionKeys.Contains(actionKey))
                 {
+                    _executedIdleActionKeys.Add(actionKey);
                     Actions.DoActionByTypes(action);
                 }
                 return;
             }
 
-            if (action.TriggerType == Config.TriggerTypes.CertainTime && action.Value == DateTime.Now.ToString("HH:mm:ss"))
+            if (action.TriggerType == Config.TriggerTypes.CertainTime &&
+                ShouldExecuteCertainTimeAction(action, actionKey, DateTime.Now))
             {
                 if (IsSkippedCertainTimeAction == false)
                 {
@@ -1152,14 +1172,76 @@ namespace WindowsShutdownHelper
                 {
                     IsSkippedCertainTimeAction = false;
                 }
+
+                _certainTimeLastExecutionDates[actionKey] = DateTime.Now.Date;
             }
 
-            if (action.TriggerType == Config.TriggerTypes.FromNow && action.Value == DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"))
+            if (action.TriggerType == Config.TriggerTypes.FromNow &&
+                TryParseFromNowValue(action, out DateTime targetTime) &&
+                DateTime.Now >= targetTime)
             {
                 Actions.DoActionByTypes(action);
                 ActionList.Remove(action);
                 WriteJsonToActionList();
             }
+        }
+
+        private static string BuildActionExecutionKey(ActionModel action)
+        {
+            if (action == null) return string.Empty;
+
+            return (action.CreatedDate ?? string.Empty) + "|" +
+                   (action.TriggerType ?? string.Empty) + "|" +
+                   (action.ActionType ?? string.Empty) + "|" +
+                   (action.Value ?? string.Empty);
+        }
+
+        private bool ShouldExecuteCertainTimeAction(ActionModel action, string actionKey, DateTime now)
+        {
+            if (action == null || string.IsNullOrWhiteSpace(action.Value))
+            {
+                return false;
+            }
+
+            if (!DateTime.TryParseExact(
+                    action.Value,
+                    "HH:mm:ss",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out DateTime parsed))
+            {
+                return false;
+            }
+
+            DateTime scheduledTime = now.Date.Add(parsed.TimeOfDay);
+            if (now < scheduledTime)
+            {
+                return false;
+            }
+
+            if (_certainTimeLastExecutionDates.TryGetValue(actionKey, out DateTime lastExecutionDate) &&
+                lastExecutionDate.Date == now.Date)
+            {
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool TryParseFromNowValue(ActionModel action, out DateTime targetTime)
+        {
+            targetTime = default;
+            if (action == null || string.IsNullOrWhiteSpace(action.Value))
+            {
+                return false;
+            }
+
+            return DateTime.TryParseExact(
+                action.Value,
+                "dd.MM.yyyy HH:mm:ss",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None,
+                out targetTime);
         }
 
         private static bool TryGetSystemIdleSeconds(ActionModel action, out uint seconds)
@@ -1230,6 +1312,7 @@ namespace WindowsShutdownHelper
             if (idleTimeMin == 0)
             {
                 NotifySystem.ResetIdleNotifications();
+                _executedIdleActionKeys.Clear();
                 Timer.Stop();
                 Timer.Start();
             }
