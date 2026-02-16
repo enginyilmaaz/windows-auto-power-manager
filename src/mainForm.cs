@@ -157,13 +157,14 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.Settings.IsZoomControlEnabled = false;
 
             webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
-            webView.CoreWebView2.NavigationCompleted += OnNavigationCompleted;
+            webView.CoreWebView2.DOMContentLoaded += OnDomContentLoaded;
 
             webView.CoreWebView2.Navigate("https://app.local/index.html");
         }
 
-        private void OnNavigationCompleted(object sender, CoreWebView2NavigationCompletedEventArgs e)
+        private void OnDomContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
         {
+            if (_webViewReady) return;
             _webViewReady = true;
             TrySendInitData();
         }

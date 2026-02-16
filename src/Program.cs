@@ -51,7 +51,6 @@ namespace WindowsShutdownHelper
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                WebViewEnvironmentProvider.Prewarm();
                 Application.Run(new mainForm());
             }
             catch (Exception ex)
