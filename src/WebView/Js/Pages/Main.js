@@ -33,6 +33,57 @@ window.MainPage = {
         this._triggerTypeByLabel[L('MainCboxTriggerTypeItemCertainTime')] = 'CertainTime';
     },
 
+    _getSortLocale() {
+        var settingsLang = Bridge && Bridge._settings ? Bridge._settings.language : '';
+        if (settingsLang && settingsLang !== 'auto') {
+            return settingsLang;
+        }
+
+        if (navigator.languages && navigator.languages.length > 0) {
+            return navigator.languages[0];
+        }
+
+        return navigator.language || 'en';
+    },
+
+    _sortLocalizedOptions(options) {
+        var locale = this._getSortLocale();
+        return (options || []).slice().sort(function (a, b) {
+            return String(a.label || '').localeCompare(String(b.label || ''), locale, {
+                sensitivity: 'base'
+            });
+        });
+    },
+
+    _buildActionOptions() {
+        var L = Bridge.lang.bind(Bridge);
+        return this._sortLocalizedOptions([
+            { value: 'ShutdownComputer', label: L('MainCboxActionTypeItemShutdownComputer') },
+            { value: 'RestartComputer', label: L('MainCboxActionTypeItemRestartComputer') },
+            { value: 'LogOffWindows', label: L('MainCboxActionTypeItemLogOffWindows') },
+            { value: 'SleepComputer', label: L('MainCboxActionTypeItemSleepComputer') },
+            { value: 'LockComputer', label: L('MainCboxActionTypeItemLockComputer') },
+            { value: 'TurnOffMonitor', label: L('MainCboxActionTypeItemTurnOffMonitor') }
+        ]);
+    },
+
+    _buildTriggerOptions() {
+        var L = Bridge.lang.bind(Bridge);
+        return this._sortLocalizedOptions([
+            { value: 'SystemIdle', label: L('MainCboxTriggerTypeItemSystemIdle') },
+            { value: 'FromNow', label: L('MainCboxTriggerTypeItemFromNow') },
+            { value: 'CertainTime', label: L('MainCboxTriggerTypeItemCertainTime') }
+        ]);
+    },
+
+    _renderOptionList(options) {
+        var html = '';
+        for (var i = 0; i < options.length; i++) {
+            html += '<option value="' + options[i].value + '">' + options[i].label + '</option>';
+        }
+        return html;
+    },
+
     _normalizeTriggerRaw(value) {
         if (!value) return '';
         var v = String(value).trim();
@@ -137,26 +188,21 @@ window.MainPage = {
         options = options || {};
         var L = Bridge.lang.bind(Bridge);
         var isEdit = options.mode === 'edit';
+        var actionOptions = this._renderOptionList(this._buildActionOptions());
+        var triggerOptions = this._renderOptionList(this._buildTriggerOptions());
         return '' +
             '<div class="form-row">' +
                 '<span class="form-label">' + L('MainLabelActionType') + '</span>' +
                 '<select id="sel-action" class="form-select">' +
                     '<option value="0">' + L('MainCboxActionTypeItemChooseAction') + '</option>' +
-                    '<option value="ShutdownComputer">' + L('MainCboxActionTypeItemShutdownComputer') + '</option>' +
-                    '<option value="RestartComputer">' + L('MainCboxActionTypeItemRestartComputer') + '</option>' +
-                    '<option value="LogOffWindows">' + L('MainCboxActionTypeItemLogOffWindows') + '</option>' +
-                    '<option value="SleepComputer">' + L('MainCboxActionTypeItemSleepComputer') + '</option>' +
-                    '<option value="LockComputer">' + L('MainCboxActionTypeItemLockComputer') + '</option>' +
-                    '<option value="TurnOffMonitor">' + L('MainCboxActionTypeItemTurnOffMonitor') + '</option>' +
+                    actionOptions +
                 '</select>' +
             '</div>' +
             '<div class="form-row">' +
                 '<span class="form-label">' + L('MainLabelTrigger') + '</span>' +
                 '<select id="sel-trigger" class="form-select">' +
                     '<option value="0">' + L('MainCboxTriggerTypeItemChooseTrigger') + '</option>' +
-                    '<option value="SystemIdle">' + L('MainCboxTriggerTypeItemSystemIdle') + '</option>' +
-                    '<option value="FromNow">' + L('MainCboxTriggerTypeItemFromNow') + '</option>' +
-                    '<option value="CertainTime">' + L('MainCboxTriggerTypeItemCertainTime') + '</option>' +
+                    triggerOptions +
                 '</select>' +
             '</div>' +
             '<div class="form-row" id="row-value">' +
