@@ -42,9 +42,23 @@ Name: "french"; MessagesFile: "compiler:Languages\French.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "italian"; MessagesFile: "compiler:Languages\Italian.isl"
 
+[CustomMessages]
+english.StartWithWindows=Start with Windows
+english.OtherOptions=Other options:
+turkish.StartWithWindows=Windows ile birlikte başlat
+turkish.OtherOptions=Diğer seçenekler:
+german.StartWithWindows=Mit Windows starten
+german.OtherOptions=Weitere Optionen:
+french.StartWithWindows=Démarrer avec Windows
+french.OtherOptions=Autres options :
+russian.StartWithWindows=Запускать вместе с Windows
+russian.OtherOptions=Другие параметры:
+italian.StartWithWindows=Avvia con Windows
+italian.OtherOptions=Altre opzioni:
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
-Name: "startupentry"; Description: "Windows ile birlikte baslat / Start with Windows"; GroupDescription: "Diger secenekler / Other options:"; Flags: unchecked
+Name: "startupentry"; Description: "{cm:StartWithWindows}"; GroupDescription: "{cm:OtherOptions}"; Flags: unchecked
 
 [Files]
 #ifexist "bin\Release\net8.0-windows\win-x64\publish\Windows Shutdown Helper.exe"
