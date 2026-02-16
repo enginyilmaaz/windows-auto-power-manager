@@ -1,9 +1,9 @@
 ﻿namespace WindowsShutdownHelper.functions
 {
-    public class logSystem
+    public class LogSystem
     {
-        public string actionType { get; set; }
-        public string actionExecutedDate { get; set; }
+        public string ActionType { get; set; }
+        public string ActionExecutedDate { get; set; }
     }
 
     //class logger

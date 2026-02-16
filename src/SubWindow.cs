@@ -43,7 +43,7 @@ namespace WindowsShutdownHelper
                     MessageBox.Show(
                         this,
                         "Arayuz acilamadi.\r\n\r\nDetay: " + ex.Message,
-                        mainForm.language?.messageTitle_error ?? "Error",
+                        MainForm.language?.MessageTitleError ?? "Error",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error);
                 }
@@ -56,9 +56,9 @@ namespace WindowsShutdownHelper
             var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
-            string wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            string webViewPath = Path.Combine(AppContext.BaseDirectory, "WebView");
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "app.local", wwwrootPath,
+                "app.local", webViewPath,
                 CoreWebView2HostResourceAccessKind.Allow);
 
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
@@ -68,7 +68,7 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
             webView.CoreWebView2.DOMContentLoaded += OnDomContentLoaded;
 
-            webView.CoreWebView2.Navigate("https://app.local/subwindow.html?page=" + _pageName);
+            webView.CoreWebView2.Navigate("https://app.local/SubWindow.html?page=" + _pageName);
         }
 
         private async System.Threading.Tasks.Task EnsureWebViewInitializedAsync(bool showLoading)
@@ -112,7 +112,7 @@ namespace WindowsShutdownHelper
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold),
                 ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
-                Text = mainForm.language?.common_loading ?? "Yükleniyor..."
+                Text = MainForm.language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
@@ -130,7 +130,7 @@ namespace WindowsShutdownHelper
         private void ShowLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingLabel.Text = mainForm.language?.common_loading ?? "Yükleniyor...";
+            _loadingLabel.Text = MainForm.language?.CommonLoading ?? "Yükleniyor...";
             _loadingOverlay.Visible = false;
             _loadingDelayTimer?.Stop();
             _loadingDelayTimer?.Start();
@@ -201,7 +201,7 @@ namespace WindowsShutdownHelper
 
         protected override void OnFormClosing(FormClosingEventArgs e)
         {
-            if (!_allowClose && !mainForm.isApplicationExiting)
+            if (!_allowClose && !MainForm.isApplicationExiting)
             {
                 e.Cancel = true;
                 Hide();
@@ -224,7 +224,7 @@ namespace WindowsShutdownHelper
             var langDict = new Dictionary<string, string>();
             foreach (PropertyInfo prop in typeof(Language).GetProperties())
             {
-                var val = prop.GetValue(mainForm.language);
+                var val = prop.GetValue(MainForm.language);
                 if (val != null) langDict[prop.Name] = val.ToString();
             }
 
@@ -237,13 +237,13 @@ namespace WindowsShutdownHelper
                 actions = displayActions,
                 settings = new
                 {
-                    settingsObj.logsEnabled,
-                    settingsObj.startWithWindows,
-                    settingsObj.runInTaskbarWhenClosed,
-                    settingsObj.isCountdownNotifierEnabled,
-                    settingsObj.countdownNotifierSeconds,
-                    settingsObj.language,
-                    settingsObj.theme,
+                    logsEnabled = settingsObj.LogsEnabled,
+                    startWithWindows = settingsObj.StartWithWindows,
+                    runInTaskbarWhenClosed = settingsObj.RunInTaskbarWhenClosed,
+                    isCountdownNotifierEnabled = settingsObj.IsCountdownNotifierEnabled,
+                    countdownNotifierSeconds = settingsObj.CountdownNotifierSeconds,
+                    language = settingsObj.Language,
+                    theme = settingsObj.Theme,
                     appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                     buildId = BuildInfo.CommitId
                 }
@@ -327,8 +327,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_warn,
-                    message = mainForm.language.messageContent_actionChoose,
+                    title = MainForm.language.MessageTitleWarn,
+                    message = MainForm.language.MessageContentActionChoose,
                     type = "warn",
                     duration = 2000
                 });
@@ -336,12 +336,12 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            if (mainForm.actionList.Count >= 5)
+            if (MainForm.actionList.Count >= 5)
             {
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_warn,
-                    message = mainForm.language.messageContent_maxActionWarn,
+                    title = MainForm.language.MessageTitleWarn,
+                    message = MainForm.language.MessageContentMaxActionWarn,
                     type = "warn",
                     duration = 2000
                 });
@@ -351,52 +351,52 @@ namespace WindowsShutdownHelper
 
             var newAction = new ActionModel
             {
-                createdDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
-                actionType = actionType
+                CreatedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
+                ActionType = actionType
             };
 
             if (triggerType == "fromNow")
             {
-                newAction.triggerType = config.triggerTypes.fromNow;
+                newAction.TriggerType = config.TriggerTypes.fromNow;
                 double inputValue = Convert.ToDouble(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 DateTime targetTime;
                 if (unitIdx == 0) targetTime = DateTime.Now.AddSeconds(inputValue);
                 else if (unitIdx == 2) targetTime = DateTime.Now.AddHours(inputValue);
                 else targetTime = DateTime.Now.AddMinutes(inputValue);
-                newAction.value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
+                newAction.Value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
             }
             else if (triggerType == "systemIdle")
             {
-                newAction.triggerType = config.triggerTypes.systemIdle;
+                newAction.TriggerType = config.TriggerTypes.systemIdle;
                 int inputValue = Convert.ToInt32(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 int valueInSeconds;
                 if (unitIdx == 0) valueInSeconds = inputValue;
                 else if (unitIdx == 2) valueInSeconds = inputValue * 3600;
                 else valueInSeconds = inputValue * 60;
-                newAction.value = valueInSeconds.ToString();
-                newAction.valueUnit = "seconds";
+                newAction.Value = valueInSeconds.ToString();
+                newAction.ValueUnit = "seconds";
             }
             else if (triggerType == "certainTime")
             {
-                newAction.triggerType = config.triggerTypes.certainTime;
+                newAction.TriggerType = config.TriggerTypes.certainTime;
                 string timeStr = data.GetProperty("time").GetString();
                 if (!string.IsNullOrEmpty(timeStr))
                 {
-                    newAction.value = timeStr + ":00";
+                    newAction.Value = timeStr + ":00";
                 }
                 else
                 {
-                    newAction.value = DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
+                    newAction.Value = DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
                 }
             }
 
-            if (!actionValidation.TryValidateActionForAdd(newAction, mainForm.actionList, mainForm.language, out string validationMessage))
+            if (!ActionValidation.TryValidateActionForAdd(newAction, MainForm.actionList, MainForm.language, out string validationMessage))
             {
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_warn,
+                    title = MainForm.language.MessageTitleWarn,
                     message = validationMessage,
                     type = "warn",
                     duration = 3000
@@ -405,13 +405,13 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            mainForm.actionList.Add(newAction);
+            MainForm.actionList.Add(newAction);
             WriteActionList();
 
             PostMessage("showToast", new
             {
-                title = mainForm.language.messageTitle_success,
-                message = mainForm.language.messageContent_actionCreated,
+                title = MainForm.language.MessageTitleSuccess,
+                message = MainForm.language.MessageContentActionCreated,
                 type = "success",
                 duration = 2000
             });
@@ -421,15 +421,15 @@ namespace WindowsShutdownHelper
         private void HandleDeleteAction(JsonElement data)
         {
             int index = data.GetProperty("index").GetInt32();
-            if (index >= 0 && index < mainForm.actionList.Count)
+            if (index >= 0 && index < MainForm.actionList.Count)
             {
-                mainForm.actionList.RemoveAt(index);
+                MainForm.actionList.RemoveAt(index);
                 WriteActionList();
 
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_success,
-                    message = mainForm.language.messageContent_actionDeleted,
+                    title = MainForm.language.MessageTitleSuccess,
+                    message = MainForm.language.MessageContentActionDeleted,
                     type = "success",
                     duration = 2000
                 });
@@ -438,13 +438,13 @@ namespace WindowsShutdownHelper
 
         private void HandleClearAllActions()
         {
-            mainForm.actionList.Clear();
+            MainForm.actionList.Clear();
             WriteActionList();
 
             PostMessage("showToast", new
             {
-                title = mainForm.language.messageTitle_success,
-                message = mainForm.language.messageContent_actionAllDeleted,
+                title = MainForm.language.MessageTitleSuccess,
+                message = MainForm.language.MessageContentActionAllDeleted,
                 type = "success",
                 duration = 2000
             });
@@ -452,17 +452,17 @@ namespace WindowsShutdownHelper
 
         private void WriteActionList()
         {
-            jsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
-                mainForm.actionList.ToList());
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
+                MainForm.actionList.ToList());
 
             // Refresh in this window
             PostMessage("refreshActions", GetTranslatedActions());
 
             // Broadcast to main form
-            var main = Application.OpenForms.OfType<mainForm>().FirstOrDefault();
+            var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
             if (main != null)
             {
-                main.writeJsonToActionList();
+                main.WriteJsonToActionList();
             }
         }
 
@@ -470,34 +470,34 @@ namespace WindowsShutdownHelper
         {
             var newSettings = new Settings
             {
-                logsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
-                startWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
-                runInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
-                isCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
-                countdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
-                language = data.GetProperty("language").GetString(),
-                theme = data.GetProperty("theme").GetString()
+                LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
+                StartWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
+                RunInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
+                IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
+                CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
+                Language = data.GetProperty("language").GetString(),
+                Theme = data.GetProperty("theme").GetString()
             };
 
-            string currentLang = LoadSettings().language;
-            jsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
+            string currentLang = LoadSettings().Language;
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
 
-            if (newSettings.startWithWindows)
-                startWithWindows.AddStartup(mainForm.language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+            if (newSettings.StartWithWindows)
+                StartWithWindows.AddStartup(MainForm.language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
             else
-                startWithWindows.DeleteStartup(mainForm.language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.DeleteStartup(MainForm.language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
 
-            if (newSettings.isCountdownNotifierEnabled)
+            if (newSettings.IsCountdownNotifierEnabled)
             {
-                notifySystem.PrewarmCountdownNotifier();
+                NotifySystem.PrewarmCountdownNotifier();
             }
 
-            if (currentLang != newSettings.language)
+            if (currentLang != newSettings.Language)
             {
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_success,
-                    message = mainForm.language.messageContent_settingSavedWithLangChanged,
+                    title = MainForm.language.MessageTitleSuccess,
+                    message = MainForm.language.MessageContentSettingSavedWithLangChanged,
                     type = "info",
                     duration = 4000
                 });
@@ -506,8 +506,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = mainForm.language.messageTitle_success,
-                    message = mainForm.language.messageContent_settingsSaved,
+                    title = MainForm.language.MessageTitleSuccess,
+                    message = MainForm.language.MessageContentSettingsSaved,
                     type = "success",
                     duration = 2000
                 });
@@ -524,13 +524,13 @@ namespace WindowsShutdownHelper
             string logPath = AppContext.BaseDirectory + "\\logs.json";
             if (File.Exists(logPath))
             {
-                var rawLogs = JsonSerializer.Deserialize<List<logSystem>>(File.ReadAllText(logPath));
-                var logs = rawLogs.OrderByDescending(a => a.actionExecutedDate).Take(250)
+                var rawLogs = JsonSerializer.Deserialize<List<LogSystem>>(File.ReadAllText(logPath));
+                var logs = rawLogs.OrderByDescending(a => a.ActionExecutedDate).Take(250)
                     .Select(l => new
                     {
-                        actionExecutedDate = l.actionExecutedDate,
-                        actionType = TranslateLogAction(l.actionType),
-                        actionTypeRaw = l.actionType
+                        actionExecutedDate = l.ActionExecutedDate,
+                        actionType = TranslateLogAction(l.ActionType),
+                        actionTypeRaw = l.ActionType
                     }).ToList();
                 PostMessage("logsLoaded", logs);
             }
@@ -547,8 +547,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = mainForm.language.messageTitle_success,
-                message = mainForm.language.messageContent_clearedLogs,
+                title = MainForm.language.MessageTitleSuccess,
+                message = MainForm.language.MessageContentClearedLogs,
                 type = "success",
                 duration = 2000
             });
@@ -557,11 +557,11 @@ namespace WindowsShutdownHelper
         private void HandleGetLanguageList()
         {
             var list = new List<object>();
-            list.Add(new { langCode = "auto", langName = (mainForm.language.settingsForm_combobox_auto_lang ?? "Auto") });
+            list.Add(new { LangCode = "auto", langName = (MainForm.language.SettingsFormComboboxAutoLang ?? "Auto") });
 
-            foreach (var entry in languageSelector.GetLanguageNames())
+            foreach (var entry in LanguageSelector.GetLanguageNames())
             {
-                list.Add(new { langCode = entry.langCode, langName = entry.LangName });
+                list.Add(new { LangCode = entry.LangCode, langName = entry.LangName });
             }
 
             PostMessage("languageList", list);
@@ -576,21 +576,21 @@ namespace WindowsShutdownHelper
                 return JsonSerializer.Deserialize<Settings>(
                     File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
             }
-            return config.settingsINI.defaulSettingFile();
+            return config.SettingsINI.DefaulSettingFile();
         }
 
         private List<Dictionary<string, string>> GetTranslatedActions()
         {
             var list = new List<Dictionary<string, string>>();
-            foreach (var act in mainForm.actionList)
+            foreach (var act in MainForm.actionList)
             {
                 var d = new Dictionary<string, string>
                 {
-                    ["triggerType"] = TranslateTrigger(act.triggerType),
-                    ["actionType"] = TranslateAction(act.actionType),
-                    ["value"] = act.value ?? "",
-                    ["valueUnit"] = TranslateUnit(act.valueUnit),
-                    ["createdDate"] = act.createdDate ?? ""
+                    ["triggerType"] = TranslateTrigger(act.TriggerType),
+                    ["actionType"] = TranslateAction(act.ActionType),
+                    ["value"] = act.Value ?? "",
+                    ["valueUnit"] = TranslateUnit(act.ValueUnit),
+                    ["createdDate"] = act.CreatedDate ?? ""
                 };
                 list.Add(d);
             }
@@ -599,42 +599,42 @@ namespace WindowsShutdownHelper
 
         private string TranslateAction(string raw)
         {
-            if (raw == config.actionTypes.lockComputer) return mainForm.language.main_cbox_ActionType_Item_lockComputer;
-            if (raw == config.actionTypes.shutdownComputer) return mainForm.language.main_cbox_ActionType_Item_shutdownComputer;
-            if (raw == config.actionTypes.restartComputer) return mainForm.language.main_cbox_ActionType_Item_restartComputer;
-            if (raw == config.actionTypes.logOffWindows) return mainForm.language.main_cbox_ActionType_Item_logOffWindows;
-            if (raw == config.actionTypes.sleepComputer) return mainForm.language.main_cbox_ActionType_Item_sleepComputer;
-            if (raw == config.actionTypes.turnOffMonitor) return mainForm.language.main_cbox_ActionType_Item_turnOffMonitor;
+            if (raw == config.ActionTypes.lockComputer) return MainForm.language.MainCboxActionTypeItemLockComputer;
+            if (raw == config.ActionTypes.shutdownComputer) return MainForm.language.MainCboxActionTypeItemShutdownComputer;
+            if (raw == config.ActionTypes.restartComputer) return MainForm.language.MainCboxActionTypeItemRestartComputer;
+            if (raw == config.ActionTypes.logOffWindows) return MainForm.language.MainCboxActionTypeItemLogOffWindows;
+            if (raw == config.ActionTypes.sleepComputer) return MainForm.language.MainCboxActionTypeItemSleepComputer;
+            if (raw == config.ActionTypes.turnOffMonitor) return MainForm.language.MainCboxActionTypeItemTurnOffMonitor;
             return raw;
         }
 
         private string TranslateTrigger(string raw)
         {
-            if (raw == config.triggerTypes.systemIdle) return mainForm.language.main_cbox_TriggerType_Item_systemIdle;
-            if (raw == config.triggerTypes.certainTime) return mainForm.language.main_cbox_TriggerType_Item_certainTime;
-            if (raw == config.triggerTypes.fromNow) return mainForm.language.main_cbox_TriggerType_Item_fromNow;
+            if (raw == config.TriggerTypes.systemIdle) return MainForm.language.MainCboxTriggerTypeItemSystemIdle;
+            if (raw == config.TriggerTypes.certainTime) return MainForm.language.MainCboxTriggerTypeItemCertainTime;
+            if (raw == config.TriggerTypes.fromNow) return MainForm.language.MainCboxTriggerTypeItemFromNow;
             return raw;
         }
 
         private string TranslateUnit(string raw)
         {
-            if (raw == "seconds") return mainForm.language.main_timeUnit_seconds ?? "Seconds";
-            if (string.IsNullOrEmpty(raw)) return mainForm.language.main_timeUnit_minutes ?? "Minutes";
+            if (raw == "seconds") return MainForm.language.MainTimeUnitSeconds ?? "Seconds";
+            if (string.IsNullOrEmpty(raw)) return MainForm.language.MainTimeUnitMinutes ?? "Minutes";
             return raw;
         }
 
         private string TranslateLogAction(string raw)
         {
-            if (raw == config.actionTypes.lockComputer) return mainForm.language.logViewerForm_lockComputer;
-            if (raw == config.actionTypes.lockComputerManually) return mainForm.language.logViewerForm_lockComputerManually;
-            if (raw == config.actionTypes.unlockComputer) return mainForm.language.logViewerForm_unlockComputer;
-            if (raw == config.actionTypes.shutdownComputer) return mainForm.language.logViewerForm_shutdownComputer;
-            if (raw == config.actionTypes.restartComputer) return mainForm.language.logViewerForm_restartComputer;
-            if (raw == config.actionTypes.logOffWindows) return mainForm.language.logViewerForm_logOffWindows;
-            if (raw == config.actionTypes.sleepComputer) return mainForm.language.logViewerForm_sleepComputer;
-            if (raw == config.actionTypes.turnOffMonitor) return mainForm.language.logViewerForm_turnOffMonitor;
-            if (raw == config.actionTypes.appStarted) return mainForm.language.logViewerForm_appStarted;
-            if (raw == config.actionTypes.appTerminated) return mainForm.language.logViewerForm_appTerminated;
+            if (raw == config.ActionTypes.lockComputer) return MainForm.language.LogViewerFormLockComputer;
+            if (raw == config.ActionTypes.lockComputerManually) return MainForm.language.LogViewerFormLockComputerManually;
+            if (raw == config.ActionTypes.unlockComputer) return MainForm.language.LogViewerFormUnlockComputer;
+            if (raw == config.ActionTypes.shutdownComputer) return MainForm.language.LogViewerFormShutdownComputer;
+            if (raw == config.ActionTypes.restartComputer) return MainForm.language.LogViewerFormRestartComputer;
+            if (raw == config.ActionTypes.logOffWindows) return MainForm.language.LogViewerFormLogOffWindows;
+            if (raw == config.ActionTypes.sleepComputer) return MainForm.language.LogViewerFormSleepComputer;
+            if (raw == config.ActionTypes.turnOffMonitor) return MainForm.language.LogViewerFormTurnOffMonitor;
+            if (raw == config.ActionTypes.appStarted) return MainForm.language.LogViewerFormAppStarted;
+            if (raw == config.ActionTypes.appTerminated) return MainForm.language.LogViewerFormAppTerminated;
             return raw;
         }
     }

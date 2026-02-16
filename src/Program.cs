@@ -40,8 +40,8 @@ namespace WindowsShutdownHelper
             {
                 if (!File.Exists(AppContext.BaseDirectory + "\\settings.json"))
                 {
-                    jsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true,
-                        settingsINI.defaulSettingFile());
+                    JsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true,
+                        SettingsINI.DefaulSettingFile());
                 }
 
                 if (PriorProcess() != null)
@@ -52,7 +52,7 @@ namespace WindowsShutdownHelper
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
                 WebViewEnvironmentProvider.Prewarm();
-                Application.Run(new mainForm());
+                Application.Run(new MainForm());
             }
             catch (Exception ex)
             {

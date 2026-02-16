@@ -1,7 +1,7 @@
 ﻿namespace WindowsShutdownHelper.Enums
 {
 
-    public enum enum_cmStrip_MainForm
+    public enum EnumCmStripMainForm
     {
         Settings = 0,
         ShowLogs = 1,

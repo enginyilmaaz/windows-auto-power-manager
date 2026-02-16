@@ -9,21 +9,21 @@ window.AboutPage = {
         '<div class="card">' +
             '<div class="card-title">' +
                 '<span class="mi">info</span>' +
-                (L('about_menuItem') || 'About') +
+                (L('AboutMenuItem') || 'About') +
             '</div>' +
             '<div class="about-content">' +
-                '<div class="about-app-name">' + (L('main_FormName') || 'Windows Shutdown Helper') + '</div>' +
+                '<div class="about-app-name">' + (L('MainFormName') || 'Windows Shutdown Helper') + '</div>' +
                 '<div class="about-row">' +
-                    '<span class="about-label">' + (L('about_label_version') || 'Version') + '</span>' +
+                    '<span class="about-label">' + (L('AboutLabelVersion') || 'Version') + '</span>' +
                     '<span class="about-value">' + version + '</span>' +
                 '</div>' +
                 '<div class="about-row">' +
-                    '<span class="about-label">' + (L('about_label_buildId') || 'Build ID') + '</span>' +
+                    '<span class="about-label">' + (L('AboutLabelBuildId') || 'Build ID') + '</span>' +
                     '<span class="about-value">' + buildId + '</span>' +
                 '</div>' +
                 '<div class="about-divider"></div>' +
                 '<div class="about-row">' +
-                    '<span class="about-label">' + (L('about_label_author') || 'Author') + '</span>' +
+                    '<span class="about-label">' + (L('AboutLabelAuthor') || 'Author') + '</span>' +
                     '<span class="about-value">enginyilmaaz</span>' +
                 '</div>' +
                 '<div class="about-row">' +

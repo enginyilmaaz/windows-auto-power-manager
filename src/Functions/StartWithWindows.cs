@@ -4,27 +4,27 @@ using System.Windows.Forms;
 
 namespace WindowsShutdownHelper.functions
 {
-    public class startWithWindows
+    public class StartWithWindows
     {
-        public static string keyName = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        public static string pathwithArguments = Application.ExecutablePath + " -runInTaskBar";
+        public static string KeyName = @"Software\Microsoft\Windows\CurrentVersion\Run";
+        public static string PathWithArguments = Application.ExecutablePath + " -runInTaskBar";
 
-        public static RegistryKey startupKey;
+        public static RegistryKey StartupKey;
 
 
         public static void Is64BitOS()
         {
             if (Environment.Is64BitOperatingSystem)
             {
-                startupKey = RegistryKey
+                StartupKey = RegistryKey
                     .OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64)
-                    .OpenSubKey(keyName, true);
+                    .OpenSubKey(KeyName, true);
             }
             else
             {
-                startupKey = RegistryKey
+                StartupKey = RegistryKey
                     .OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry32)
-                    .OpenSubKey(keyName, true);
+                    .OpenSubKey(KeyName, true);
             }
         }
 
@@ -32,24 +32,24 @@ namespace WindowsShutdownHelper.functions
         {
             Is64BitOS();
 
-            if (startupKey.GetValue(appTitle) == null)
+            if (StartupKey.GetValue(appTitle) == null)
             {
-                startupKey.SetValue(appTitle, pathwithArguments, RegistryValueKind.String);
+                StartupKey.SetValue(appTitle, PathWithArguments, RegistryValueKind.String);
             }
 
-            startupKey.Close();
+            StartupKey.Close();
         }
 
 
         public static void DeleteStartup(string appTitle)
         {
             Is64BitOS();
-            if (startupKey.GetValue(appTitle) != null)
+            if (StartupKey.GetValue(appTitle) != null)
             {
-                startupKey.DeleteValue(appTitle);
+                StartupKey.DeleteValue(appTitle);
             }
 
-            startupKey.Close();
+            StartupKey.Close();
         }
     }
 }

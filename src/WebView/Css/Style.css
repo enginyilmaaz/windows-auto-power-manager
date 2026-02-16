@@ -254,7 +254,7 @@
     font-style: normal;
     font-weight: 400;
     font-display: swap;
-    src: url('../fonts/MaterialIconsRound.otf') format('opentype');
+    src: url('../Fonts/MaterialIconsRound.otf') format('opentype');
 }
 
 .mi {

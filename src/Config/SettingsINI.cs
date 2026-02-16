@@ -1,18 +1,18 @@
 ﻿namespace WindowsShutdownHelper.config
 {
-    public static class settingsINI
+    public static class SettingsINI
     {
-        public static Settings defaulSettingFile()
+        public static Settings DefaulSettingFile()
         {
             Settings setting = new Settings
             {
-                logsEnabled = true,
-                startWithWindows = false,
-                runInTaskbarWhenClosed = false,
-                isCountdownNotifierEnabled = true,
-                countdownNotifierSeconds = 5,
-                language = "auto",
-                theme = "system"
+                LogsEnabled = true,
+                StartWithWindows = false,
+                RunInTaskbarWhenClosed = false,
+                IsCountdownNotifierEnabled = true,
+                CountdownNotifierSeconds = 5,
+                Language = "auto",
+                Theme = "system"
             };
 
 

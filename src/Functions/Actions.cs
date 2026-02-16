@@ -7,43 +7,43 @@ namespace WindowsShutdownHelper.functions
 {
     public class ActionModel
     {
-        public string triggerType { get; set; }
-        public string actionType { get; set; }
-        public string value { get; set; }
-        public string valueUnit { get; set; }
-        public string createdDate { get; set; }
+        public string TriggerType { get; set; }
+        public string ActionType { get; set; }
+        public string Value { get; set; }
+        public string ValueUnit { get; set; }
+        public string CreatedDate { get; set; }
     }
 
     public class Actions
     {
-        public static void doActionByTypes(ActionModel action)
+        public static void DoActionByTypes(ActionModel action)
         {
-            if (action.actionType == config.actionTypes.lockComputer)
+            if (action.ActionType == config.ActionTypes.lockComputer)
             {
                 Lock.Computer();
             }
 
-            if (action.actionType == config.actionTypes.sleepComputer)
+            if (action.ActionType == config.ActionTypes.sleepComputer)
             {
                 Sleep.Computer();
             }
 
-            if (action.actionType == config.actionTypes.turnOffMonitor)
+            if (action.ActionType == config.ActionTypes.turnOffMonitor)
             {
                 TurnOff.Monitor();
             }
 
-            if (action.actionType == config.actionTypes.shutdownComputer)
+            if (action.ActionType == config.ActionTypes.shutdownComputer)
             {
                 ShutdownComputer();
             }
 
-            if (action.actionType == config.actionTypes.restartComputer)
+            if (action.ActionType == config.ActionTypes.restartComputer)
             {
                 RestartComputer();
             }
 
-            if (action.actionType == config.actionTypes.logOffWindows)
+            if (action.ActionType == config.ActionTypes.logOffWindows)
             {
                 LogOff.Windows();
             }
@@ -51,7 +51,7 @@ namespace WindowsShutdownHelper.functions
 
         public static void ShutdownComputer()
         {
-            Logger.doLog(config.actionTypes.shutdownComputer);
+            Logger.DoLog(config.ActionTypes.shutdownComputer);
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -66,7 +66,7 @@ namespace WindowsShutdownHelper.functions
 
         public static void RestartComputer()
         {
-            Logger.doLog(config.actionTypes.restartComputer);
+            Logger.DoLog(config.ActionTypes.restartComputer);
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -82,25 +82,25 @@ namespace WindowsShutdownHelper.functions
 
         public class Lock
         {
-            public static bool manualLocked = true;
+            public static bool ManualLocked = true;
 
             [DllImport("user32.dll")]
             public static extern void LockWorkStation();
 
             public static void Computer()
             {
-                if (detectScreen.isLockedWorkstation() == false)
+                if (DetectScreen.IsLockedWorkstation() == false)
                 {
-                    manualLocked = false;
-                    Logger.doLog(config.actionTypes.lockComputer);
+                    ManualLocked = false;
+                    Logger.DoLog(config.ActionTypes.lockComputer);
                     LockWorkStation();
                 }
             }
 
 
-            public static bool isLockedManually()
+            public static bool IsLockedManually()
             {
-                return manualLocked;
+                return ManualLocked;
             }
         }
 
@@ -112,7 +112,7 @@ namespace WindowsShutdownHelper.functions
 
             public static void Windows()
             {
-                Logger.doLog(config.actionTypes.logOffWindows);
+                Logger.DoLog(config.ActionTypes.logOffWindows);
                 ExitWindowsEx(0, 0);
             }
         }
@@ -124,7 +124,7 @@ namespace WindowsShutdownHelper.functions
 
             public static void Computer()
             {
-                Logger.doLog(config.actionTypes.sleepComputer);
+                Logger.DoLog(config.ActionTypes.sleepComputer);
                 SetSuspendState(false, true, true);
             }
         }
@@ -209,7 +209,7 @@ namespace WindowsShutdownHelper.functions
                     return;
                 }
 
-                Logger.doLog(config.actionTypes.turnOffMonitor);
+                Logger.DoLog(config.ActionTypes.turnOffMonitor);
                 SetMonitorState(MonitorState.OFF);
             }
         }

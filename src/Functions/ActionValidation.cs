@@ -4,16 +4,16 @@ using System.Globalization;
 
 namespace WindowsShutdownHelper.functions
 {
-    internal static class actionValidation
+    internal static class ActionValidation
     {
         private const string FromNowDateFormat = "dd.MM.yyyy HH:mm:ss";
         private const string CertainTimeFormat = "HH:mm:ss";
 
         private static readonly HashSet<string> SessionEndingActions = new HashSet<string>
         {
-            config.actionTypes.shutdownComputer,
-            config.actionTypes.restartComputer,
-            config.actionTypes.logOffWindows
+            config.ActionTypes.shutdownComputer,
+            config.ActionTypes.restartComputer,
+            config.ActionTypes.logOffWindows
         };
 
         public static bool TryValidateActionForAdd(
@@ -26,13 +26,13 @@ namespace WindowsShutdownHelper.functions
 
             if (newAction == null)
             {
-                errorMessage = language?.messageContent_actionChoose ?? "Invalid action.";
+                errorMessage = language?.MessageContentActionChoose ?? "Invalid action.";
                 return false;
             }
 
             if (!TryGetActionOrderValue(newAction, out long newActionOrderValue))
             {
-                errorMessage = language?.messageContent_actionChoose ?? "Invalid action value.";
+                errorMessage = language?.MessageContentActionChoose ?? "Invalid action value.";
                 return false;
             }
 
@@ -43,7 +43,7 @@ namespace WindowsShutdownHelper.functions
                     continue;
                 }
 
-                if (!string.Equals(existingAction.triggerType, newAction.triggerType, StringComparison.Ordinal))
+                if (!string.Equals(existingAction.TriggerType, newAction.TriggerType, StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -54,24 +54,24 @@ namespace WindowsShutdownHelper.functions
                 }
 
                 if (HasSameExecutionPoint(existingAction, newAction, existingActionOrderValue, newActionOrderValue) &&
-                    string.Equals(existingAction.actionType, newAction.actionType, StringComparison.Ordinal))
+                    string.Equals(existingAction.ActionType, newAction.ActionType, StringComparison.Ordinal))
                 {
-                    errorMessage = language?.messageContent_idleActionConflict
+                    errorMessage = language?.MessageContentIdleActionConflict
                         ?? "This action conflicts with existing actions.";
                     return false;
                 }
 
-                if (newAction.triggerType == config.triggerTypes.systemIdle &&
-                    string.Equals(existingAction.actionType, newAction.actionType, StringComparison.Ordinal))
+                if (newAction.TriggerType == config.TriggerTypes.systemIdle &&
+                    string.Equals(existingAction.ActionType, newAction.ActionType, StringComparison.Ordinal))
                 {
-                    errorMessage = language?.messageContent_idleActionConflict
+                    errorMessage = language?.MessageContentIdleActionConflict
                         ?? "This action conflicts with existing actions.";
                     return false;
                 }
 
                 if (HasGuaranteedConflict(existingAction, newAction, existingActionOrderValue, newActionOrderValue))
                 {
-                    errorMessage = language?.messageContent_idleActionConflict
+                    errorMessage = language?.MessageContentIdleActionConflict
                         ?? "This action conflicts with existing actions.";
                     return false;
                 }
@@ -87,7 +87,7 @@ namespace WindowsShutdownHelper.functions
 
         private static bool HasSameExecutionPoint(ActionModel first, ActionModel second, long firstOrder, long secondOrder)
         {
-            return string.Equals(first.triggerType, second.triggerType, StringComparison.Ordinal)
+            return string.Equals(first.TriggerType, second.TriggerType, StringComparison.Ordinal)
                 && firstOrder == secondOrder;
         }
 
@@ -97,15 +97,15 @@ namespace WindowsShutdownHelper.functions
             long existingActionOrderValue,
             long newActionOrderValue)
         {
-            bool existingIsSessionEnding = IsSessionEndingAction(existingAction.actionType);
-            bool newIsSessionEnding = IsSessionEndingAction(newAction.actionType);
+            bool existingIsSessionEnding = IsSessionEndingAction(existingAction.ActionType);
+            bool newIsSessionEnding = IsSessionEndingAction(newAction.ActionType);
 
             if (!existingIsSessionEnding && !newIsSessionEnding)
             {
                 return false;
             }
 
-            if (newAction.triggerType == config.triggerTypes.certainTime)
+            if (newAction.TriggerType == config.TriggerTypes.certainTime)
             {
                 return existingActionOrderValue == newActionOrderValue;
             }
@@ -126,12 +126,12 @@ namespace WindowsShutdownHelper.functions
         private static bool TryGetActionOrderValue(ActionModel action, out long orderValue)
         {
             orderValue = 0;
-            if (action == null || string.IsNullOrWhiteSpace(action.triggerType))
+            if (action == null || string.IsNullOrWhiteSpace(action.TriggerType))
             {
                 return false;
             }
 
-            if (action.triggerType == config.triggerTypes.systemIdle)
+            if (action.TriggerType == config.TriggerTypes.systemIdle)
             {
                 if (!TryGetSystemIdleSeconds(action, out int systemIdleSeconds) || systemIdleSeconds <= 0)
                 {
@@ -142,15 +142,15 @@ namespace WindowsShutdownHelper.functions
                 return true;
             }
 
-            if (action.triggerType == config.triggerTypes.fromNow)
+            if (action.TriggerType == config.TriggerTypes.fromNow)
             {
-                if (string.IsNullOrWhiteSpace(action.value))
+                if (string.IsNullOrWhiteSpace(action.Value))
                 {
                     return false;
                 }
 
                 if (!DateTime.TryParseExact(
-                    action.value,
+                    action.Value,
                     FromNowDateFormat,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
@@ -163,15 +163,15 @@ namespace WindowsShutdownHelper.functions
                 return true;
             }
 
-            if (action.triggerType == config.triggerTypes.certainTime)
+            if (action.TriggerType == config.TriggerTypes.certainTime)
             {
-                if (string.IsNullOrWhiteSpace(action.value))
+                if (string.IsNullOrWhiteSpace(action.Value))
                 {
                     return false;
                 }
 
                 if (!DateTime.TryParseExact(
-                    action.value,
+                    action.Value,
                     CertainTimeFormat,
                     CultureInfo.InvariantCulture,
                     DateTimeStyles.None,
@@ -191,12 +191,12 @@ namespace WindowsShutdownHelper.functions
         {
             seconds = 0;
 
-            if (action == null || string.IsNullOrWhiteSpace(action.value))
+            if (action == null || string.IsNullOrWhiteSpace(action.Value))
             {
                 return false;
             }
 
-            if (!int.TryParse(action.value, out int parsed))
+            if (!int.TryParse(action.Value, out int parsed))
             {
                 return false;
             }
@@ -206,7 +206,7 @@ namespace WindowsShutdownHelper.functions
                 return false;
             }
 
-            if (string.IsNullOrEmpty(action.valueUnit))
+            if (string.IsNullOrEmpty(action.ValueUnit))
             {
                 if (parsed > int.MaxValue / 60)
                 {

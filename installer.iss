@@ -56,7 +56,7 @@ Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags:
 Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Check: not Is64BitInstallMode
 #else
 Source: "bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "bin\Release\net8.0-windows\wwwroot\*"; DestDir: "{app}\wwwroot"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "bin\Release\net8.0-windows\WebView\*"; DestDir: "{app}\WebView"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "bin\Release\net8.0-windows\runtimes\*"; DestDir: "{app}\runtimes"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "bin\Release\net8.0-windows\*.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bin\Release\net8.0-windows\Windows Shutdown Helper.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion
@@ -79,5 +79,5 @@ Type: files; Name: "{app}\settings.json"
 Type: files; Name: "{app}\actionList.json"
 Type: files; Name: "{app}\logs.json"
 Type: filesandordirs; Name: "{app}\lang"
-Type: filesandordirs; Name: "{app}\wwwroot"
+Type: filesandordirs; Name: "{app}\WebView"
 Type: filesandordirs; Name: "{app}\runtimes"

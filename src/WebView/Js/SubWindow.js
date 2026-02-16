@@ -7,10 +7,10 @@
     var navigationToken = 0;
 
     var pageConfig = {
-        main: { scriptPath: 'js/pages/main.js', globalName: 'MainPage' },
-        settings: { scriptPath: 'js/pages/settings.js', globalName: 'SettingsPage' },
-        logs: { scriptPath: 'js/pages/logs.js', globalName: 'LogsPage' },
-        about: { scriptPath: 'js/pages/about.js', globalName: 'AboutPage' }
+        main: { scriptPath: 'Js/Pages/Main.js', globalName: 'MainPage' },
+        settings: { scriptPath: 'Js/Pages/Settings.js', globalName: 'SettingsPage' },
+        logs: { scriptPath: 'Js/Pages/Logs.js', globalName: 'LogsPage' },
+        about: { scriptPath: 'Js/Pages/About.js', globalName: 'AboutPage' }
     };
 
     function getPage(page) {
@@ -76,7 +76,7 @@
 
     function getLoadingText() {
         var L = Bridge.lang.bind(Bridge);
-        return L('common_loading') || 'Yükleniyor...';
+        return L('CommonLoading') || 'Yükleniyor...';
     }
 
     function applyLanguage() {
@@ -85,15 +85,15 @@
         if (!title) return;
 
         if (pageName === 'main') {
-            title.textContent = L('main_groupbox_newAction') || 'Actions';
+            title.textContent = L('MainGroupboxNewAction') || 'Actions';
         } else if (pageName === 'settings') {
-            title.textContent = L('settingsForm_Name') || 'Settings';
+            title.textContent = L('SettingsFormName') || 'Settings';
         } else if (pageName === 'logs') {
-            title.textContent = L('logViewerForm_Name') || 'Logs';
+            title.textContent = L('LogViewerFormName') || 'Logs';
         } else if (pageName === 'about') {
-            title.textContent = L('about_menuItem') || 'About';
+            title.textContent = L('AboutMenuItem') || 'About';
         } else {
-            title.textContent = L('main_FormName') || 'Windows Shutdown Helper';
+            title.textContent = L('MainFormName') || 'Windows Shutdown Helper';
         }
     }
 
@@ -102,7 +102,7 @@
         if (!wrap) return;
 
         var L = Bridge.lang.bind(Bridge);
-        wrap.innerHTML = '<div class="table-empty">' + (L('messageTitle_error') || 'Error') + '</div>';
+        wrap.innerHTML = '<div class="table-empty">' + (L('MessageTitleError') || 'Error') + '</div>';
     }
 
     function renderPage() {

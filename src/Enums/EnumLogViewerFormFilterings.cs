@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_logViewerForm_Filterings
+    public enum EnumLogViewerFormFilterings
     {
         Choose = 0,
         Lock = 1,

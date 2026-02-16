@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_cmStrip_mainGrid
+    public enum EnumCmStripMainGrid
     {
         DeleteSelectedAction = 0,
         DeleteAllAction = 1

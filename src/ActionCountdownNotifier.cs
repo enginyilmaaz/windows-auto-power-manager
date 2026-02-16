@@ -9,15 +9,15 @@ using WindowsShutdownHelper.functions;
 
 namespace WindowsShutdownHelper
 {
-    public partial class actionCountdownNotifier : Form
+    public partial class ActionCountdownNotifier : Form
     {
-        public static Language language = languageSelector.languageFile();
+        public static Language language = LanguageSelector.LanguageFile();
         public ActionModel action = new ActionModel();
-        public string messageTitle;
-        public string messageContentCountdownNotify, messageContentCountdownNotify_2;
-        public string messageContentActionType;
-        public string messageContentYouCanThat;
-        public int showTimeSecond;
+        public string MessageTitle;
+        public string MessageContentCountdownNotify, MessageContentCountdownNotify2;
+        public string MessageContentActionType;
+        public string MessageContentYouCanThat;
+        public int ShowTimeSecond;
         public Timer timer = new Timer();
 
         private bool _webViewReady;
@@ -36,13 +36,13 @@ namespace WindowsShutdownHelper
         private Point dragStartForm;
         private bool dragging;
 
-        public actionCountdownNotifier()
+        public ActionCountdownNotifier()
         {
             InitializeComponent();
             InitializeLoadingOverlay();
         }
 
-        public actionCountdownNotifier(string _messageTitle, string _messageContentCountdownNotify,
+        public ActionCountdownNotifier(string _messageTitle, string _messageContentCountdownNotify,
             string _messageContentCountdownNotify_2,
             string _messageContentActionType,
             string _messageContentYouCanThat, int _showTimeSecond,
@@ -71,7 +71,7 @@ namespace WindowsShutdownHelper
                 MessageBox.Show(
                     this,
                     "Arayuz acilamadi.\r\n\r\nDetay: " + ex.Message,
-                    language?.messageTitle_error ?? "Error",
+                    language?.MessageTitleError ?? "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 Close();
@@ -120,12 +120,12 @@ namespace WindowsShutdownHelper
             ActionModel _action)
         {
             action = _action ?? new ActionModel();
-            showTimeSecond = Math.Max(0, _showTimeSecond);
-            messageTitle = _messageTitle;
-            messageContentCountdownNotify = _messageContentCountdownNotify;
-            messageContentCountdownNotify_2 = _messageContentCountdownNotify_2;
-            messageContentActionType = _messageContentActionType;
-            messageContentYouCanThat = _messageContentYouCanThat;
+            ShowTimeSecond = Math.Max(0, _showTimeSecond);
+            MessageTitle = _messageTitle;
+            MessageContentCountdownNotify = _messageContentCountdownNotify;
+            MessageContentCountdownNotify2 = _messageContentCountdownNotify_2;
+            MessageContentActionType = _messageContentActionType;
+            MessageContentYouCanThat = _messageContentYouCanThat;
 
             _hasPendingNotification = true;
             _showAfterInitialized = false;
@@ -196,9 +196,9 @@ namespace WindowsShutdownHelper
             var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
-            string wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            string webViewPath = Path.Combine(AppContext.BaseDirectory, "WebView");
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "app.local", wwwrootPath,
+                "app.local", webViewPath,
                 CoreWebView2HostResourceAccessKind.Allow);
 
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
@@ -208,7 +208,7 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
             webView.CoreWebView2.DOMContentLoaded += OnDomContentLoaded;
 
-            webView.CoreWebView2.Navigate("https://app.local/countdown.html");
+            webView.CoreWebView2.Navigate("https://app.local/Countdown.html");
         }
 
         private void OnDomContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
@@ -229,21 +229,21 @@ namespace WindowsShutdownHelper
         private void SendInitData()
         {
             bool enableIgnore = true;
-            bool enableDelete = action.triggerType == config.triggerTypes.fromNow ||
-                                action.triggerType == config.triggerTypes.certainTime;
-            bool enableSkip = action.triggerType == config.triggerTypes.certainTime;
+            bool enableDelete = action.TriggerType == config.TriggerTypes.fromNow ||
+                                action.TriggerType == config.TriggerTypes.certainTime;
+            bool enableSkip = action.TriggerType == config.TriggerTypes.certainTime;
 
             var initData = new
             {
-                title = messageTitle,
-                countdownText1 = messageContentCountdownNotify,
-                countdownText2 = messageContentCountdownNotify_2,
-                actionType = messageContentActionType,
-                infoText = messageContentYouCanThat,
-                seconds = showTimeSecond,
-                btnDelete = language.actionCountdownNotifier_button_delete ?? "Delete",
-                btnIgnore = language.actionCountdownNotifier_button_ignore ?? "Ignore",
-                btnSkip = language.actionCountdownNotifier_button_skip ?? "Skip",
+                title = MessageTitle,
+                countdownText1 = MessageContentCountdownNotify,
+                countdownText2 = MessageContentCountdownNotify2,
+                actionType = MessageContentActionType,
+                infoText = MessageContentYouCanThat,
+                seconds = ShowTimeSecond,
+                btnDelete = language.ActionCountdownNotifierButtonDelete ?? "Delete",
+                btnIgnore = language.ActionCountdownNotifierButtonIgnore ?? "Ignore",
+                btnSkip = language.ActionCountdownNotifierButtonSkip ?? "Skip",
                 enableIgnore = enableIgnore,
                 enableDelete = enableDelete,
                 enableSkip = enableSkip
@@ -258,8 +258,8 @@ namespace WindowsShutdownHelper
             _timerStarted = true;
 
             timer.Interval = 1000;
-            timer.Tick -= timerTick;
-            timer.Tick += timerTick;
+            timer.Tick -= TimerTick;
+            timer.Tick += TimerTick;
             timer.Start();
         }
 
@@ -285,7 +285,7 @@ namespace WindowsShutdownHelper
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(97, 106, 124),
-                Text = language?.common_loading ?? "Yükleniyor..."
+                Text = language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
@@ -303,7 +303,7 @@ namespace WindowsShutdownHelper
         private void ShowLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingLabel.Text = language?.common_loading ?? "Yükleniyor...";
+            _loadingLabel.Text = language?.CommonLoading ?? "Yükleniyor...";
             _loadingOverlay.Visible = false;
             _loadingDelayTimer?.Stop();
             _loadingDelayTimer?.Start();
@@ -347,7 +347,7 @@ namespace WindowsShutdownHelper
             _hasPendingNotification = false;
             _showAfterInitialized = false;
             _initSent = false;
-            showTimeSecond = 0;
+            ShowTimeSecond = 0;
 
             if (!IsDisposed)
             {
@@ -367,17 +367,17 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.PostWebMessageAsJson(msg);
         }
 
-        private void timerTick(object sender, EventArgs e)
+        private void TimerTick(object sender, EventArgs e)
         {
-            if (showTimeSecond == 0)
+            if (ShowTimeSecond == 0)
             {
                 HideAndReset();
                 return;
             }
 
-            if (action.triggerType == config.triggerTypes.systemIdle)
+            if (action.TriggerType == config.TriggerTypes.systemIdle)
             {
-                uint idleTimeMin = systemIdleDetector.GetLastInputTime();
+                uint idleTimeMin = SystemIdleDetector.GetLastInputTime();
                 if (idleTimeMin == 0)
                 {
                     HideAndReset();
@@ -385,8 +385,8 @@ namespace WindowsShutdownHelper
                 }
             }
 
-            --showTimeSecond;
-            PostMessage("updateCountdown", new { seconds = showTimeSecond });
+            --ShowTimeSecond;
+            PostMessage("updateCountdown", new { seconds = ShowTimeSecond });
         }
 
         private void OnWebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -415,14 +415,14 @@ namespace WindowsShutdownHelper
                     HideAndReset();
                     break;
                 case "delete":
-                    mainForm.actionList.Remove(action);
-                    mainForm.isDeletedFromNotifier = true;
-                    jsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
-                        mainForm.actionList);
+                    MainForm.actionList.Remove(action);
+                    MainForm.isDeletedFromNotifier = true;
+                    JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
+                        MainForm.actionList);
                     HideAndReset();
                     break;
                 case "skip":
-                    mainForm.isSkippedCertainTimeAction = true;
+                    MainForm.isSkippedCertainTimeAction = true;
                     HideAndReset();
                     break;
                 case "dragStart":

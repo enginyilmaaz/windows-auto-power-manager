@@ -10,38 +10,38 @@ window.MainPage = {
         var L = Bridge.lang.bind(Bridge);
         return '' +
             '<div class="form-row">' +
-                '<span class="form-label">' + L('main_label_actionType') + '</span>' +
+                '<span class="form-label">' + L('MainLabelActionType') + '</span>' +
                 '<select id="sel-action" class="form-select">' +
-                    '<option value="0">' + L('main_cbox_ActionType_Item_chooseAction') + '</option>' +
-                    '<option value="shutdownComputer">' + L('main_cbox_ActionType_Item_shutdownComputer') + '</option>' +
-                    '<option value="restartComputer">' + L('main_cbox_ActionType_Item_restartComputer') + '</option>' +
-                    '<option value="logOffWindows">' + L('main_cbox_ActionType_Item_logOffWindows') + '</option>' +
-                    '<option value="sleepComputer">' + L('main_cbox_ActionType_Item_sleepComputer') + '</option>' +
-                    '<option value="lockComputer">' + L('main_cbox_ActionType_Item_lockComputer') + '</option>' +
-                    '<option value="turnOffMonitor">' + L('main_cbox_ActionType_Item_turnOffMonitor') + '</option>' +
+                    '<option value="0">' + L('MainCboxActionTypeItemChooseAction') + '</option>' +
+                    '<option value="shutdownComputer">' + L('MainCboxActionTypeItemShutdownComputer') + '</option>' +
+                    '<option value="restartComputer">' + L('MainCboxActionTypeItemRestartComputer') + '</option>' +
+                    '<option value="logOffWindows">' + L('MainCboxActionTypeItemLogOffWindows') + '</option>' +
+                    '<option value="sleepComputer">' + L('MainCboxActionTypeItemSleepComputer') + '</option>' +
+                    '<option value="lockComputer">' + L('MainCboxActionTypeItemLockComputer') + '</option>' +
+                    '<option value="turnOffMonitor">' + L('MainCboxActionTypeItemTurnOffMonitor') + '</option>' +
                 '</select>' +
             '</div>' +
             '<div class="form-row">' +
-                '<span class="form-label">' + L('main_label_trigger') + '</span>' +
+                '<span class="form-label">' + L('MainLabelTrigger') + '</span>' +
                 '<select id="sel-trigger" class="form-select">' +
-                    '<option value="0">' + L('main_cbox_TriggerType_Item_chooseTrigger') + '</option>' +
-                    '<option value="systemIdle">' + L('main_cbox_TriggerType_Item_systemIdle') + '</option>' +
-                    '<option value="fromNow">' + L('main_cbox_TriggerType_Item_fromNow') + '</option>' +
-                    '<option value="certainTime">' + L('main_cbox_TriggerType_Item_certainTime') + '</option>' +
+                    '<option value="0">' + L('MainCboxTriggerTypeItemChooseTrigger') + '</option>' +
+                    '<option value="systemIdle">' + L('MainCboxTriggerTypeItemSystemIdle') + '</option>' +
+                    '<option value="fromNow">' + L('MainCboxTriggerTypeItemFromNow') + '</option>' +
+                    '<option value="certainTime">' + L('MainCboxTriggerTypeItemCertainTime') + '</option>' +
                 '</select>' +
             '</div>' +
             '<div class="form-row" id="row-value">' +
-                '<span class="form-label" id="lbl-value">' + L('main_label_value') + '</span>' +
-                '<span class="form-hint" id="hint-trigger">' + L('label_firstly_choose_a_trigger') + '</span>' +
+                '<span class="form-label" id="lbl-value">' + L('MainLabelValue') + '</span>' +
+                '<span class="form-hint" id="hint-trigger">' + L('LabelFirstlyChooseATrigger') + '</span>' +
                 '<input type="number" id="inp-value" class="form-input form-input-small" min="1" max="99999" value="1" style="display:none">' +
                 '<select id="sel-unit" class="form-select form-input-small" style="display:none">' +
-                    '<option value="0">' + (L('main_timeUnit_seconds') || 'Seconds') + '</option>' +
-                    '<option value="1" selected>' + (L('main_timeUnit_minutes') || 'Minutes') + '</option>' +
-                    '<option value="2">' + (L('main_timeUnit_hours') || 'Hours') + '</option>' +
+                    '<option value="0">' + (L('MainTimeUnitSeconds') || 'Seconds') + '</option>' +
+                    '<option value="1" selected>' + (L('MainTimeUnitMinutes') || 'Minutes') + '</option>' +
+                    '<option value="2">' + (L('MainTimeUnitHours') || 'Hours') + '</option>' +
                 '</select>' +
                 '<input type="time" id="inp-time" class="form-input form-input-small" style="display:none">' +
             '</div>' +
-            '<button class="btn btn-primary" id="btn-add">' + L('main_button_addAction') + '</button>';
+            '<button class="btn btn-primary" id="btn-add">' + L('MainButtonAddAction') + '</button>';
     },
 
     // Bind form events (called after modal body is populated)
@@ -66,13 +66,13 @@ window.MainPage = {
                 inp.style.display = '';
                 unit.style.display = '';
                 time.style.display = 'none';
-                lbl.textContent = L('main_label_value_duration') || L('main_label_value');
+                lbl.textContent = L('MainLabelValueDuration') || L('MainLabelValue');
             } else if (v === 'certainTime') {
                 hint.style.display = 'none';
                 inp.style.display = 'none';
                 unit.style.display = 'none';
                 time.style.display = '';
-                lbl.textContent = L('main_label_value_time') || L('main_label_value');
+                lbl.textContent = L('MainLabelValueTime') || L('MainLabelValue');
             }
         });
 
@@ -99,12 +99,12 @@ window.MainPage = {
         var L = Bridge.lang.bind(Bridge);
         return '' +
         '<div class="card">' +
-            '<div class="card-title">' + L('main_groupBox_actionList') + '</div>' +
+            '<div class="card-title">' + L('MainGroupBoxActionList') + '</div>' +
             '<div id="action-table-wrap"></div>' +
         '</div>' +
         '<div class="context-menu" id="ctx-menu">' +
-            '<div class="context-menu-item" id="ctx-delete">' + L('contextMenuStrip_mainGrid_deleteSelectedAction') + '</div>' +
-            '<div class="context-menu-item danger" id="ctx-clear">' + L('contextMenuStrip_mainGrid_deleteAllAction') + '</div>' +
+            '<div class="context-menu-item" id="ctx-delete">' + L('ContextMenuStripMainGridDeleteSelectedAction') + '</div>' +
+            '<div class="context-menu-item danger" id="ctx-clear">' + L('ContextMenuStripMainGridDeleteAllAction') + '</div>' +
         '</div>';
     },
 
@@ -157,12 +157,12 @@ window.MainPage = {
         var filtered = self._rawActions;
         if (self._currentFilter && self._currentFilter !== 'all') {
             var filterMap = {
-                'shutdownComputer': L('main_cbox_ActionType_Item_shutdownComputer'),
-                'restartComputer': L('main_cbox_ActionType_Item_restartComputer'),
-                'sleepComputer': L('main_cbox_ActionType_Item_sleepComputer'),
-                'lockComputer': L('main_cbox_ActionType_Item_lockComputer'),
-                'turnOffMonitor': L('main_cbox_ActionType_Item_turnOffMonitor'),
-                'logOffWindows': L('main_cbox_ActionType_Item_logOffWindows')
+                'shutdownComputer': L('MainCboxActionTypeItemShutdownComputer'),
+                'restartComputer': L('MainCboxActionTypeItemRestartComputer'),
+                'sleepComputer': L('MainCboxActionTypeItemSleepComputer'),
+                'lockComputer': L('MainCboxActionTypeItemLockComputer'),
+                'turnOffMonitor': L('MainCboxActionTypeItemTurnOffMonitor'),
+                'logOffWindows': L('MainCboxActionTypeItemLogOffWindows')
             };
             var filterText = filterMap[self._currentFilter] || self._currentFilter;
             filtered = filtered.filter(function (a) {
@@ -183,16 +183,16 @@ window.MainPage = {
         }
 
         if (!filtered || filtered.length === 0) {
-            wrap.innerHTML = '<div class="table-empty">' + (L('messageContent_noLog') || 'No actions yet') + '</div>';
+            wrap.innerHTML = '<div class="table-empty">' + (L('MessageContentNoLog') || 'No actions yet') + '</div>';
             return;
         }
 
         var html = '<table class="data-table"><thead><tr>' +
-            '<th>' + L('main_datagrid_main_triggerType') + '</th>' +
-            '<th>' + L('main_datagrid_main_actionType') + '</th>' +
-            '<th>' + L('main_datagrid_main_value') + '</th>' +
-            '<th>' + (L('main_datagrid_main_valueUnit') || 'Unit') + '</th>' +
-            '<th>' + L('main_datagrid_main_createdDate') + '</th>' +
+            '<th>' + L('MainDatagridMainTriggerType') + '</th>' +
+            '<th>' + L('MainDatagridMainActionType') + '</th>' +
+            '<th>' + L('MainDatagridMainValue') + '</th>' +
+            '<th>' + (L('MainDatagridMainValueUnit') || 'Unit') + '</th>' +
+            '<th>' + L('MainDatagridMainCreatedDate') + '</th>' +
             '</tr></thead><tbody>';
 
         for (var i = 0; i < filtered.length; i++) {

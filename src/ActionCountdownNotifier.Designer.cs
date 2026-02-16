@@ -1,6 +1,6 @@
 namespace WindowsShutdownHelper
 {
-    partial class actionCountdownNotifier
+    partial class ActionCountdownNotifier
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -31,14 +31,14 @@ namespace WindowsShutdownHelper
             this.webView.TabIndex = 0;
             this.webView.ZoomFactor = 1D;
 
-            // actionCountdownNotifier
+            // ActionCountdownNotifier
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
             this.ClientSize = new System.Drawing.Size(358, 172);
             this.Controls.Add(this.webView);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
-            this.Name = "actionCountdownNotifier";
+            this.Name = "ActionCountdownNotifier";
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Countdown";

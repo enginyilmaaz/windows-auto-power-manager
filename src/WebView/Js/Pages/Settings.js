@@ -8,24 +8,24 @@ window.SettingsPage = {
 
         return '' +
         '<div class="card">' +
-            '<div class="card-title">' + (L('settingsForm_Name') || 'Settings') + '</div>' +
+            '<div class="card-title">' + (L('SettingsFormName') || 'Settings') + '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_theme') || 'Theme') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelTheme') || 'Theme') + '</span>' +
                 '<select id="set-theme" class="form-select" style="max-width:200px">' +
-                    '<option value="system"' + (s.theme === 'system' || !s.theme ? ' selected' : '') + '>' + (L('settingsForm_theme_system') || 'System Default') + '</option>' +
-                    '<option value="dark"' + (s.theme === 'dark' ? ' selected' : '') + '>' + (L('settingsForm_theme_dark') || 'Dark') + '</option>' +
-                    '<option value="light"' + (s.theme === 'light' ? ' selected' : '') + '>' + (L('settingsForm_theme_light') || 'Light') + '</option>' +
+                    '<option value="system"' + (s.theme === 'system' || !s.theme ? ' selected' : '') + '>' + (L('SettingsFormThemeSystem') || 'System Default') + '</option>' +
+                    '<option value="dark"' + (s.theme === 'dark' ? ' selected' : '') + '>' + (L('SettingsFormThemeDark') || 'Dark') + '</option>' +
+                    '<option value="light"' + (s.theme === 'light' ? ' selected' : '') + '>' + (L('SettingsFormThemeLight') || 'Light') + '</option>' +
                 '</select>' +
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_language') || 'Language') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelLanguage') || 'Language') + '</span>' +
                 '<select id="set-lang" class="form-select" style="max-width:200px"></select>' +
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_logs') || 'Record Logs') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelLogs') || 'Record Logs') + '</span>' +
                 '<label class="toggle-switch">' +
                     '<input type="checkbox" id="set-logs"' + (s.logsEnabled ? ' checked' : '') + '>' +
                     '<span class="toggle-slider"></span>' +
@@ -33,7 +33,7 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_startWithWindows') || 'Start with Windows') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelStartWithWindows') || 'Start with Windows') + '</span>' +
                 '<label class="toggle-switch">' +
                     '<input type="checkbox" id="set-startup"' + (s.startWithWindows ? ' checked' : '') + '>' +
                     '<span class="toggle-slider"></span>' +
@@ -41,7 +41,7 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_runInTaskbarWhenClosed') || 'Run in Taskbar When Closed') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelRunInTaskbarWhenClosed') || 'Run in Taskbar When Closed') + '</span>' +
                 '<label class="toggle-switch">' +
                     '<input type="checkbox" id="set-taskbar"' + (s.runInTaskbarWhenClosed ? ' checked' : '') + '>' +
                     '<span class="toggle-slider"></span>' +
@@ -49,7 +49,7 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_isCountdownNotifierEnabled') || 'Countdown Notifier') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelIsCountdownNotifierEnabled') || 'Countdown Notifier') + '</span>' +
                 '<label class="toggle-switch">' +
                     '<input type="checkbox" id="set-countdown"' + (s.isCountdownNotifierEnabled ? ' checked' : '') + '>' +
                     '<span class="toggle-slider"></span>' +
@@ -57,13 +57,13 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('settingsForm_label_countdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
+                '<span class="settings-label">' + (L('SettingsFormLabelCountdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
                 '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
             '</div>' +
 
             '<div class="settings-actions">' +
-                '<button class="btn btn-secondary" id="set-cancel">' + (L('settingsForm_button_cancel') || 'Cancel') + '</button>' +
-                '<button class="btn btn-success" id="set-save">' + (L('settingsForm_button_save') || 'Save') + '</button>' +
+                '<button class="btn btn-secondary" id="set-cancel">' + (L('SettingsFormButtonCancel') || 'Cancel') + '</button>' +
+                '<button class="btn btn-success" id="set-save">' + (L('SettingsFormButtonSave') || 'Save') + '</button>' +
             '</div>' +
         '</div>';
     },
@@ -98,9 +98,9 @@ window.SettingsPage = {
             sel.innerHTML = '';
             for (var i = 0; i < list.length; i++) {
                 var opt = document.createElement('option');
-                opt.value = list[i].langCode;
+                opt.value = list[i].LangCode;
                 opt.textContent = list[i].langName;
-                if (list[i].langCode === (Bridge._settings.language || 'auto')) {
+                if (list[i].LangCode === (Bridge._settings.language || 'auto')) {
                     opt.selected = true;
                 }
                 sel.appendChild(opt);

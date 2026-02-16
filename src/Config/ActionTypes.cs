@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper.config
 {
-    public class actionTypes
+    public class ActionTypes
     {
         public static readonly string lockComputer = "lockComputer";
         public static readonly string sleepComputer = "sleepComputer";

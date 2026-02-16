@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_combobox_actionType
+    public enum EnumComboboxActionType
     {
         Shutdown = 1,
         Restart = 2,

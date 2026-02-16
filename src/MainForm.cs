@@ -13,9 +13,9 @@ using WindowsShutdownHelper.functions;
 
 namespace WindowsShutdownHelper
 {
-    public partial class mainForm : Form
+    public partial class MainForm : Form
     {
-        public static Language language = languageSelector.languageFile();
+        public static Language language = LanguageSelector.LanguageFile();
         public static List<ActionModel> actionList = new List<ActionModel>();
         public static Settings settings = new Settings();
         public static bool isDeletedFromNotifier;
@@ -40,7 +40,7 @@ namespace WindowsShutdownHelper
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
 
-        public mainForm()
+        public MainForm()
         {
             InitializeComponent();
             InitializeLoadingOverlay();
@@ -63,15 +63,15 @@ namespace WindowsShutdownHelper
             base.OnLoad(e);
         }
 
-        public void deleteExpriedAction()
+        public void DeleteExpriedAction()
         {
             bool changed = false;
             foreach (ActionModel action in actionList.ToList())
             {
-                if (action.triggerType == config.triggerTypes.fromNow)
+                if (action.TriggerType == config.TriggerTypes.fromNow)
                 {
                     if (DateTime.TryParseExact(
-                        action.value,
+                        action.Value,
                         "dd.MM.yyyy HH:mm:ss",
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
@@ -91,7 +91,7 @@ namespace WindowsShutdownHelper
                     }
                 }
             }
-            if (changed) writeJsonToActionList();
+            if (changed) WriteJsonToActionList();
         }
 
         private void mainForm_Load(object sender, EventArgs e)
@@ -105,8 +105,8 @@ namespace WindowsShutdownHelper
                 _ = InitializeWebViewSafeAsync();
             }));
 
-            Text = language.main_FormName;
-            notifyIcon_main.Text = language.main_FormName + " " + language.notifyIcon_main;
+            Text = language.MainFormName;
+            NotifyIconMain.Text = language.MainFormName + " " + language.NotifyIconMain;
             BeginInvoke(new Action(InitializeRuntimeState));
         }
 
@@ -130,31 +130,31 @@ namespace WindowsShutdownHelper
         {
             try
             {
-                detectScreen.manuelLockingActionLogger();
+                DetectScreen.ManuelLockingActionLogger();
                 actionList = LoadActionList();
 
-                deleteExpriedAction();
+                DeleteExpriedAction();
 
                 // Setup timer
                 timer.Interval = 1000;
-                timer.Tick += timerTick;
+                timer.Tick += TimerTick;
                 timer.Start();
 
                 // Setup notify icon context menu text
-                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.AddNewAction].Text =
-                    language.contextMenuStrip_notifyIcon_addNewAction;
-                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ExitTheProgram].Text =
-                    language.contextMenuStrip_notifyIcon_exitProgram;
-                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.Settings].Text =
-                    language.contextMenuStrip_notifyIcon_showSettings;
-                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ShowLogs].Text =
-                    language.contextMenuStrip_notifyIcon_showLogs;
-                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.About].Text =
-                    language.about_menuItem ?? "About";
+                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
+                    language.ContextMenuStripNotifyIconAddNewAction;
+                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
+                    language.ContextMenuStripNotifyIconExitProgram;
+                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
+                    language.ContextMenuStripNotifyIconShowSettings;
+                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
+                    language.ContextMenuStripNotifyIconShowLogs;
+                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
+                    language.AboutMenuItem ?? "About";
 
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
-                bool isDark = DetermineIfDark(_cachedSettings.theme);
+                bool isDark = DetermineIfDark(_cachedSettings.Theme);
                 contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
                 contextMenuStrip_notifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
                 BackColor = isDark
@@ -164,7 +164,7 @@ namespace WindowsShutdownHelper
             catch (Exception ex)
             {
                 actionList = new List<ActionModel>();
-                _cachedSettings = config.settingsINI.defaulSettingFile();
+                _cachedSettings = config.SettingsINI.DefaulSettingFile();
                 ReportStartupError("Baslangic verileri yuklenemedi", ex);
             }
             finally
@@ -173,7 +173,7 @@ namespace WindowsShutdownHelper
                 TrySendInitData();
 
                 // Log app started in background
-                _ = System.Threading.Tasks.Task.Run(() => Logger.doLog(config.actionTypes.appStarted, _cachedSettings));
+                _ = System.Threading.Tasks.Task.Run(() => Logger.DoLog(config.ActionTypes.appStarted, _cachedSettings));
             }
         }
 
@@ -182,9 +182,9 @@ namespace WindowsShutdownHelper
             var env = await WebViewEnvironmentProvider.GetAsync();
             await webView.EnsureCoreWebView2Async(env);
 
-            string wwwrootPath = Path.Combine(AppContext.BaseDirectory, "wwwroot");
+            string webViewPath = Path.Combine(AppContext.BaseDirectory, "WebView");
             webView.CoreWebView2.SetVirtualHostNameToFolderMapping(
-                "app.local", wwwrootPath,
+                "app.local", webViewPath,
                 CoreWebView2HostResourceAccessKind.Allow);
 
             webView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = false;
@@ -194,7 +194,7 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.WebMessageReceived += OnWebMessageReceived;
             webView.CoreWebView2.DOMContentLoaded += OnDomContentLoaded;
 
-            webView.CoreWebView2.Navigate("https://app.local/index.html");
+            webView.CoreWebView2.Navigate("https://app.local/Index.html");
         }
 
         private async System.Threading.Tasks.Task InitializeWebViewSafeAsync()
@@ -238,7 +238,7 @@ namespace WindowsShutdownHelper
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold),
                 ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
-                Text = language?.common_loading ?? "Yükleniyor..."
+                Text = language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
@@ -256,7 +256,7 @@ namespace WindowsShutdownHelper
         private void ShowLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingLabel.Text = language?.common_loading ?? "Yükleniyor...";
+            _loadingLabel.Text = language?.CommonLoading ?? "Yükleniyor...";
             _loadingOverlay.Visible = false;
             _loadingDelayTimer?.Stop();
             _loadingDelayTimer?.Start();
@@ -292,9 +292,9 @@ namespace WindowsShutdownHelper
                     win.PrewarmInBackground();
                 }
 
-                if (_cachedSettings?.isCountdownNotifierEnabled == true)
+                if (_cachedSettings?.IsCountdownNotifierEnabled == true)
                 {
-                    notifySystem.PrewarmCountdownNotifier();
+                    NotifySystem.PrewarmCountdownNotifier();
                 }
             }));
         }
@@ -326,13 +326,13 @@ namespace WindowsShutdownHelper
                 actions = displayActions,
                 settings = new
                 {
-                    settingsObj.logsEnabled,
-                    settingsObj.startWithWindows,
-                    settingsObj.runInTaskbarWhenClosed,
-                    settingsObj.isCountdownNotifierEnabled,
-                    settingsObj.countdownNotifierSeconds,
-                    settingsObj.language,
-                    settingsObj.theme,
+                    logsEnabled = settingsObj.LogsEnabled,
+                    startWithWindows = settingsObj.StartWithWindows,
+                    runInTaskbarWhenClosed = settingsObj.RunInTaskbarWhenClosed,
+                    isCountdownNotifierEnabled = settingsObj.IsCountdownNotifierEnabled,
+                    countdownNotifierSeconds = settingsObj.CountdownNotifierSeconds,
+                    language = settingsObj.Language,
+                    theme = settingsObj.Theme,
                     appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                     buildId = BuildInfo.CommitId
                 }
@@ -348,11 +348,11 @@ namespace WindowsShutdownHelper
             {
                 var d = new Dictionary<string, string>
                 {
-                    ["triggerType"] = TranslateTrigger(act.triggerType),
-                    ["actionType"] = TranslateAction(act.actionType),
-                    ["value"] = act.value ?? "",
-                    ["valueUnit"] = TranslateUnit(act.valueUnit),
-                    ["createdDate"] = act.createdDate ?? ""
+                    ["triggerType"] = TranslateTrigger(act.TriggerType),
+                    ["actionType"] = TranslateAction(act.ActionType),
+                    ["value"] = act.Value ?? "",
+                    ["valueUnit"] = TranslateUnit(act.ValueUnit),
+                    ["createdDate"] = act.CreatedDate ?? ""
                 };
                 list.Add(d);
             }
@@ -361,34 +361,34 @@ namespace WindowsShutdownHelper
 
         private string TranslateAction(string raw)
         {
-            if (raw == config.actionTypes.lockComputer) return language.main_cbox_ActionType_Item_lockComputer;
-            if (raw == config.actionTypes.shutdownComputer) return language.main_cbox_ActionType_Item_shutdownComputer;
-            if (raw == config.actionTypes.restartComputer) return language.main_cbox_ActionType_Item_restartComputer;
-            if (raw == config.actionTypes.logOffWindows) return language.main_cbox_ActionType_Item_logOffWindows;
-            if (raw == config.actionTypes.sleepComputer) return language.main_cbox_ActionType_Item_sleepComputer;
-            if (raw == config.actionTypes.turnOffMonitor) return language.main_cbox_ActionType_Item_turnOffMonitor;
+            if (raw == config.ActionTypes.lockComputer) return language.MainCboxActionTypeItemLockComputer;
+            if (raw == config.ActionTypes.shutdownComputer) return language.MainCboxActionTypeItemShutdownComputer;
+            if (raw == config.ActionTypes.restartComputer) return language.MainCboxActionTypeItemRestartComputer;
+            if (raw == config.ActionTypes.logOffWindows) return language.MainCboxActionTypeItemLogOffWindows;
+            if (raw == config.ActionTypes.sleepComputer) return language.MainCboxActionTypeItemSleepComputer;
+            if (raw == config.ActionTypes.turnOffMonitor) return language.MainCboxActionTypeItemTurnOffMonitor;
             return raw;
         }
 
         private string TranslateTrigger(string raw)
         {
-            if (raw == config.triggerTypes.systemIdle) return language.main_cbox_TriggerType_Item_systemIdle;
-            if (raw == config.triggerTypes.certainTime) return language.main_cbox_TriggerType_Item_certainTime;
-            if (raw == config.triggerTypes.fromNow) return language.main_cbox_TriggerType_Item_fromNow;
+            if (raw == config.TriggerTypes.systemIdle) return language.MainCboxTriggerTypeItemSystemIdle;
+            if (raw == config.TriggerTypes.certainTime) return language.MainCboxTriggerTypeItemCertainTime;
+            if (raw == config.TriggerTypes.fromNow) return language.MainCboxTriggerTypeItemFromNow;
             return raw;
         }
 
         private string TranslateUnit(string raw)
         {
-            if (raw == "seconds") return language.main_timeUnit_seconds ?? "Seconds";
-            if (string.IsNullOrEmpty(raw)) return language.main_timeUnit_minutes ?? "Minutes";
+            if (raw == "seconds") return language.MainTimeUnitSeconds ?? "Seconds";
+            if (string.IsNullOrEmpty(raw)) return language.MainTimeUnitMinutes ?? "Minutes";
             return raw;
         }
 
         private Settings LoadSettings()
         {
             string path = AppContext.BaseDirectory + "\\settings.json";
-            return ReadJsonFileOrDefault(path, config.settingsINI.defaulSettingFile());
+            return ReadJsonFileOrDefault(path, config.SettingsINI.DefaulSettingFile());
         }
 
         private List<ActionModel> LoadActionList()
@@ -435,13 +435,13 @@ namespace WindowsShutdownHelper
             {
                 _loadingOverlay.Visible = true;
                 _loadingOverlay.BringToFront();
-                _loadingLabel.Text = language?.messageTitle_error ?? "Error";
+                _loadingLabel.Text = language?.MessageTitleError ?? "Error";
             }
 
             MessageBox.Show(
                 this,
                 title + ".\r\n\r\nDetay: " + ex.Message,
-                language?.messageTitle_error ?? "Error",
+                language?.MessageTitleError ?? "Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
@@ -512,7 +512,7 @@ namespace WindowsShutdownHelper
                     isApplicationExiting = true;
                     StopSubWindowPrewarm();
                     CloseAllSubWindows();
-                    Logger.doLog(config.actionTypes.appTerminated);
+                    Logger.DoLog(config.ActionTypes.appTerminated);
                     Application.ExitThread();
                     break;
             }
@@ -538,8 +538,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_warn,
-                    message = language.messageContent_actionChoose,
+                    title = language.MessageTitleWarn,
+                    message = language.MessageContentActionChoose,
                     type = "warn",
                     duration = 2000
                 });
@@ -551,8 +551,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_warn,
-                    message = language.messageContent_maxActionWarn,
+                    title = language.MessageTitleWarn,
+                    message = language.MessageContentMaxActionWarn,
                     type = "warn",
                     duration = 2000
                 });
@@ -562,52 +562,52 @@ namespace WindowsShutdownHelper
 
             var newAction = new ActionModel
             {
-                createdDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
-                actionType = actionType
+                CreatedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"),
+                ActionType = actionType
             };
 
             if (triggerType == "fromNow")
             {
-                newAction.triggerType = config.triggerTypes.fromNow;
+                newAction.TriggerType = config.TriggerTypes.fromNow;
                 double inputValue = Convert.ToDouble(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 DateTime targetTime;
                 if (unitIdx == 0) targetTime = DateTime.Now.AddSeconds(inputValue);
                 else if (unitIdx == 2) targetTime = DateTime.Now.AddHours(inputValue);
                 else targetTime = DateTime.Now.AddMinutes(inputValue);
-                newAction.value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
+                newAction.Value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
             }
             else if (triggerType == "systemIdle")
             {
-                newAction.triggerType = config.triggerTypes.systemIdle;
+                newAction.TriggerType = config.TriggerTypes.systemIdle;
                 int inputValue = Convert.ToInt32(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 int valueInSeconds;
                 if (unitIdx == 0) valueInSeconds = inputValue;
                 else if (unitIdx == 2) valueInSeconds = inputValue * 3600;
                 else valueInSeconds = inputValue * 60;
-                newAction.value = valueInSeconds.ToString();
-                newAction.valueUnit = "seconds";
+                newAction.Value = valueInSeconds.ToString();
+                newAction.ValueUnit = "seconds";
             }
             else if (triggerType == "certainTime")
             {
-                newAction.triggerType = config.triggerTypes.certainTime;
+                newAction.TriggerType = config.TriggerTypes.certainTime;
                 string timeStr = data.GetProperty("time").GetString();
                 if (!string.IsNullOrEmpty(timeStr))
                 {
-                    newAction.value = timeStr + ":00";
+                    newAction.Value = timeStr + ":00";
                 }
                 else
                 {
-                    newAction.value = DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
+                    newAction.Value = DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
                 }
             }
 
-            if (!actionValidation.TryValidateActionForAdd(newAction, actionList, language, out string validationMessage))
+            if (!ActionValidation.TryValidateActionForAdd(newAction, actionList, language, out string validationMessage))
             {
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_warn,
+                    title = language.MessageTitleWarn,
                     message = validationMessage,
                     type = "warn",
                     duration = 3000
@@ -617,12 +617,12 @@ namespace WindowsShutdownHelper
             }
 
             actionList.Add(newAction);
-            writeJsonToActionList();
+            WriteJsonToActionList();
 
             PostMessage("showToast", new
             {
-                title = language.messageTitle_success,
-                message = language.messageContent_actionCreated,
+                title = language.MessageTitleSuccess,
+                message = language.MessageContentActionCreated,
                 type = "success",
                 duration = 2000
             });
@@ -635,12 +635,12 @@ namespace WindowsShutdownHelper
             if (index >= 0 && index < actionList.Count)
             {
                 actionList.RemoveAt(index);
-                writeJsonToActionList();
+                WriteJsonToActionList();
 
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_success,
-                    message = language.messageContent_actionDeleted,
+                    title = language.MessageTitleSuccess,
+                    message = language.MessageContentActionDeleted,
                     type = "success",
                     duration = 2000
                 });
@@ -650,12 +650,12 @@ namespace WindowsShutdownHelper
         private void HandleClearAllActions()
         {
             actionList.Clear();
-            writeJsonToActionList();
+            WriteJsonToActionList();
 
             PostMessage("showToast", new
             {
-                title = language.messageTitle_success,
-                message = language.messageContent_actionAllDeleted,
+                title = language.MessageTitleSuccess,
+                message = language.MessageContentActionAllDeleted,
                 type = "success",
                 duration = 2000
             });
@@ -665,41 +665,41 @@ namespace WindowsShutdownHelper
         {
             var newSettings = new Settings
             {
-                logsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
-                startWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
-                runInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
-                isCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
-                countdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
-                language = data.GetProperty("language").GetString(),
-                theme = data.GetProperty("theme").GetString()
+                LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
+                StartWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
+                RunInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
+                IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
+                CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
+                Language = data.GetProperty("language").GetString(),
+                Theme = data.GetProperty("theme").GetString()
             };
 
-            string currentLang = LoadSettings().language;
-            jsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
+            string currentLang = LoadSettings().Language;
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
 
             // Update tray menu renderer and form BackColor based on theme
-            bool isDark = DetermineIfDark(newSettings.theme);
+            bool isDark = DetermineIfDark(newSettings.Theme);
             contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
             BackColor = isDark
                 ? System.Drawing.Color.FromArgb(26, 27, 46)
                 : System.Drawing.Color.FromArgb(240, 242, 245);
 
-            if (newSettings.startWithWindows)
-                startWithWindows.AddStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+            if (newSettings.StartWithWindows)
+                StartWithWindows.AddStartup(language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
             else
-                startWithWindows.DeleteStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.DeleteStartup(language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
 
-            if (newSettings.isCountdownNotifierEnabled)
+            if (newSettings.IsCountdownNotifierEnabled)
             {
-                notifySystem.PrewarmCountdownNotifier();
+                NotifySystem.PrewarmCountdownNotifier();
             }
 
-            if (currentLang != newSettings.language)
+            if (currentLang != newSettings.Language)
             {
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_success,
-                    message = language.messageContent_settingSavedWithLangChanged,
+                    title = language.MessageTitleSuccess,
+                    message = language.MessageContentSettingSavedWithLangChanged,
                     type = "info",
                     duration = 4000
                 });
@@ -708,8 +708,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_success,
-                    message = language.messageContent_settingsSaved,
+                    title = language.MessageTitleSuccess,
+                    message = language.MessageContentSettingsSaved,
                     type = "success",
                     duration = 2000
                 });
@@ -726,13 +726,13 @@ namespace WindowsShutdownHelper
             string logPath = AppContext.BaseDirectory + "\\logs.json";
             if (File.Exists(logPath))
             {
-                var rawLogs = JsonSerializer.Deserialize<List<logSystem>>(File.ReadAllText(logPath));
-                var logs = rawLogs.OrderByDescending(a => a.actionExecutedDate).Take(250)
+                var rawLogs = JsonSerializer.Deserialize<List<LogSystem>>(File.ReadAllText(logPath));
+                var logs = rawLogs.OrderByDescending(a => a.ActionExecutedDate).Take(250)
                     .Select(l => new
                     {
-                        actionExecutedDate = l.actionExecutedDate,
-                        actionType = TranslateLogAction(l.actionType),
-                        actionTypeRaw = l.actionType
+                        actionExecutedDate = l.ActionExecutedDate,
+                        actionType = TranslateLogAction(l.ActionType),
+                        actionTypeRaw = l.ActionType
                     }).ToList();
                 PostMessage("logsLoaded", logs);
             }
@@ -744,16 +744,16 @@ namespace WindowsShutdownHelper
 
         private string TranslateLogAction(string raw)
         {
-            if (raw == config.actionTypes.lockComputer) return language.logViewerForm_lockComputer;
-            if (raw == config.actionTypes.lockComputerManually) return language.logViewerForm_lockComputerManually;
-            if (raw == config.actionTypes.unlockComputer) return language.logViewerForm_unlockComputer;
-            if (raw == config.actionTypes.shutdownComputer) return language.logViewerForm_shutdownComputer;
-            if (raw == config.actionTypes.restartComputer) return language.logViewerForm_restartComputer;
-            if (raw == config.actionTypes.logOffWindows) return language.logViewerForm_logOffWindows;
-            if (raw == config.actionTypes.sleepComputer) return language.logViewerForm_sleepComputer;
-            if (raw == config.actionTypes.turnOffMonitor) return language.logViewerForm_turnOffMonitor;
-            if (raw == config.actionTypes.appStarted) return language.logViewerForm_appStarted;
-            if (raw == config.actionTypes.appTerminated) return language.logViewerForm_appTerminated;
+            if (raw == config.ActionTypes.lockComputer) return language.LogViewerFormLockComputer;
+            if (raw == config.ActionTypes.lockComputerManually) return language.LogViewerFormLockComputerManually;
+            if (raw == config.ActionTypes.unlockComputer) return language.LogViewerFormUnlockComputer;
+            if (raw == config.ActionTypes.shutdownComputer) return language.LogViewerFormShutdownComputer;
+            if (raw == config.ActionTypes.restartComputer) return language.LogViewerFormRestartComputer;
+            if (raw == config.ActionTypes.logOffWindows) return language.LogViewerFormLogOffWindows;
+            if (raw == config.ActionTypes.sleepComputer) return language.LogViewerFormSleepComputer;
+            if (raw == config.ActionTypes.turnOffMonitor) return language.LogViewerFormTurnOffMonitor;
+            if (raw == config.ActionTypes.appStarted) return language.LogViewerFormAppStarted;
+            if (raw == config.ActionTypes.appTerminated) return language.LogViewerFormAppTerminated;
             return raw;
         }
 
@@ -764,8 +764,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.messageTitle_success,
-                message = language.messageContent_clearedLogs,
+                title = language.MessageTitleSuccess,
+                message = language.MessageContentClearedLogs,
                 type = "success",
                 duration = 2000
             });
@@ -774,11 +774,11 @@ namespace WindowsShutdownHelper
         private void HandleGetLanguageList()
         {
             var list = new List<object>();
-            list.Add(new { langCode = "auto", langName = (language.settingsForm_combobox_auto_lang ?? "Auto") });
+            list.Add(new { LangCode = "auto", langName = (language.SettingsFormComboboxAutoLang ?? "Auto") });
 
-            foreach (var entry in languageSelector.GetLanguageNames())
+            foreach (var entry in LanguageSelector.GetLanguageNames())
             {
-                list.Add(new { langCode = entry.langCode, langName = entry.LangName });
+                list.Add(new { LangCode = entry.LangCode, langName = entry.LangName });
             }
 
             PostMessage("languageList", list);
@@ -794,8 +794,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.messageTitle_success,
-                message = language.pause_paused ?? "Actions paused successfully",
+                title = language.MessageTitleSuccess,
+                message = language.PausePaused ?? "Actions paused successfully",
                 type = "info",
                 duration = 2000
             });
@@ -810,8 +810,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.messageTitle_success,
-                message = language.pause_resumed ?? "Actions resumed",
+                title = language.MessageTitleSuccess,
+                message = language.PauseResumed ?? "Actions resumed",
                 type = "success",
                 duration = 2000
             });
@@ -834,9 +834,9 @@ namespace WindowsShutdownHelper
 
         // =============== Action List Persistence ===============
 
-        public void writeJsonToActionList()
+        public void WriteJsonToActionList()
         {
-            jsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
                 actionList.ToList());
             RefreshActionsInUI();
         }
@@ -865,15 +865,15 @@ namespace WindowsShutdownHelper
             switch (pageName)
             {
                 case "main":
-                    return language.main_groupbox_newAction ?? "Actions";
+                    return language.MainGroupboxNewAction ?? "Actions";
                 case "settings":
-                    return language.settingsForm_Name ?? "Settings";
+                    return language.SettingsFormName ?? "Settings";
                 case "logs":
-                    return language.logViewerForm_Name ?? "Logs";
+                    return language.LogViewerFormName ?? "Logs";
                 case "about":
-                    return language.about_menuItem ?? "About";
+                    return language.AboutMenuItem ?? "About";
                 default:
-                    return language.main_FormName ?? "Windows Shutdown Helper";
+                    return language.MainFormName ?? "Windows Shutdown Helper";
             }
         }
 
@@ -897,25 +897,25 @@ namespace WindowsShutdownHelper
 
         // =============== Timer & Action Execution ===============
 
-        private void doAction(ActionModel action, uint idleTimeMin)
+        private void DoAction(ActionModel action, uint idleTimeMin)
         {
             if (action == null) return;
 
-            if (action.triggerType == config.triggerTypes.systemIdle)
+            if (action.TriggerType == config.TriggerTypes.systemIdle)
             {
                 if (!TryGetSystemIdleSeconds(action, out uint actionValueSeconds)) return;
                 if (idleTimeMin == actionValueSeconds)
                 {
-                    Actions.doActionByTypes(action);
+                    Actions.DoActionByTypes(action);
                 }
                 return;
             }
 
-            if (action.triggerType == config.triggerTypes.certainTime && action.value == DateTime.Now.ToString("HH:mm:ss"))
+            if (action.TriggerType == config.TriggerTypes.certainTime && action.Value == DateTime.Now.ToString("HH:mm:ss"))
             {
                 if (isSkippedCertainTimeAction == false)
                 {
-                    Actions.doActionByTypes(action);
+                    Actions.DoActionByTypes(action);
                 }
                 else
                 {
@@ -923,23 +923,23 @@ namespace WindowsShutdownHelper
                 }
             }
 
-            if (action.triggerType == config.triggerTypes.fromNow && action.value == DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"))
+            if (action.TriggerType == config.TriggerTypes.fromNow && action.Value == DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"))
             {
-                Actions.doActionByTypes(action);
+                Actions.DoActionByTypes(action);
                 actionList.Remove(action);
-                writeJsonToActionList();
+                WriteJsonToActionList();
             }
         }
 
         private static bool TryGetSystemIdleSeconds(ActionModel action, out uint seconds)
         {
             seconds = 0;
-            if (action == null || string.IsNullOrWhiteSpace(action.value))
+            if (action == null || string.IsNullOrWhiteSpace(action.Value))
             {
                 return false;
             }
 
-            if (!uint.TryParse(action.value, out uint parsed))
+            if (!uint.TryParse(action.Value, out uint parsed))
             {
                 return false;
             }
@@ -949,7 +949,7 @@ namespace WindowsShutdownHelper
                 return false;
             }
 
-            if (string.IsNullOrEmpty(action.valueUnit))
+            if (string.IsNullOrEmpty(action.ValueUnit))
             {
                 if (parsed > uint.MaxValue / 60)
                 {
@@ -966,10 +966,10 @@ namespace WindowsShutdownHelper
             return true;
         }
 
-        private void timerTick(object sender, EventArgs e)
+        private void TimerTick(object sender, EventArgs e)
         {
             // Update time in UI
-            string timeText = (language.main_statusBar_currentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
+            string timeText = (language.MainStatusBarCurrentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
             PostMessage("updateTime", timeText);
 
             // Check pause expiration
@@ -980,8 +980,8 @@ namespace WindowsShutdownHelper
                 SendPauseStatus();
                 PostMessage("showToast", new
                 {
-                    title = language.messageTitle_info ?? "Info",
-                    message = language.pause_resumed ?? "Actions resumed",
+                    title = language.MessageTitleInfo ?? "Info",
+                    message = language.PauseResumed ?? "Actions resumed",
                     type = "info",
                     duration = 2000
                 });
@@ -994,40 +994,40 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            uint idleTimeMin = systemIdleDetector.GetLastInputTime();
+            uint idleTimeMin = SystemIdleDetector.GetLastInputTime();
 
             if (idleTimeMin == 0)
             {
-                notifySystem.ResetIdleNotifications();
+                NotifySystem.ResetIdleNotifications();
                 timer.Stop();
                 timer.Start();
             }
 
             if (isDeletedFromNotifier)
             {
-                writeJsonToActionList();
+                WriteJsonToActionList();
                 isDeletedFromNotifier = false;
             }
 
             foreach (ActionModel action in actionList.ToList())
             {
-                doAction(action, idleTimeMin);
-                notifySystem.showNotification(action, idleTimeMin);
+                DoAction(action, idleTimeMin);
+                NotifySystem.ShowNotification(action, idleTimeMin);
             }
         }
 
         // =============== System Tray & Window Events ===============
 
-        public void showMain()
+        public void ShowMain()
         {
             Show();
             Focus();
             ShowInTaskbar = true;
         }
 
-        private void notifyIcon_main_MouseDoubleClick(object sender, MouseEventArgs e)
+        private void NotifyIconMain_MouseDoubleClick(object sender, MouseEventArgs e)
         {
-            showMain();
+            ShowMain();
         }
 
         private void mainForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -1035,7 +1035,7 @@ namespace WindowsShutdownHelper
             StopSubWindowPrewarm();
 
             settings = LoadSettings();
-            if (settings.runInTaskbarWhenClosed)
+            if (settings.RunInTaskbarWhenClosed)
             {
                 e.Cancel = true;
                 Hide();
@@ -1050,7 +1050,7 @@ namespace WindowsShutdownHelper
 
         private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Logger.doLog(config.actionTypes.appTerminated);
+            Logger.DoLog(config.ActionTypes.appTerminated);
         }
 
         private void exitTheProgramToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1058,13 +1058,13 @@ namespace WindowsShutdownHelper
             isApplicationExiting = true;
             StopSubWindowPrewarm();
             CloseAllSubWindows();
-            Logger.doLog(config.actionTypes.appTerminated);
+            Logger.DoLog(config.ActionTypes.appTerminated);
             Application.ExitThread();
         }
 
         private void addNewActionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            showMain();
+            ShowMain();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)

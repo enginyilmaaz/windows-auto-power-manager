@@ -2,9 +2,9 @@
 
 namespace WindowsShutdownHelper.functions
 {
-    public static class detectScreen
+    public static class DetectScreen
     {
-        public static bool isLocked;
+        public static bool IsLocked;
 
         public static void main()
         {
@@ -15,29 +15,29 @@ namespace WindowsShutdownHelper.functions
         {
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
-                if (Actions.Lock.isLockedManually())
+                if (Actions.Lock.IsLockedManually())
                 {
-                    Logger.doLog(config.actionTypes.lockComputerManually); 
-                    isLocked = true;
+                    Logger.DoLog(config.ActionTypes.lockComputerManually); 
+                    IsLocked = true;
                 }
 
              
             }
             else if (e.Reason == SessionSwitchReason.SessionUnlock)
             {
-                Logger.doLog(config.actionTypes.unlockComputer);
-                isLocked = false;
+                Logger.DoLog(config.ActionTypes.unlockComputer);
+                IsLocked = false;
             }
         }
 
 
-        public static bool isLockedWorkstation()
+        public static bool IsLockedWorkstation()
         {
-            return isLocked;
+            return IsLocked;
         }
 
 
-        public static void manuelLockingActionLogger()
+        public static void ManuelLockingActionLogger()
         {
             main();
         }

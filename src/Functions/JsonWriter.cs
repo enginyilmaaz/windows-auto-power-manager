@@ -3,7 +3,7 @@ using System.Text.Json;
 
 namespace WindowsShutdownHelper.functions
 {
-    public class jsonWriter
+    public class JsonWriter
     {
         public static void WriteJson(string fileNameWithExtension, bool writeIndented, object willWriteListOrClass)
         {

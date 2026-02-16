@@ -8,31 +8,31 @@ window.LogsPage = {
 
         return '' +
         '<div class="card">' +
-            '<div class="card-title">' + (L('logViewerForm_Name') || 'Logs') + '</div>' +
+            '<div class="card-title">' + (L('LogViewerFormName') || 'Logs') + '</div>' +
             '<div class="logs-toolbar">' +
-                '<span class="form-label">' + (L('logViewerForm_label_filtering') || 'Filter') + '</span>' +
+                '<span class="form-label">' + (L('LogViewerFormLabelFiltering') || 'Filter') + '</span>' +
                 '<select id="log-filter" class="form-select">' +
-                    '<option value="all">' + (L('logViewerForm_filter_choose') || 'All') + '</option>' +
-                    '<option value="locks">' + (L('logViewerForm_filter_locks') || 'Locks') + '</option>' +
-                    '<option value="unlocks">' + (L('logViewerForm_filter_unlocks') || 'Unlocks') + '</option>' +
-                    '<option value="turnOffsMonitor">' + (L('logViewerForm_filter_turnOffsMonitor') || 'Monitor Off') + '</option>' +
-                    '<option value="sleeps">' + (L('logViewerForm_filter_sleeps') || 'Sleeps') + '</option>' +
-                    '<option value="logOffs">' + (L('logViewerForm_filter_logOffs') || 'Log Offs') + '</option>' +
-                    '<option value="shutdowns">' + (L('logViewerForm_filter_shutdowns') || 'Shutdowns') + '</option>' +
-                    '<option value="restarts">' + (L('logViewerForm_filter_restarts') || 'Restarts') + '</option>' +
-                    '<option value="appStarts">' + (L('logViewerForm_filter_appStarts') || 'App Starts') + '</option>' +
-                    '<option value="appTerminates">' + (L('logViewerForm_filter_appTerminates') || 'App Terminates') + '</option>' +
+                    '<option value="all">' + (L('LogViewerFormFilterChoose') || 'All') + '</option>' +
+                    '<option value="locks">' + (L('LogViewerFormFilterLocks') || 'Locks') + '</option>' +
+                    '<option value="unlocks">' + (L('LogViewerFormFilterUnlocks') || 'Unlocks') + '</option>' +
+                    '<option value="turnOffsMonitor">' + (L('LogViewerFormFilterTurnOffsMonitor') || 'Monitor Off') + '</option>' +
+                    '<option value="sleeps">' + (L('LogViewerFormFilterSleeps') || 'Sleeps') + '</option>' +
+                    '<option value="logOffs">' + (L('LogViewerFormFilterLogOffs') || 'Log Offs') + '</option>' +
+                    '<option value="shutdowns">' + (L('LogViewerFormFilterShutdowns') || 'Shutdowns') + '</option>' +
+                    '<option value="restarts">' + (L('LogViewerFormFilterRestarts') || 'Restarts') + '</option>' +
+                    '<option value="appStarts">' + (L('LogViewerFormFilterAppStarts') || 'App Starts') + '</option>' +
+                    '<option value="appTerminates">' + (L('LogViewerFormFilterAppTerminates') || 'App Terminates') + '</option>' +
                 '</select>' +
-                '<span class="form-label">' + (L('logViewerForm_label_sorting') || 'Sort') + '</span>' +
+                '<span class="form-label">' + (L('LogViewerFormLabelSorting') || 'Sort') + '</span>' +
                 '<select id="log-sort" class="form-select">' +
-                    '<option value="newestToOld">' + (L('logViewerForm_sorting_newestToOld') || 'Newest first') + '</option>' +
-                    '<option value="oldestToNewest">' + (L('logViewerForm_sorting_OldestToNewest') || 'Oldest first') + '</option>' +
+                    '<option value="newestToOld">' + (L('LogViewerFormSortingNewestToOld') || 'Newest first') + '</option>' +
+                    '<option value="oldestToNewest">' + (L('LogViewerFormSortingOldestToNewest') || 'Oldest first') + '</option>' +
                 '</select>' +
             '</div>' +
             '<div id="log-table-wrap"></div>' +
             '<div class="logs-actions">' +
-                '<button class="btn btn-danger" id="log-clear">' + (L('logViewerForm_button_clearLogs') || 'Clear Logs') + '</button>' +
-                '<button class="btn btn-secondary" id="log-back">' + (L('logViewerForm_button_cancel') || 'Back') + '</button>' +
+                '<button class="btn btn-danger" id="log-clear">' + (L('LogViewerFormButtonClearLogs') || 'Clear Logs') + '</button>' +
+                '<button class="btn btn-secondary" id="log-back">' + (L('LogViewerFormButtonCancel') || 'Back') + '</button>' +
             '</div>' +
         '</div>';
     },
@@ -115,14 +115,14 @@ window.LogsPage = {
         var L = Bridge.lang.bind(Bridge);
 
         if (!this._logs || this._logs.length === 0) {
-            wrap.innerHTML = '<div class="table-empty">' + (L('messageContent_noLog') || 'No logs found') + '</div>';
+            wrap.innerHTML = '<div class="table-empty">' + (L('MessageContentNoLog') || 'No logs found') + '</div>';
             return;
         }
 
         var html = '<table class="data-table"><thead><tr>' +
             '<th style="width:50px">#</th>' +
-            '<th>' + (L('logViewerForm_actionExecutionTime') || 'Date') + '</th>' +
-            '<th>' + (L('logViewerForm_actionType') || 'Action') + '</th>' +
+            '<th>' + (L('LogViewerFormActionExecutionTime') || 'Date') + '</th>' +
+            '<th>' + (L('LogViewerFormActionType') || 'Action') + '</th>' +
             '</tr></thead><tbody>';
 
         for (var i = 0; i < this._logs.length; i++) {

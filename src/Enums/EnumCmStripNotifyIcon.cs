@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_cmStrip_notifyIcon
+    public enum EnumCmStripNotifyIcon
     {
         AddNewAction = 0,
         Settings = 1,

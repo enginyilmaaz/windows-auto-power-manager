@@ -7,7 +7,7 @@ namespace WindowsShutdownHelper.functions
 {
     public class Logger
     {
-        public static void doLog(string actionType, Settings cachedSettings = null)
+        public static void DoLog(string actionType, Settings cachedSettings = null)
         {
             Settings settings = cachedSettings;
 
@@ -21,29 +21,29 @@ namespace WindowsShutdownHelper.functions
                 else
                 {
                     settings = new Settings();
-                    settings.logsEnabled = true;
+                    settings.LogsEnabled = true;
                 }
             }
 
-            if (settings.logsEnabled)
+            if (settings.LogsEnabled)
             {
-                List<logSystem> logLists = new List<logSystem>();
+                List<LogSystem> logLists = new List<LogSystem>();
 
                 if (File.Exists(AppContext.BaseDirectory + "\\logs.json"))
                 {
-                    logLists = JsonSerializer.Deserialize<List<logSystem>>(
+                    logLists = JsonSerializer.Deserialize<List<LogSystem>>(
                         File.ReadAllText(AppContext.BaseDirectory + "\\logs.json"));
                 }
 
-                logSystem newLog = new logSystem
+                LogSystem newLog = new LogSystem
                 {
-                    actionType = actionType,
-                    actionExecutedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")
+                    ActionType = actionType,
+                    ActionExecutedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")
                 };
 
                 logLists.Add(newLog);
 
-                jsonWriter.WriteJson(AppContext.BaseDirectory + "\\logs.json", true, logLists);
+                JsonWriter.WriteJson(AppContext.BaseDirectory + "\\logs.json", true, logLists);
             }
         }
     }

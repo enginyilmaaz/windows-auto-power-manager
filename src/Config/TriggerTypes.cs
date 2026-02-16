@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper.config
 {
-    public class triggerTypes
+    public class TriggerTypes
     {
         public static readonly string certainTime = "certainTime";
         public static readonly string fromNow = "fromNow ";

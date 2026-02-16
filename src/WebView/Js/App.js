@@ -5,10 +5,10 @@ const App = {
     _pageLoadPromises: {},
     _navigationToken: 0,
     _pageConfig: {
-        main: { scriptPath: 'js/pages/main.js', globalName: 'MainPage' },
-        settings: { scriptPath: 'js/pages/settings.js', globalName: 'SettingsPage' },
-        logs: { scriptPath: 'js/pages/logs.js', globalName: 'LogsPage' },
-        about: { scriptPath: 'js/pages/about.js', globalName: 'AboutPage' }
+        main: { scriptPath: 'Js/Pages/Main.js', globalName: 'MainPage' },
+        settings: { scriptPath: 'Js/Pages/Settings.js', globalName: 'SettingsPage' },
+        logs: { scriptPath: 'Js/Pages/Logs.js', globalName: 'LogsPage' },
+        about: { scriptPath: 'Js/Pages/About.js', globalName: 'AboutPage' }
     },
 
     init() {
@@ -246,7 +246,7 @@ const App = {
 
     _getLoadingText() {
         var L = Bridge.lang.bind(Bridge);
-        return L('common_loading') || 'Yükleniyor...';
+        return L('CommonLoading') || 'Yükleniyor...';
     },
 
     _showPageLoading() {
@@ -260,7 +260,7 @@ const App = {
         if (!container) return;
 
         var L = Bridge.lang.bind(Bridge);
-        container.innerHTML = '<div class="table-empty">' + (L('messageTitle_error') || 'Error') + '</div>';
+        container.innerHTML = '<div class="table-empty">' + (L('MessageTitleError') || 'Error') + '</div>';
     },
 
     _applyLanguage() {
@@ -268,80 +268,80 @@ const App = {
 
         // Menu items
         var miMain = document.getElementById('mi-main-text');
-        if (miMain) miMain.textContent = L('main_groupbox_newAction') || 'Actions';
+        if (miMain) miMain.textContent = L('MainGroupboxNewAction') || 'Actions';
 
         var miSettings = document.getElementById('mi-settings-text');
-        if (miSettings) miSettings.textContent = L('settingsForm_Name') || 'Settings';
+        if (miSettings) miSettings.textContent = L('SettingsFormName') || 'Settings';
 
         var miLogs = document.getElementById('mi-logs-text');
-        if (miLogs) miLogs.textContent = L('logViewerForm_Name') || 'Logs';
+        if (miLogs) miLogs.textContent = L('LogViewerFormName') || 'Logs';
 
         var miExit = document.getElementById('mi-exit-text');
-        if (miExit) miExit.textContent = L('contextMenuStrip_notifyIcon_exitProgram') || 'Exit';
+        if (miExit) miExit.textContent = L('ContextMenuStripNotifyIconExitProgram') || 'Exit';
 
         var miAbout = document.getElementById('mi-about-text');
-        if (miAbout) miAbout.textContent = L('about_menuItem') || 'About';
+        if (miAbout) miAbout.textContent = L('AboutMenuItem') || 'About';
 
         // Toolbar
         var addBtn = document.getElementById('btn-toolbar-add');
-        if (addBtn) addBtn.title = L('toolbar_addAction') || 'New Action';
+        if (addBtn) addBtn.title = L('ToolbarAddAction') || 'New Action';
 
         var pauseBtn = document.getElementById('btn-toolbar-pause');
-        if (pauseBtn) pauseBtn.title = L('toolbar_pause') || 'Pause';
+        if (pauseBtn) pauseBtn.title = L('ToolbarPause') || 'Pause';
 
         var resumeBtn = document.getElementById('btn-toolbar-resume');
-        if (resumeBtn) resumeBtn.title = L('toolbar_resume') || 'Resume';
+        if (resumeBtn) resumeBtn.title = L('ToolbarResume') || 'Resume';
 
         var searchInput = document.getElementById('toolbar-search-input');
-        if (searchInput) searchInput.placeholder = L('toolbar_search') || 'Search...';
+        if (searchInput) searchInput.placeholder = L('ToolbarSearch') || 'Search...';
 
         // Tabs
         var tabAll = document.getElementById('tab-all');
-        if (tabAll) tabAll.textContent = L('tab_all') || 'All';
+        if (tabAll) tabAll.textContent = L('TabAll') || 'All';
 
         var tabShutdown = document.getElementById('tab-shutdown');
-        if (tabShutdown) tabShutdown.textContent = L('tab_shutdown') || 'Shutdown';
+        if (tabShutdown) tabShutdown.textContent = L('TabShutdown') || 'Shutdown';
 
         var tabRestart = document.getElementById('tab-restart');
-        if (tabRestart) tabRestart.textContent = L('tab_restart') || 'Restart';
+        if (tabRestart) tabRestart.textContent = L('TabRestart') || 'Restart';
 
         var tabSleep = document.getElementById('tab-sleep');
-        if (tabSleep) tabSleep.textContent = L('tab_sleep') || 'Sleep';
+        if (tabSleep) tabSleep.textContent = L('TabSleep') || 'Sleep';
 
         var tabLock = document.getElementById('tab-lock');
-        if (tabLock) tabLock.textContent = L('tab_lock') || 'Lock';
+        if (tabLock) tabLock.textContent = L('TabLock') || 'Lock';
 
         var tabMonitor = document.getElementById('tab-monitor');
-        if (tabMonitor) tabMonitor.textContent = L('tab_monitor') || 'Monitor';
+        if (tabMonitor) tabMonitor.textContent = L('TabMonitor') || 'Monitor';
 
         var tabLogoff = document.getElementById('tab-logoff');
-        if (tabLogoff) tabLogoff.textContent = L('tab_logoff') || 'Log Off';
+        if (tabLogoff) tabLogoff.textContent = L('TabLogoff') || 'Log Off';
 
         // Pause dropdown
         var p30 = document.getElementById('pause-opt-30');
-        if (p30) p30.textContent = L('pause_30min') || '30 minutes';
+        if (p30) p30.textContent = L('Pause30min') || '30 minutes';
 
         var p60 = document.getElementById('pause-opt-60');
-        if (p60) p60.textContent = L('pause_1hour') || '1 hour';
+        if (p60) p60.textContent = L('Pause1hour') || '1 hour';
 
         var p120 = document.getElementById('pause-opt-120');
-        if (p120) p120.textContent = L('pause_2hours') || '2 hours';
+        if (p120) p120.textContent = L('Pause2hours') || '2 hours';
 
         var p240 = document.getElementById('pause-opt-240');
-        if (p240) p240.textContent = L('pause_4hours') || '4 hours';
+        if (p240) p240.textContent = L('Pause4hours') || '4 hours';
 
         var pEod = document.getElementById('pause-opt-eod');
-        if (pEod) pEod.textContent = L('pause_untilEndOfDay') || 'Until end of day';
+        if (pEod) pEod.textContent = L('PauseUntilEndOfDay') || 'Until end of day';
 
         var pLabel = document.getElementById('pause-custom-label');
-        if (pLabel) pLabel.textContent = L('pause_customTitle') || 'Custom duration (min)';
+        if (pLabel) pLabel.textContent = L('PauseCustomTitle') || 'Custom duration (min)';
 
         var pInput = document.getElementById('pause-custom-input');
-        if (pInput) pInput.placeholder = L('pause_customPlaceholder') || 'Enter minutes...';
+        if (pInput) pInput.placeholder = L('PauseCustomPlaceholder') || 'Enter minutes...';
 
         // Pause banner
         var bannerText = document.getElementById('pause-banner-text');
-        if (bannerText) bannerText.textContent = L('pause_banner') || 'Actions paused';
+        if (bannerText) bannerText.textContent = L('PauseBanner') || 'Actions paused';
     },
 
     _closePauseDropdown() {
@@ -364,7 +364,7 @@ const App = {
             if (h > 0) timeStr += h + 'h ';
             if (m > 0 || h > 0) timeStr += m + 'm ';
             timeStr += s + 's';
-            bannerTime.textContent = timeStr + ' ' + (L('pause_remaining') || 'remaining');
+            bannerTime.textContent = timeStr + ' ' + (L('PauseRemaining') || 'remaining');
         } else {
             banner.classList.add('hidden');
         }
@@ -377,7 +377,7 @@ const App = {
 
             var L = Bridge.lang.bind(Bridge);
             var modalTitle = document.getElementById('modal-title');
-            modalTitle.textContent = L('modal_title_newAction') || 'New Action';
+            modalTitle.textContent = L('ModalTitleNewAction') || 'New Action';
 
             var modalBody = document.getElementById('modal-body');
             modalBody.innerHTML = mainPage.renderForm();

@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_combobox_triggerType
+    public enum EnumComboboxTriggerType
     {
         SystemIdleTime = 1,
         FromNow = 2,

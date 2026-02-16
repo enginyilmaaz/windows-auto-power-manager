@@ -88,25 +88,31 @@ WindowsShutdownHelper/
 │   │   ├── ModernMenuRenderer.cs     # Custom tray menu renderer
 │   │   └── WebViewEnvironmentProvider.cs # WebView2 environment singleton
 │   ├── Enums/                        # UI-related enumerations
-│   └── wwwroot/                      # Frontend assets
-│       ├── index.html                # Main SPA page
-│       ├── subwindow.html            # Sub-window SPA page
-│       ├── countdown.html            # Countdown notifier page
-│       ├── css/
-│       │   ├── style.css             # Main stylesheet
-│       │   └── countdown.css         # Countdown popup styles
-│       └── js/
-│           ├── app.js                # SPA router
-│           ├── bridge.js             # C# ↔ JS bridge
-│           ├── subwindow.js          # Sub-window router
-│           ├── countdown.js          # Countdown UI logic
-│           ├── components/
-│           │   └── toast.js          # Toast notification component
-│           └── pages/
-│               ├── main.js           # Action list page
-│               ├── settings.js       # Settings page
-│               ├── logs.js           # Log viewer page
-│               └── about.js          # About page
+│   └── WebView/                      # Frontend assets
+│       ├── Index.html                # Main SPA page
+│       ├── SubWindow.html            # Sub-window SPA page
+│       ├── Countdown.html            # Countdown notifier page
+│       ├── Css/
+│       │   ├── Style.css             # Main stylesheet
+│       │   └── Countdown.css         # Countdown popup styles
+│       ├── Fonts/
+│       │   └── MaterialIconsRound.otf
+│       └── Js/
+│           ├── App.js                # SPA router
+│           ├── Bridge.js             # C# ↔ JS bridge
+│           ├── SubWindow.js          # Sub-window router
+│           ├── Countdown.js          # Countdown UI logic
+│           ├── Components/
+│           │   └── Toast.js          # Toast notification component
+│           └── Pages/
+│               ├── Main.js           # Action list page
+│               ├── Settings.js       # Settings page
+│               ├── Logs.js           # Log viewer page
+│               └── About.js          # About page
+├── tools/
+│   ├── dotnet/                       # Local .NET 8.0 SDK
+│   ├── create-build.ps1              # PowerShell build script
+│   └── create-build.sh               # Bash build script
 ├── installer.iss                     # Inno Setup installer script
 ├── Windows Shutdown Helper.csproj    # .NET project file
 ├── Windows Shutdown Helper.sln       # Solution file
@@ -118,11 +124,19 @@ WindowsShutdownHelper/
 ## Building
 
 ### Prerequisites
-- .NET 8.0 SDK
+- .NET 8.0 SDK (a local copy is included in `tools/dotnet/`)
 - Windows 10 or later
 - WebView2 Runtime (included in modern Windows)
 
 ### Build
+
+Using the local .NET SDK from `tools/dotnet/`:
+```bash
+tools\dotnet\dotnet restore "Windows Shutdown Helper.sln"
+tools\dotnet\dotnet build "Windows Shutdown Helper.sln" -c Release
+```
+
+Or if .NET 8.0 SDK is installed globally:
 ```bash
 dotnet restore "Windows Shutdown Helper.sln"
 dotnet build "Windows Shutdown Helper.sln" -c Release

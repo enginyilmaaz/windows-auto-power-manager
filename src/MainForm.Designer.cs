@@ -1,6 +1,6 @@
 namespace WindowsShutdownHelper
 {
-    partial class mainForm
+    partial class MainForm
     {
         private System.ComponentModel.IContainer components = null;
 
@@ -18,10 +18,10 @@ namespace WindowsShutdownHelper
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 
             this.webViewHost = new System.Windows.Forms.Panel();
-            this.notifyIcon_main = new System.Windows.Forms.NotifyIcon(this.components);
+            this.NotifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip_notifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addNewActionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -88,15 +88,15 @@ namespace WindowsShutdownHelper
             this.exitTheProgramToolStripMenuItem.Text = "Exit the program";
             this.exitTheProgramToolStripMenuItem.Click += new System.EventHandler(this.exitTheProgramToolStripMenuItem_Click);
 
-            // notifyIcon_main
-            this.notifyIcon_main.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.notifyIcon_main.ContextMenuStrip = this.contextMenuStrip_notifyIcon;
-            this.notifyIcon_main.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon_main.Icon")));
-            this.notifyIcon_main.Text = "notifyIcon1";
-            this.notifyIcon_main.Visible = true;
-            this.notifyIcon_main.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon_main_MouseDoubleClick);
+            // NotifyIconMain
+            this.NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
+            this.NotifyIconMain.ContextMenuStrip = this.contextMenuStrip_notifyIcon;
+            this.NotifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIconMain.Icon")));
+            this.NotifyIconMain.Text = "notifyIcon1";
+            this.NotifyIconMain.Visible = true;
+            this.NotifyIconMain.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIconMain_MouseDoubleClick);
 
-            // mainForm
+            // MainForm
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(580, 520);
@@ -104,7 +104,7 @@ namespace WindowsShutdownHelper
             this.Controls.Add(this.webViewHost);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
-            this.Name = "mainForm";
+            this.Name = "MainForm";
             this.BackColor = System.Drawing.Color.FromArgb(26, 27, 46);
             this.Text = "Windows Shutdown Helper";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
@@ -118,7 +118,7 @@ namespace WindowsShutdownHelper
         #endregion
 
         private System.Windows.Forms.Panel webViewHost;
-        private System.Windows.Forms.NotifyIcon notifyIcon_main;
+        private System.Windows.Forms.NotifyIcon NotifyIconMain;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_notifyIcon;
         private System.Windows.Forms.ToolStripMenuItem addNewActionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;

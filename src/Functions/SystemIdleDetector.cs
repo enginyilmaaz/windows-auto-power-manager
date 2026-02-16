@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace WindowsShutdownHelper.functions
 {
-    internal class systemIdleDetector
+    internal class SystemIdleDetector
     {
         [DllImport("user32.dll")]
         private static extern bool GetLastInputInfo(ref LASTINPUTINFO plii);

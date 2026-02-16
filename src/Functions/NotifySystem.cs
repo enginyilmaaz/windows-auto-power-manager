@@ -8,12 +8,12 @@ using System.Windows.Forms;
 
 namespace WindowsShutdownHelper.functions
 {
-    internal class notifySystem
+    internal class NotifySystem
     {
-        public static Language language = languageSelector.languageFile();
-        public static string actionTypeName;
+        public static Language language = LanguageSelector.LanguageFile();
+        public static string ActionTypeName;
         private static HashSet<string> _notifiedIdleActions = new HashSet<string>();
-        private static actionCountdownNotifier _sharedCountdownNotifier;
+        private static ActionCountdownNotifier _sharedCountdownNotifier;
 
         public static void ResetIdleNotifications()
         {
@@ -30,13 +30,13 @@ namespace WindowsShutdownHelper.functions
         {
             if (_sharedCountdownNotifier == null || _sharedCountdownNotifier.IsDisposed)
             {
-                _sharedCountdownNotifier = new actionCountdownNotifier();
+                _sharedCountdownNotifier = new ActionCountdownNotifier();
             }
         }
 
         private static bool IsCountdownNotifierVisible()
         {
-            return Application.OpenForms.OfType<actionCountdownNotifier>()
+            return Application.OpenForms.OfType<ActionCountdownNotifier>()
                 .Any(form => form.Visible && form.Opacity > 0);
         }
 
@@ -52,17 +52,17 @@ namespace WindowsShutdownHelper.functions
 
             EnsureCountdownNotifier();
             _sharedCountdownNotifier.ConfigureAndShow(
-                language.messageTitle_info,
-                language.messageContent_CountdownNotify,
-                language.messageContent_CountdownNotify_2,
-                actionTypeName,
+                language.MessageTitleInfo,
+                language.MessageContentCountdownNotify,
+                language.MessageContentCountdownNotify2,
+                ActionTypeName,
                 infoText,
                 countdownSeconds,
                 action);
             return true;
         }
 
-        public static void showNotification(ActionModel action, uint idleTimeMin)
+        public static void ShowNotification(ActionModel action, uint idleTimeMin)
         {
             Settings settings = new Settings();
 
@@ -73,24 +73,24 @@ namespace WindowsShutdownHelper.functions
             }
             else
             {
-                settings.isCountdownNotifierEnabled = false;
+                settings.IsCountdownNotifierEnabled = false;
             }
 
-            if (settings.isCountdownNotifierEnabled)
+            if (settings.IsCountdownNotifierEnabled)
             {
-                actionTypeLocalization(action);
+                ActionTypeLocalization(action);
 
-                if (action.triggerType == config.triggerTypes.systemIdle)
+                if (action.TriggerType == config.TriggerTypes.systemIdle)
                 {
                     if (!TryGetSystemIdleSeconds(action, out int actionValue)) return;
-                    string actionKey = action.createdDate + "_" + action.actionType;
+                    string actionKey = action.CreatedDate + "_" + action.ActionType;
 
-                    if (idleTimeMin >= actionValue - settings.countdownNotifierSeconds
+                    if (idleTimeMin >= actionValue - settings.CountdownNotifierSeconds
                         && !_notifiedIdleActions.Contains(actionKey))
                     {
                         bool shown = ShowCountdownNotification(
-                            language.messageContent_cancelForSystemIdle,
-                            settings.countdownNotifierSeconds,
+                            language.MessageContentCancelForSystemIdle,
+                            settings.CountdownNotifierSeconds,
                             action);
                         if (shown)
                         {
@@ -99,10 +99,10 @@ namespace WindowsShutdownHelper.functions
                     }
                 }
 
-                else if (action.triggerType == config.triggerTypes.fromNow)
+                else if (action.TriggerType == config.TriggerTypes.fromNow)
                 {
                     if (!DateTime.TryParseExact(
-                        action.value,
+                        action.Value,
                         "dd.MM.yyyy HH:mm:ss",
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
@@ -111,24 +111,24 @@ namespace WindowsShutdownHelper.functions
                         return;
                     }
 
-                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.countdownNotifierSeconds);
+                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.CountdownNotifierSeconds);
                     string nowDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss");
                     string executionDate = actionExecuteDate.ToString("dd.MM.yyyy HH:mm:ss");
 
                     if (executionDate == nowDate)
                     {
                         ShowCountdownNotification(
-                            language.messageContent_youCanThat,
-                            settings.countdownNotifierSeconds,
+                            language.MessageContentYouCanThat,
+                            settings.CountdownNotifierSeconds,
                             action);
                     }
                 }
 
 
-                else if (action.triggerType == config.triggerTypes.certainTime)
+                else if (action.TriggerType == config.TriggerTypes.certainTime)
                 {
                     if (!DateTime.TryParseExact(
-                        action.value,
+                        action.Value,
                         "HH:mm:ss",
                         CultureInfo.InvariantCulture,
                         DateTimeStyles.None,
@@ -137,15 +137,15 @@ namespace WindowsShutdownHelper.functions
                         return;
                     }
 
-                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.countdownNotifierSeconds);
+                    actionExecuteDate = actionExecuteDate.AddSeconds(-settings.CountdownNotifierSeconds);
                     string nowDate = DateTime.Now.ToString("HH:mm:ss");
                     string executionDate = actionExecuteDate.ToString("HH:mm:ss");
 
                     if (executionDate == nowDate)
                     {
                         ShowCountdownNotification(
-                            language.messageContent_youCanThat,
-                            settings.countdownNotifierSeconds,
+                            language.MessageContentYouCanThat,
+                            settings.CountdownNotifierSeconds,
                             action);
                     }
                 }
@@ -155,12 +155,12 @@ namespace WindowsShutdownHelper.functions
         private static bool TryGetSystemIdleSeconds(ActionModel action, out int seconds)
         {
             seconds = 0;
-            if (action == null || string.IsNullOrWhiteSpace(action.value))
+            if (action == null || string.IsNullOrWhiteSpace(action.Value))
             {
                 return false;
             }
 
-            if (!int.TryParse(action.value, out int parsed))
+            if (!int.TryParse(action.Value, out int parsed))
             {
                 return false;
             }
@@ -170,7 +170,7 @@ namespace WindowsShutdownHelper.functions
                 return false;
             }
 
-            if (string.IsNullOrEmpty(action.valueUnit))
+            if (string.IsNullOrEmpty(action.ValueUnit))
             {
                 if (parsed > int.MaxValue / 60)
                 {
@@ -188,31 +188,31 @@ namespace WindowsShutdownHelper.functions
         }
 
 
-        public static void actionTypeLocalization(ActionModel action)
+        public static void ActionTypeLocalization(ActionModel action)
         {
-            if (action.actionType == config.actionTypes.lockComputer)
+            if (action.ActionType == config.ActionTypes.lockComputer)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_lockComputer;
+                ActionTypeName = language.MainCboxActionTypeItemLockComputer;
             }
-            else if (action.actionType == config.actionTypes.shutdownComputer)
+            else if (action.ActionType == config.ActionTypes.shutdownComputer)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_shutdownComputer;
+                ActionTypeName = language.MainCboxActionTypeItemShutdownComputer;
             }
-            else if (action.actionType == config.actionTypes.restartComputer)
+            else if (action.ActionType == config.ActionTypes.restartComputer)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_restartComputer;
+                ActionTypeName = language.MainCboxActionTypeItemRestartComputer;
             }
-            else if (action.actionType == config.actionTypes.logOffWindows)
+            else if (action.ActionType == config.ActionTypes.logOffWindows)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_logOffWindows;
+                ActionTypeName = language.MainCboxActionTypeItemLogOffWindows;
             }
-            else if (action.actionType == config.actionTypes.sleepComputer)
+            else if (action.ActionType == config.ActionTypes.sleepComputer)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_sleepComputer;
+                ActionTypeName = language.MainCboxActionTypeItemSleepComputer;
             }
-            else if (action.actionType == config.actionTypes.turnOffMonitor)
+            else if (action.ActionType == config.ActionTypes.turnOffMonitor)
             {
-                actionTypeName = language.main_cbox_ActionType_Item_turnOffMonitor;
+                ActionTypeName = language.MainCboxActionTypeItemTurnOffMonitor;
             }
         }
     }

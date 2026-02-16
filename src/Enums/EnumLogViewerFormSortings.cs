@@ -1,6 +1,6 @@
 ﻿namespace WindowsShutdownHelper
 {
-    public enum enum_logViewerForm_Sortings
+    public enum EnumLogViewerFormSortings
     {
         Choose = 0,
         oldestToNewest = 1,
