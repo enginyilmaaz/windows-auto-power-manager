@@ -86,12 +86,12 @@ Name: "startupentry"; Description: "{cm:StartWithWindows}"; GroupDescription: "{
 
 [Files]
 #ifexist "bin\Release\net8.0-windows\win-x64\publish\Windows Shutdown Helper.exe"
-Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: Is64BitInstallMode
-Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: not Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
 #ifexist "bin\Release\net8.0-windows\win-x86\publish\Windows Shutdown Helper.exe"
-Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: Is64BitInstallMode
-Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: not Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
 Source: "bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bin\Release\net8.0-windows\WebView\*"; DestDir: "{app}\WebView"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -125,8 +125,12 @@ begin
   BaseDir := AddBackslash(RootDir);
   Result :=
     FileExists(BaseDir + 'Settings.json') or
+    FileExists(BaseDir + 'settings.json') or
     FileExists(BaseDir + 'ActionList.json') or
+    FileExists(BaseDir + 'actionList.json') or
+    FileExists(BaseDir + 'actionlist.json') or
     FileExists(BaseDir + 'Logs.json') or
+    FileExists(BaseDir + 'logs.json') or
     DirExists(BaseDir + 'lang');
 end;
 
@@ -136,8 +140,12 @@ var
 begin
   BaseDir := AddBackslash(RootDir);
   DeleteFile(BaseDir + 'Settings.json');
+  DeleteFile(BaseDir + 'settings.json');
   DeleteFile(BaseDir + 'ActionList.json');
+  DeleteFile(BaseDir + 'actionList.json');
+  DeleteFile(BaseDir + 'actionlist.json');
   DeleteFile(BaseDir + 'Logs.json');
+  DeleteFile(BaseDir + 'logs.json');
   DelTree(BaseDir + 'lang', True, True, True);
 end;
 
