@@ -9,20 +9,20 @@ using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
 using WindowsShutdownHelper.Enums;
-using WindowsShutdownHelper.functions;
+using WindowsShutdownHelper.Functions;
 
 namespace WindowsShutdownHelper
 {
     public partial class MainForm : Form
     {
-        public static Language language = LanguageSelector.LanguageFile();
-        public static List<ActionModel> actionList = new List<ActionModel>();
-        public static Settings settings = new Settings();
-        public static bool isDeletedFromNotifier;
-        public static bool isSkippedCertainTimeAction;
-        public static bool isApplicationExiting;
-        public static Timer timer = new Timer();
-        public static int runInTaskbarCounter;
+        public static Language Language = LanguageSelector.LanguageFile();
+        public static List<ActionModel> ActionList = new List<ActionModel>();
+        public static Settings Settings = new Settings();
+        public static bool IsDeletedFromNotifier;
+        public static bool IsSkippedCertainTimeAction;
+        public static bool IsApplicationExiting;
+        public static Timer Timer = new Timer();
+        public static int RunInTaskbarCounter;
 
         private bool _webViewReady;
         private bool _bootDataReady;
@@ -52,9 +52,9 @@ namespace WindowsShutdownHelper
 
             foreach (string arg in args)
             {
-                if (arg == "-runInTaskBar" && runInTaskbarCounter <= 0)
+                if (arg == "-runInTaskBar" && RunInTaskbarCounter <= 0)
                 {
-                    ++runInTaskbarCounter;
+                    ++RunInTaskbarCounter;
                     Hide();
                     ShowInTaskbar = false;
                 }
@@ -66,9 +66,9 @@ namespace WindowsShutdownHelper
         public void DeleteExpriedAction()
         {
             bool changed = false;
-            foreach (ActionModel action in actionList.ToList())
+            foreach (ActionModel action in ActionList.ToList())
             {
-                if (action.TriggerType == config.TriggerTypes.fromNow)
+                if (action.TriggerType == Config.TriggerTypes.FromNow)
                 {
                     if (DateTime.TryParseExact(
                         action.Value,
@@ -79,14 +79,14 @@ namespace WindowsShutdownHelper
                     {
                         if (DateTime.Now > actionDate)
                         {
-                            actionList.Remove(action);
+                            ActionList.Remove(action);
                             changed = true;
                         }
                     }
                     else
                     {
                         // Remove malformed scheduled entries to avoid runtime crashes.
-                        actionList.Remove(action);
+                        ActionList.Remove(action);
                         changed = true;
                     }
                 }
@@ -105,8 +105,8 @@ namespace WindowsShutdownHelper
                 _ = InitializeWebViewSafeAsync();
             }));
 
-            Text = language.MainFormName;
-            NotifyIconMain.Text = language.MainFormName + " " + language.NotifyIconMain;
+            Text = Language.MainFormName;
+            NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
             BeginInvoke(new Action(InitializeRuntimeState));
         }
 
@@ -131,40 +131,40 @@ namespace WindowsShutdownHelper
             try
             {
                 DetectScreen.ManuelLockingActionLogger();
-                actionList = LoadActionList();
+                ActionList = LoadActionList();
 
                 DeleteExpriedAction();
 
                 // Setup timer
-                timer.Interval = 1000;
-                timer.Tick += TimerTick;
-                timer.Start();
+                Timer.Interval = 1000;
+                Timer.Tick += TimerTick;
+                Timer.Start();
 
                 // Setup notify icon context menu text
-                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
-                    language.ContextMenuStripNotifyIconAddNewAction;
-                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
-                    language.ContextMenuStripNotifyIconExitProgram;
-                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
-                    language.ContextMenuStripNotifyIconShowSettings;
-                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
-                    language.ContextMenuStripNotifyIconShowLogs;
-                contextMenuStrip_notifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
-                    language.AboutMenuItem ?? "About";
+                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
+                    Language.ContextMenuStripNotifyIconAddNewAction;
+                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
+                    Language.ContextMenuStripNotifyIconExitProgram;
+                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
+                    Language.ContextMenuStripNotifyIconShowSettings;
+                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
+                    Language.ContextMenuStripNotifyIconShowLogs;
+                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
+                    Language.AboutMenuItem ?? "About";
 
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
-                contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
-                contextMenuStrip_notifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
+                ContextMenuStripNotifyIcon.Renderer = new WindowsShutdownHelper.Functions.ModernMenuRenderer(isDark);
+                ContextMenuStripNotifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
                 BackColor = isDark
                     ? System.Drawing.Color.FromArgb(26, 27, 46)
                     : System.Drawing.Color.FromArgb(240, 242, 245);
             }
             catch (Exception ex)
             {
-                actionList = new List<ActionModel>();
-                _cachedSettings = config.SettingsINI.DefaulSettingFile();
+                ActionList = new List<ActionModel>();
+                _cachedSettings = Config.SettingsINI.DefaulSettingFile();
                 ReportStartupError("Baslangic verileri yuklenemedi", ex);
             }
             finally
@@ -173,7 +173,7 @@ namespace WindowsShutdownHelper
                 TrySendInitData();
 
                 // Log app started in background
-                _ = System.Threading.Tasks.Task.Run(() => Logger.DoLog(config.ActionTypes.appStarted, _cachedSettings));
+                _ = System.Threading.Tasks.Task.Run(() => Logger.DoLog(Config.ActionTypes.AppStarted, _cachedSettings));
             }
         }
 
@@ -238,7 +238,7 @@ namespace WindowsShutdownHelper
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold),
                 ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
-                Text = language?.CommonLoading ?? "Yükleniyor..."
+                Text = Language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
@@ -256,7 +256,7 @@ namespace WindowsShutdownHelper
         private void ShowLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingLabel.Text = language?.CommonLoading ?? "Yükleniyor...";
+            _loadingLabel.Text = Language?.CommonLoading ?? "Yükleniyor...";
             _loadingOverlay.Visible = false;
             _loadingDelayTimer?.Stop();
             _loadingDelayTimer?.Start();
@@ -280,14 +280,14 @@ namespace WindowsShutdownHelper
 
         private void StartSubWindowPrewarm()
         {
-            if (_subWindowPrewarmStarted || isApplicationExiting || IsDisposed) return;
+            if (_subWindowPrewarmStarted || IsApplicationExiting || IsDisposed) return;
             _subWindowPrewarmStarted = true;
 
             BeginInvoke(new Action(() =>
             {
                 foreach (var pageName in _subWindowPrewarmPages)
                 {
-                    if (isApplicationExiting || IsDisposed) break;
+                    if (IsApplicationExiting || IsDisposed) break;
                     var win = GetOrCreateSubWindow(pageName);
                     win.PrewarmInBackground();
                 }
@@ -312,7 +312,7 @@ namespace WindowsShutdownHelper
             var langDict = new Dictionary<string, string>();
             foreach (PropertyInfo prop in typeof(Language).GetProperties())
             {
-                var val = prop.GetValue(language);
+                var val = prop.GetValue(Language);
                 if (val != null) langDict[prop.Name] = val.ToString();
             }
 
@@ -344,7 +344,7 @@ namespace WindowsShutdownHelper
         private List<Dictionary<string, string>> GetTranslatedActions()
         {
             var list = new List<Dictionary<string, string>>();
-            foreach (var act in actionList)
+            foreach (var act in ActionList)
             {
                 var d = new Dictionary<string, string>
                 {
@@ -361,39 +361,39 @@ namespace WindowsShutdownHelper
 
         private string TranslateAction(string raw)
         {
-            if (raw == config.ActionTypes.lockComputer) return language.MainCboxActionTypeItemLockComputer;
-            if (raw == config.ActionTypes.shutdownComputer) return language.MainCboxActionTypeItemShutdownComputer;
-            if (raw == config.ActionTypes.restartComputer) return language.MainCboxActionTypeItemRestartComputer;
-            if (raw == config.ActionTypes.logOffWindows) return language.MainCboxActionTypeItemLogOffWindows;
-            if (raw == config.ActionTypes.sleepComputer) return language.MainCboxActionTypeItemSleepComputer;
-            if (raw == config.ActionTypes.turnOffMonitor) return language.MainCboxActionTypeItemTurnOffMonitor;
+            if (raw == Config.ActionTypes.LockComputer) return Language.MainCboxActionTypeItemLockComputer;
+            if (raw == Config.ActionTypes.ShutdownComputer) return Language.MainCboxActionTypeItemShutdownComputer;
+            if (raw == Config.ActionTypes.RestartComputer) return Language.MainCboxActionTypeItemRestartComputer;
+            if (raw == Config.ActionTypes.LogOffWindows) return Language.MainCboxActionTypeItemLogOffWindows;
+            if (raw == Config.ActionTypes.SleepComputer) return Language.MainCboxActionTypeItemSleepComputer;
+            if (raw == Config.ActionTypes.TurnOffMonitor) return Language.MainCboxActionTypeItemTurnOffMonitor;
             return raw;
         }
 
         private string TranslateTrigger(string raw)
         {
-            if (raw == config.TriggerTypes.systemIdle) return language.MainCboxTriggerTypeItemSystemIdle;
-            if (raw == config.TriggerTypes.certainTime) return language.MainCboxTriggerTypeItemCertainTime;
-            if (raw == config.TriggerTypes.fromNow) return language.MainCboxTriggerTypeItemFromNow;
+            if (raw == Config.TriggerTypes.SystemIdle) return Language.MainCboxTriggerTypeItemSystemIdle;
+            if (raw == Config.TriggerTypes.CertainTime) return Language.MainCboxTriggerTypeItemCertainTime;
+            if (raw == Config.TriggerTypes.FromNow) return Language.MainCboxTriggerTypeItemFromNow;
             return raw;
         }
 
         private string TranslateUnit(string raw)
         {
-            if (raw == "seconds") return language.MainTimeUnitSeconds ?? "Seconds";
-            if (string.IsNullOrEmpty(raw)) return language.MainTimeUnitMinutes ?? "Minutes";
+            if (raw == "seconds") return Language.MainTimeUnitSeconds ?? "Seconds";
+            if (string.IsNullOrEmpty(raw)) return Language.MainTimeUnitMinutes ?? "Minutes";
             return raw;
         }
 
         private Settings LoadSettings()
         {
             string path = AppContext.BaseDirectory + "\\settings.json";
-            return ReadJsonFileOrDefault(path, config.SettingsINI.DefaulSettingFile());
+            return ReadJsonFileOrDefault(path, Config.SettingsINI.DefaulSettingFile());
         }
 
         private List<ActionModel> LoadActionList()
         {
-            string path = AppContext.BaseDirectory + "\\actionList.json";
+            string path = AppContext.BaseDirectory + "\\ActionList.json";
             return ReadJsonFileOrDefault(path, new List<ActionModel>());
         }
 
@@ -435,13 +435,13 @@ namespace WindowsShutdownHelper
             {
                 _loadingOverlay.Visible = true;
                 _loadingOverlay.BringToFront();
-                _loadingLabel.Text = language?.MessageTitleError ?? "Error";
+                _loadingLabel.Text = Language?.MessageTitleError ?? "Error";
             }
 
             MessageBox.Show(
                 this,
                 title + ".\r\n\r\nDetay: " + ex.Message,
-                language?.MessageTitleError ?? "Error",
+                Language?.MessageTitleError ?? "Error",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Error);
         }
@@ -509,10 +509,10 @@ namespace WindowsShutdownHelper
                     HandleResumeActions();
                     break;
                 case "exitApp":
-                    isApplicationExiting = true;
+                    IsApplicationExiting = true;
                     StopSubWindowPrewarm();
                     CloseAllSubWindows();
-                    Logger.DoLog(config.ActionTypes.appTerminated);
+                    Logger.DoLog(Config.ActionTypes.AppTerminated);
                     Application.ExitThread();
                     break;
             }
@@ -538,8 +538,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleWarn,
-                    message = language.MessageContentActionChoose,
+                    title = Language.MessageTitleWarn,
+                    message = Language.MessageContentActionChoose,
                     type = "warn",
                     duration = 2000
                 });
@@ -547,12 +547,12 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            if (actionList.Count >= 5)
+            if (ActionList.Count >= 5)
             {
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleWarn,
-                    message = language.MessageContentMaxActionWarn,
+                    title = Language.MessageTitleWarn,
+                    message = Language.MessageContentMaxActionWarn,
                     type = "warn",
                     duration = 2000
                 });
@@ -568,7 +568,7 @@ namespace WindowsShutdownHelper
 
             if (triggerType == "fromNow")
             {
-                newAction.TriggerType = config.TriggerTypes.fromNow;
+                newAction.TriggerType = Config.TriggerTypes.FromNow;
                 double inputValue = Convert.ToDouble(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 DateTime targetTime;
@@ -579,7 +579,7 @@ namespace WindowsShutdownHelper
             }
             else if (triggerType == "systemIdle")
             {
-                newAction.TriggerType = config.TriggerTypes.systemIdle;
+                newAction.TriggerType = Config.TriggerTypes.SystemIdle;
                 int inputValue = Convert.ToInt32(data.GetProperty("value").GetString());
                 int unitIdx = Convert.ToInt32(data.GetProperty("timeUnit").GetString());
                 int valueInSeconds;
@@ -591,7 +591,7 @@ namespace WindowsShutdownHelper
             }
             else if (triggerType == "certainTime")
             {
-                newAction.TriggerType = config.TriggerTypes.certainTime;
+                newAction.TriggerType = Config.TriggerTypes.CertainTime;
                 string timeStr = data.GetProperty("time").GetString();
                 if (!string.IsNullOrEmpty(timeStr))
                 {
@@ -603,11 +603,11 @@ namespace WindowsShutdownHelper
                 }
             }
 
-            if (!ActionValidation.TryValidateActionForAdd(newAction, actionList, language, out string validationMessage))
+            if (!ActionValidation.TryValidateActionForAdd(newAction, ActionList, Language, out string validationMessage))
             {
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleWarn,
+                    title = Language.MessageTitleWarn,
                     message = validationMessage,
                     type = "warn",
                     duration = 3000
@@ -616,13 +616,13 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            actionList.Add(newAction);
+            ActionList.Add(newAction);
             WriteJsonToActionList();
 
             PostMessage("showToast", new
             {
-                title = language.MessageTitleSuccess,
-                message = language.MessageContentActionCreated,
+                title = Language.MessageTitleSuccess,
+                message = Language.MessageContentActionCreated,
                 type = "success",
                 duration = 2000
             });
@@ -632,15 +632,15 @@ namespace WindowsShutdownHelper
         private void HandleDeleteAction(JsonElement data)
         {
             int index = data.GetProperty("index").GetInt32();
-            if (index >= 0 && index < actionList.Count)
+            if (index >= 0 && index < ActionList.Count)
             {
-                actionList.RemoveAt(index);
+                ActionList.RemoveAt(index);
                 WriteJsonToActionList();
 
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleSuccess,
-                    message = language.MessageContentActionDeleted,
+                    title = Language.MessageTitleSuccess,
+                    message = Language.MessageContentActionDeleted,
                     type = "success",
                     duration = 2000
                 });
@@ -649,13 +649,13 @@ namespace WindowsShutdownHelper
 
         private void HandleClearAllActions()
         {
-            actionList.Clear();
+            ActionList.Clear();
             WriteJsonToActionList();
 
             PostMessage("showToast", new
             {
-                title = language.MessageTitleSuccess,
-                message = language.MessageContentActionAllDeleted,
+                title = Language.MessageTitleSuccess,
+                message = Language.MessageContentActionAllDeleted,
                 type = "success",
                 duration = 2000
             });
@@ -679,15 +679,15 @@ namespace WindowsShutdownHelper
 
             // Update tray menu renderer and form BackColor based on theme
             bool isDark = DetermineIfDark(newSettings.Theme);
-            contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
+            ContextMenuStripNotifyIcon.Renderer = new WindowsShutdownHelper.Functions.ModernMenuRenderer(isDark);
             BackColor = isDark
                 ? System.Drawing.Color.FromArgb(26, 27, 46)
                 : System.Drawing.Color.FromArgb(240, 242, 245);
 
             if (newSettings.StartWithWindows)
-                StartWithWindows.AddStartup(language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
             else
-                StartWithWindows.DeleteStartup(language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.DeleteStartup(Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
 
             if (newSettings.IsCountdownNotifierEnabled)
             {
@@ -698,8 +698,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleSuccess,
-                    message = language.MessageContentSettingSavedWithLangChanged,
+                    title = Language.MessageTitleSuccess,
+                    message = Language.MessageContentSettingSavedWithLangChanged,
                     type = "info",
                     duration = 4000
                 });
@@ -708,8 +708,8 @@ namespace WindowsShutdownHelper
             {
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleSuccess,
-                    message = language.MessageContentSettingsSaved,
+                    title = Language.MessageTitleSuccess,
+                    message = Language.MessageContentSettingsSaved,
                     type = "success",
                     duration = 2000
                 });
@@ -744,16 +744,16 @@ namespace WindowsShutdownHelper
 
         private string TranslateLogAction(string raw)
         {
-            if (raw == config.ActionTypes.lockComputer) return language.LogViewerFormLockComputer;
-            if (raw == config.ActionTypes.lockComputerManually) return language.LogViewerFormLockComputerManually;
-            if (raw == config.ActionTypes.unlockComputer) return language.LogViewerFormUnlockComputer;
-            if (raw == config.ActionTypes.shutdownComputer) return language.LogViewerFormShutdownComputer;
-            if (raw == config.ActionTypes.restartComputer) return language.LogViewerFormRestartComputer;
-            if (raw == config.ActionTypes.logOffWindows) return language.LogViewerFormLogOffWindows;
-            if (raw == config.ActionTypes.sleepComputer) return language.LogViewerFormSleepComputer;
-            if (raw == config.ActionTypes.turnOffMonitor) return language.LogViewerFormTurnOffMonitor;
-            if (raw == config.ActionTypes.appStarted) return language.LogViewerFormAppStarted;
-            if (raw == config.ActionTypes.appTerminated) return language.LogViewerFormAppTerminated;
+            if (raw == Config.ActionTypes.LockComputer) return Language.LogViewerFormLockComputer;
+            if (raw == Config.ActionTypes.LockComputerManually) return Language.LogViewerFormLockComputerManually;
+            if (raw == Config.ActionTypes.UnlockComputer) return Language.LogViewerFormUnlockComputer;
+            if (raw == Config.ActionTypes.ShutdownComputer) return Language.LogViewerFormShutdownComputer;
+            if (raw == Config.ActionTypes.RestartComputer) return Language.LogViewerFormRestartComputer;
+            if (raw == Config.ActionTypes.LogOffWindows) return Language.LogViewerFormLogOffWindows;
+            if (raw == Config.ActionTypes.SleepComputer) return Language.LogViewerFormSleepComputer;
+            if (raw == Config.ActionTypes.TurnOffMonitor) return Language.LogViewerFormTurnOffMonitor;
+            if (raw == Config.ActionTypes.AppStarted) return Language.LogViewerFormAppStarted;
+            if (raw == Config.ActionTypes.AppTerminated) return Language.LogViewerFormAppTerminated;
             return raw;
         }
 
@@ -764,8 +764,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.MessageTitleSuccess,
-                message = language.MessageContentClearedLogs,
+                title = Language.MessageTitleSuccess,
+                message = Language.MessageContentClearedLogs,
                 type = "success",
                 duration = 2000
             });
@@ -774,7 +774,7 @@ namespace WindowsShutdownHelper
         private void HandleGetLanguageList()
         {
             var list = new List<object>();
-            list.Add(new { LangCode = "auto", langName = (language.SettingsFormComboboxAutoLang ?? "Auto") });
+            list.Add(new { LangCode = "auto", langName = (Language.SettingsFormComboboxAutoLang ?? "Auto") });
 
             foreach (var entry in LanguageSelector.GetLanguageNames())
             {
@@ -794,8 +794,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.MessageTitleSuccess,
-                message = language.PausePaused ?? "Actions paused successfully",
+                title = Language.MessageTitleSuccess,
+                message = Language.PausePaused ?? "Actions paused successfully",
                 type = "info",
                 duration = 2000
             });
@@ -810,8 +810,8 @@ namespace WindowsShutdownHelper
 
             PostMessage("showToast", new
             {
-                title = language.MessageTitleSuccess,
-                message = language.PauseResumed ?? "Actions resumed",
+                title = Language.MessageTitleSuccess,
+                message = Language.PauseResumed ?? "Actions resumed",
                 type = "success",
                 duration = 2000
             });
@@ -836,8 +836,8 @@ namespace WindowsShutdownHelper
 
         public void WriteJsonToActionList()
         {
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
-                actionList.ToList());
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true,
+                ActionList.ToList());
             RefreshActionsInUI();
         }
 
@@ -865,15 +865,15 @@ namespace WindowsShutdownHelper
             switch (pageName)
             {
                 case "main":
-                    return language.MainGroupboxNewAction ?? "Actions";
+                    return Language.MainGroupboxNewAction ?? "Actions";
                 case "settings":
-                    return language.SettingsFormName ?? "Settings";
+                    return Language.SettingsFormName ?? "Settings";
                 case "logs":
-                    return language.LogViewerFormName ?? "Logs";
+                    return Language.LogViewerFormName ?? "Logs";
                 case "about":
-                    return language.AboutMenuItem ?? "About";
+                    return Language.AboutMenuItem ?? "About";
                 default:
-                    return language.MainFormName ?? "Windows Shutdown Helper";
+                    return Language.MainFormName ?? "Windows Shutdown Helper";
             }
         }
 
@@ -901,7 +901,7 @@ namespace WindowsShutdownHelper
         {
             if (action == null) return;
 
-            if (action.TriggerType == config.TriggerTypes.systemIdle)
+            if (action.TriggerType == Config.TriggerTypes.SystemIdle)
             {
                 if (!TryGetSystemIdleSeconds(action, out uint actionValueSeconds)) return;
                 if (idleTimeMin == actionValueSeconds)
@@ -911,22 +911,22 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            if (action.TriggerType == config.TriggerTypes.certainTime && action.Value == DateTime.Now.ToString("HH:mm:ss"))
+            if (action.TriggerType == Config.TriggerTypes.CertainTime && action.Value == DateTime.Now.ToString("HH:mm:ss"))
             {
-                if (isSkippedCertainTimeAction == false)
+                if (IsSkippedCertainTimeAction == false)
                 {
                     Actions.DoActionByTypes(action);
                 }
                 else
                 {
-                    isSkippedCertainTimeAction = false;
+                    IsSkippedCertainTimeAction = false;
                 }
             }
 
-            if (action.TriggerType == config.TriggerTypes.fromNow && action.Value == DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"))
+            if (action.TriggerType == Config.TriggerTypes.FromNow && action.Value == DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss"))
             {
                 Actions.DoActionByTypes(action);
-                actionList.Remove(action);
+                ActionList.Remove(action);
                 WriteJsonToActionList();
             }
         }
@@ -969,7 +969,7 @@ namespace WindowsShutdownHelper
         private void TimerTick(object sender, EventArgs e)
         {
             // Update time in UI
-            string timeText = (language.MainStatusBarCurrentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
+            string timeText = (Language.MainStatusBarCurrentTime ?? "Time") + " : " + DateTime.Now + "  |  Build Id: " + BuildInfo.CommitId;
             PostMessage("updateTime", timeText);
 
             // Check pause expiration
@@ -980,8 +980,8 @@ namespace WindowsShutdownHelper
                 SendPauseStatus();
                 PostMessage("showToast", new
                 {
-                    title = language.MessageTitleInfo ?? "Info",
-                    message = language.PauseResumed ?? "Actions resumed",
+                    title = Language.MessageTitleInfo ?? "Info",
+                    message = Language.PauseResumed ?? "Actions resumed",
                     type = "info",
                     duration = 2000
                 });
@@ -999,17 +999,17 @@ namespace WindowsShutdownHelper
             if (idleTimeMin == 0)
             {
                 NotifySystem.ResetIdleNotifications();
-                timer.Stop();
-                timer.Start();
+                Timer.Stop();
+                Timer.Start();
             }
 
-            if (isDeletedFromNotifier)
+            if (IsDeletedFromNotifier)
             {
                 WriteJsonToActionList();
-                isDeletedFromNotifier = false;
+                IsDeletedFromNotifier = false;
             }
 
-            foreach (ActionModel action in actionList.ToList())
+            foreach (ActionModel action in ActionList.ToList())
             {
                 DoAction(action, idleTimeMin);
                 NotifySystem.ShowNotification(action, idleTimeMin);
@@ -1034,8 +1034,8 @@ namespace WindowsShutdownHelper
         {
             StopSubWindowPrewarm();
 
-            settings = LoadSettings();
-            if (settings.RunInTaskbarWhenClosed)
+            Settings = LoadSettings();
+            if (Settings.RunInTaskbarWhenClosed)
             {
                 e.Cancel = true;
                 Hide();
@@ -1043,22 +1043,22 @@ namespace WindowsShutdownHelper
 
             if (!e.Cancel)
             {
-                isApplicationExiting = true;
+                IsApplicationExiting = true;
                 CloseAllSubWindows();
             }
         }
 
         private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Logger.DoLog(config.ActionTypes.appTerminated);
+            Logger.DoLog(Config.ActionTypes.AppTerminated);
         }
 
         private void exitTheProgramToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            isApplicationExiting = true;
+            IsApplicationExiting = true;
             StopSubWindowPrewarm();
             CloseAllSubWindows();
-            Logger.DoLog(config.ActionTypes.appTerminated);
+            Logger.DoLog(Config.ActionTypes.AppTerminated);
             Application.ExitThread();
         }
 

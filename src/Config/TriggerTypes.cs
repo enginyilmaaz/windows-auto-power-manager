@@ -1,9 +1,9 @@
-﻿namespace WindowsShutdownHelper.config
+namespace WindowsShutdownHelper.Config
 {
     public class TriggerTypes
     {
-        public static readonly string certainTime = "certainTime";
-        public static readonly string fromNow = "fromNow ";
-        public static readonly string systemIdle = "systemIdle";
+        public static readonly string CertainTime = "certainTime";
+        public static readonly string FromNow = "fromNow ";
+        public static readonly string SystemIdle = "systemIdle";
     }
 }

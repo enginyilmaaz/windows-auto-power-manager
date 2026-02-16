@@ -2,7 +2,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     public class StartWithWindows
     {

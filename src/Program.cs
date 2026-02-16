@@ -2,8 +2,8 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using WindowsShutdownHelper.config;
-using WindowsShutdownHelper.functions;
+using WindowsShutdownHelper.Config;
+using WindowsShutdownHelper.Functions;
 
 namespace WindowsShutdownHelper
 {

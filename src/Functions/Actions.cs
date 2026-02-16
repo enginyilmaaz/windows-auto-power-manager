@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     public class ActionModel
     {
@@ -18,32 +18,32 @@ namespace WindowsShutdownHelper.functions
     {
         public static void DoActionByTypes(ActionModel action)
         {
-            if (action.ActionType == config.ActionTypes.lockComputer)
+            if (action.ActionType == Config.ActionTypes.LockComputer)
             {
                 Lock.Computer();
             }
 
-            if (action.ActionType == config.ActionTypes.sleepComputer)
+            if (action.ActionType == Config.ActionTypes.SleepComputer)
             {
                 Sleep.Computer();
             }
 
-            if (action.ActionType == config.ActionTypes.turnOffMonitor)
+            if (action.ActionType == Config.ActionTypes.TurnOffMonitor)
             {
                 TurnOff.Monitor();
             }
 
-            if (action.ActionType == config.ActionTypes.shutdownComputer)
+            if (action.ActionType == Config.ActionTypes.ShutdownComputer)
             {
                 ShutdownComputer();
             }
 
-            if (action.ActionType == config.ActionTypes.restartComputer)
+            if (action.ActionType == Config.ActionTypes.RestartComputer)
             {
                 RestartComputer();
             }
 
-            if (action.ActionType == config.ActionTypes.logOffWindows)
+            if (action.ActionType == Config.ActionTypes.LogOffWindows)
             {
                 LogOff.Windows();
             }
@@ -51,7 +51,7 @@ namespace WindowsShutdownHelper.functions
 
         public static void ShutdownComputer()
         {
-            Logger.DoLog(config.ActionTypes.shutdownComputer);
+            Logger.DoLog(Config.ActionTypes.ShutdownComputer);
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -66,7 +66,7 @@ namespace WindowsShutdownHelper.functions
 
         public static void RestartComputer()
         {
-            Logger.DoLog(config.ActionTypes.restartComputer);
+            Logger.DoLog(Config.ActionTypes.RestartComputer);
             Process process = new Process();
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
@@ -92,7 +92,7 @@ namespace WindowsShutdownHelper.functions
                 if (DetectScreen.IsLockedWorkstation() == false)
                 {
                     ManualLocked = false;
-                    Logger.DoLog(config.ActionTypes.lockComputer);
+                    Logger.DoLog(Config.ActionTypes.LockComputer);
                     LockWorkStation();
                 }
             }
@@ -112,7 +112,7 @@ namespace WindowsShutdownHelper.functions
 
             public static void Windows()
             {
-                Logger.DoLog(config.ActionTypes.logOffWindows);
+                Logger.DoLog(Config.ActionTypes.LogOffWindows);
                 ExitWindowsEx(0, 0);
             }
         }
@@ -124,7 +124,7 @@ namespace WindowsShutdownHelper.functions
 
             public static void Computer()
             {
-                Logger.DoLog(config.ActionTypes.sleepComputer);
+                Logger.DoLog(Config.ActionTypes.SleepComputer);
                 SetSuspendState(false, true, true);
             }
         }
@@ -209,7 +209,7 @@ namespace WindowsShutdownHelper.functions
                     return;
                 }
 
-                Logger.DoLog(config.ActionTypes.turnOffMonitor);
+                Logger.DoLog(Config.ActionTypes.TurnOffMonitor);
                 SetMonitorState(MonitorState.OFF);
             }
         }

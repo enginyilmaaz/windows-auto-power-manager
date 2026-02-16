@@ -6,9 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading.Tasks;
-using WindowsShutdownHelper.lang;
+using WindowsShutdownHelper.Lang;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     internal class LanguageSelector
 

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     internal static class WebViewEnvironmentProvider
     {

@@ -1,12 +1,12 @@
 ﻿using Microsoft.Win32;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     public static class DetectScreen
     {
         public static bool IsLocked;
 
-        public static void main()
+        public static void Main()
         {
             SystemEvents.SessionSwitch += SystemEvents_SessionSwitch;
         }
@@ -17,7 +17,7 @@ namespace WindowsShutdownHelper.functions
             {
                 if (Actions.Lock.IsLockedManually())
                 {
-                    Logger.DoLog(config.ActionTypes.lockComputerManually); 
+                    Logger.DoLog(Config.ActionTypes.LockComputerManually); 
                     IsLocked = true;
                 }
 
@@ -25,7 +25,7 @@ namespace WindowsShutdownHelper.functions
             }
             else if (e.Reason == SessionSwitchReason.SessionUnlock)
             {
-                Logger.DoLog(config.ActionTypes.unlockComputer);
+                Logger.DoLog(Config.ActionTypes.UnlockComputer);
                 IsLocked = false;
             }
         }
@@ -39,7 +39,7 @@ namespace WindowsShutdownHelper.functions
 
         public static void ManuelLockingActionLogger()
         {
-            main();
+            Main();
         }
     }
 }

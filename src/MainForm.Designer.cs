@@ -22,7 +22,7 @@ namespace WindowsShutdownHelper
 
             this.webViewHost = new System.Windows.Forms.Panel();
             this.NotifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
-            this.contextMenuStrip_notifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.ContextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addNewActionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.showTheLogsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -30,7 +30,7 @@ namespace WindowsShutdownHelper
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitTheProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
-            this.contextMenuStrip_notifyIcon.SuspendLayout();
+            this.ContextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
 
             // webViewHost
@@ -40,8 +40,8 @@ namespace WindowsShutdownHelper
             this.webViewHost.Size = new System.Drawing.Size(529, 484);
             this.webViewHost.TabIndex = 0;
 
-            // contextMenuStrip_notifyIcon
-            this.contextMenuStrip_notifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            // ContextMenuStripNotifyIcon
+            this.ContextMenuStripNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
                 this.addNewActionToolStripMenuItem,
                 this.settingsToolStripMenuItem,
                 this.showTheLogsToolStripMenuItem,
@@ -49,9 +49,9 @@ namespace WindowsShutdownHelper
                 this.toolStripSeparator1,
                 this.exitTheProgramToolStripMenuItem
             });
-            this.contextMenuStrip_notifyIcon.Name = "contextMenuStrip_notifyIcon";
-            this.contextMenuStrip_notifyIcon.ImageScalingSize = new System.Drawing.Size(24, 24);
-            this.contextMenuStrip_notifyIcon.Size = new System.Drawing.Size(200, 120);
+            this.ContextMenuStripNotifyIcon.Name = "ContextMenuStripNotifyIcon";
+            this.ContextMenuStripNotifyIcon.ImageScalingSize = new System.Drawing.Size(24, 24);
+            this.ContextMenuStripNotifyIcon.Size = new System.Drawing.Size(200, 120);
 
             // addNewActionToolStripMenuItem
             this.addNewActionToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.add;
@@ -90,7 +90,7 @@ namespace WindowsShutdownHelper
 
             // NotifyIconMain
             this.NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
-            this.NotifyIconMain.ContextMenuStrip = this.contextMenuStrip_notifyIcon;
+            this.NotifyIconMain.ContextMenuStrip = this.ContextMenuStripNotifyIcon;
             this.NotifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIconMain.Icon")));
             this.NotifyIconMain.Text = "notifyIcon1";
             this.NotifyIconMain.Visible = true;
@@ -111,7 +111,7 @@ namespace WindowsShutdownHelper
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.mainForm_FormClosed);
             this.Load += new System.EventHandler(this.mainForm_Load);
 
-            this.contextMenuStrip_notifyIcon.ResumeLayout(false);
+            this.ContextMenuStripNotifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
         }
 
@@ -119,7 +119,7 @@ namespace WindowsShutdownHelper
 
         private System.Windows.Forms.Panel webViewHost;
         private System.Windows.Forms.NotifyIcon NotifyIconMain;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip_notifyIcon;
+        private System.Windows.Forms.ContextMenuStrip ContextMenuStripNotifyIcon;
         private System.Windows.Forms.ToolStripMenuItem addNewActionToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem showTheLogsToolStripMenuItem;

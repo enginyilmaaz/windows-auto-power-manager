@@ -5,20 +5,20 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
-using WindowsShutdownHelper.functions;
+using WindowsShutdownHelper.Functions;
 
 namespace WindowsShutdownHelper
 {
     public partial class ActionCountdownNotifier : Form
     {
-        public static Language language = LanguageSelector.LanguageFile();
-        public ActionModel action = new ActionModel();
+        public static Language Language = LanguageSelector.LanguageFile();
+        public ActionModel Action = new ActionModel();
         public string MessageTitle;
         public string MessageContentCountdownNotify, MessageContentCountdownNotify2;
         public string MessageContentActionType;
         public string MessageContentYouCanThat;
         public int ShowTimeSecond;
-        public Timer timer = new Timer();
+        public Timer Timer = new Timer();
 
         private bool _webViewReady;
         private bool _webViewInitStarted;
@@ -71,7 +71,7 @@ namespace WindowsShutdownHelper
                 MessageBox.Show(
                     this,
                     "Arayuz acilamadi.\r\n\r\nDetay: " + ex.Message,
-                    language?.MessageTitleError ?? "Error",
+                    Language?.MessageTitleError ?? "Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
                 Close();
@@ -119,7 +119,7 @@ namespace WindowsShutdownHelper
             int _showTimeSecond,
             ActionModel _action)
         {
-            action = _action ?? new ActionModel();
+            Action = _action ?? new ActionModel();
             ShowTimeSecond = Math.Max(0, _showTimeSecond);
             MessageTitle = _messageTitle;
             MessageContentCountdownNotify = _messageContentCountdownNotify;
@@ -131,7 +131,7 @@ namespace WindowsShutdownHelper
             _showAfterInitialized = false;
             _initSent = false;
             _timerStarted = false;
-            timer.Stop();
+            Timer.Stop();
         }
 
         private async Task EnsureWebViewInitializedSafeAsync(bool showLoading)
@@ -229,9 +229,9 @@ namespace WindowsShutdownHelper
         private void SendInitData()
         {
             bool enableIgnore = true;
-            bool enableDelete = action.TriggerType == config.TriggerTypes.fromNow ||
-                                action.TriggerType == config.TriggerTypes.certainTime;
-            bool enableSkip = action.TriggerType == config.TriggerTypes.certainTime;
+            bool enableDelete = Action.TriggerType == Config.TriggerTypes.FromNow ||
+                                Action.TriggerType == Config.TriggerTypes.CertainTime;
+            bool enableSkip = Action.TriggerType == Config.TriggerTypes.CertainTime;
 
             var initData = new
             {
@@ -241,9 +241,9 @@ namespace WindowsShutdownHelper
                 actionType = MessageContentActionType,
                 infoText = MessageContentYouCanThat,
                 seconds = ShowTimeSecond,
-                btnDelete = language.ActionCountdownNotifierButtonDelete ?? "Delete",
-                btnIgnore = language.ActionCountdownNotifierButtonIgnore ?? "Ignore",
-                btnSkip = language.ActionCountdownNotifierButtonSkip ?? "Skip",
+                btnDelete = Language.ActionCountdownNotifierButtonDelete ?? "Delete",
+                btnIgnore = Language.ActionCountdownNotifierButtonIgnore ?? "Ignore",
+                btnSkip = Language.ActionCountdownNotifierButtonSkip ?? "Skip",
                 enableIgnore = enableIgnore,
                 enableDelete = enableDelete,
                 enableSkip = enableSkip
@@ -257,10 +257,10 @@ namespace WindowsShutdownHelper
             if (_timerStarted) return;
             _timerStarted = true;
 
-            timer.Interval = 1000;
-            timer.Tick -= TimerTick;
-            timer.Tick += TimerTick;
-            timer.Start();
+            Timer.Interval = 1000;
+            Timer.Tick -= TimerTick;
+            Timer.Tick += TimerTick;
+            Timer.Start();
         }
 
         private void InitializeLoadingOverlay()
@@ -285,7 +285,7 @@ namespace WindowsShutdownHelper
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
                 ForeColor = Color.FromArgb(97, 106, 124),
-                Text = language?.CommonLoading ?? "Yükleniyor..."
+                Text = Language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
@@ -303,7 +303,7 @@ namespace WindowsShutdownHelper
         private void ShowLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingLabel.Text = language?.CommonLoading ?? "Yükleniyor...";
+            _loadingLabel.Text = Language?.CommonLoading ?? "Yükleniyor...";
             _loadingOverlay.Visible = false;
             _loadingDelayTimer?.Stop();
             _loadingDelayTimer?.Start();
@@ -322,7 +322,11 @@ namespace WindowsShutdownHelper
             ShowInTaskbar = false;
             if (_isPrewarmedHidden)
             {
-                StartPosition = FormStartPosition.CenterScreen;
+                StartPosition = FormStartPosition.Manual;
+                var area = Screen.PrimaryScreen.WorkingArea;
+                int x = area.Left + Math.Max(0, (area.Width - Width) / 2);
+                int y = area.Top + Math.Max(0, (area.Height - Height) / 2);
+                Location = new Point(x, y);
             }
             Opacity = 1;
 
@@ -342,7 +346,7 @@ namespace WindowsShutdownHelper
 
         private void HideAndReset()
         {
-            timer.Stop();
+            Timer.Stop();
             _timerStarted = false;
             _hasPendingNotification = false;
             _showAfterInitialized = false;
@@ -375,7 +379,7 @@ namespace WindowsShutdownHelper
                 return;
             }
 
-            if (action.TriggerType == config.TriggerTypes.systemIdle)
+            if (Action.TriggerType == Config.TriggerTypes.SystemIdle)
             {
                 uint idleTimeMin = SystemIdleDetector.GetLastInputTime();
                 if (idleTimeMin == 0)
@@ -415,14 +419,14 @@ namespace WindowsShutdownHelper
                     HideAndReset();
                     break;
                 case "delete":
-                    MainForm.actionList.Remove(action);
-                    MainForm.isDeletedFromNotifier = true;
+                    MainForm.ActionList.Remove(Action);
+                    MainForm.IsDeletedFromNotifier = true;
                     JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
-                        MainForm.actionList);
+                        MainForm.ActionList);
                     HideAndReset();
                     break;
                 case "skip":
-                    MainForm.isSkippedCertainTimeAction = true;
+                    MainForm.IsSkippedCertainTimeAction = true;
                     HideAndReset();
                     break;
                 case "dragStart":

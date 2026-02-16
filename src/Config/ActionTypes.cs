@@ -1,16 +1,16 @@
-﻿namespace WindowsShutdownHelper.config
+namespace WindowsShutdownHelper.Config
 {
     public class ActionTypes
     {
-        public static readonly string lockComputer = "lockComputer";
-        public static readonly string sleepComputer = "sleepComputer";
-        public static readonly string turnOffMonitor = "turnOffMonitor";
-        public static readonly string shutdownComputer = "shutdownComputer";
-        public static readonly string restartComputer = "restartComputer";
-        public static readonly string logOffWindows = "logOffWindows";
-        public static readonly string lockComputerManually = "lockComputerManually";
-        public static readonly string unlockComputer = "unlockComputer";
-        public static readonly string appStarted = "appStarted";
-        public static readonly string appTerminated = "appTerminated";
+        public static readonly string LockComputer = "lockComputer";
+        public static readonly string SleepComputer = "sleepComputer";
+        public static readonly string TurnOffMonitor = "turnOffMonitor";
+        public static readonly string ShutdownComputer = "shutdownComputer";
+        public static readonly string RestartComputer = "restartComputer";
+        public static readonly string LogOffWindows = "logOffWindows";
+        public static readonly string LockComputerManually = "lockComputerManually";
+        public static readonly string UnlockComputer = "unlockComputer";
+        public static readonly string AppStarted = "appStarted";
+        public static readonly string AppTerminated = "appTerminated";
     }
 }

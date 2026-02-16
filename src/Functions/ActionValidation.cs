@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     internal static class ActionValidation
     {
@@ -11,9 +11,9 @@ namespace WindowsShutdownHelper.functions
 
         private static readonly HashSet<string> SessionEndingActions = new HashSet<string>
         {
-            config.ActionTypes.shutdownComputer,
-            config.ActionTypes.restartComputer,
-            config.ActionTypes.logOffWindows
+            Config.ActionTypes.ShutdownComputer,
+            Config.ActionTypes.RestartComputer,
+            Config.ActionTypes.LogOffWindows
         };
 
         public static bool TryValidateActionForAdd(
@@ -61,7 +61,7 @@ namespace WindowsShutdownHelper.functions
                     return false;
                 }
 
-                if (newAction.TriggerType == config.TriggerTypes.systemIdle &&
+                if (newAction.TriggerType == Config.TriggerTypes.SystemIdle &&
                     string.Equals(existingAction.ActionType, newAction.ActionType, StringComparison.Ordinal))
                 {
                     errorMessage = language?.MessageContentIdleActionConflict
@@ -105,7 +105,7 @@ namespace WindowsShutdownHelper.functions
                 return false;
             }
 
-            if (newAction.TriggerType == config.TriggerTypes.certainTime)
+            if (newAction.TriggerType == Config.TriggerTypes.CertainTime)
             {
                 return existingActionOrderValue == newActionOrderValue;
             }
@@ -131,7 +131,7 @@ namespace WindowsShutdownHelper.functions
                 return false;
             }
 
-            if (action.TriggerType == config.TriggerTypes.systemIdle)
+            if (action.TriggerType == Config.TriggerTypes.SystemIdle)
             {
                 if (!TryGetSystemIdleSeconds(action, out int systemIdleSeconds) || systemIdleSeconds <= 0)
                 {
@@ -142,7 +142,7 @@ namespace WindowsShutdownHelper.functions
                 return true;
             }
 
-            if (action.TriggerType == config.TriggerTypes.fromNow)
+            if (action.TriggerType == Config.TriggerTypes.FromNow)
             {
                 if (string.IsNullOrWhiteSpace(action.Value))
                 {
@@ -163,7 +163,7 @@ namespace WindowsShutdownHelper.functions
                 return true;
             }
 
-            if (action.TriggerType == config.TriggerTypes.certainTime)
+            if (action.TriggerType == Config.TriggerTypes.CertainTime)
             {
                 if (string.IsNullOrWhiteSpace(action.Value))
                 {

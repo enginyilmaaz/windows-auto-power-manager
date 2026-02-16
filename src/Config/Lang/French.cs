@@ -1,4 +1,4 @@
-namespace WindowsShutdownHelper.lang
+namespace WindowsShutdownHelper.Lang
 {
     public static class French
     {

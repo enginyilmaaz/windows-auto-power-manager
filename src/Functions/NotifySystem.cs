@@ -6,11 +6,11 @@ using System.Linq;
 using System.Text.Json;
 using System.Windows.Forms;
 
-namespace WindowsShutdownHelper.functions
+namespace WindowsShutdownHelper.Functions
 {
     internal class NotifySystem
     {
-        public static Language language = LanguageSelector.LanguageFile();
+        public static Language Language = LanguageSelector.LanguageFile();
         public static string ActionTypeName;
         private static HashSet<string> _notifiedIdleActions = new HashSet<string>();
         private static ActionCountdownNotifier _sharedCountdownNotifier;
@@ -52,9 +52,9 @@ namespace WindowsShutdownHelper.functions
 
             EnsureCountdownNotifier();
             _sharedCountdownNotifier.ConfigureAndShow(
-                language.MessageTitleInfo,
-                language.MessageContentCountdownNotify,
-                language.MessageContentCountdownNotify2,
+                Language.MessageTitleInfo,
+                Language.MessageContentCountdownNotify,
+                Language.MessageContentCountdownNotify2,
                 ActionTypeName,
                 infoText,
                 countdownSeconds,
@@ -80,7 +80,7 @@ namespace WindowsShutdownHelper.functions
             {
                 ActionTypeLocalization(action);
 
-                if (action.TriggerType == config.TriggerTypes.systemIdle)
+                if (action.TriggerType == Config.TriggerTypes.SystemIdle)
                 {
                     if (!TryGetSystemIdleSeconds(action, out int actionValue)) return;
                     string actionKey = action.CreatedDate + "_" + action.ActionType;
@@ -89,7 +89,7 @@ namespace WindowsShutdownHelper.functions
                         && !_notifiedIdleActions.Contains(actionKey))
                     {
                         bool shown = ShowCountdownNotification(
-                            language.MessageContentCancelForSystemIdle,
+                            Language.MessageContentCancelForSystemIdle,
                             settings.CountdownNotifierSeconds,
                             action);
                         if (shown)
@@ -99,7 +99,7 @@ namespace WindowsShutdownHelper.functions
                     }
                 }
 
-                else if (action.TriggerType == config.TriggerTypes.fromNow)
+                else if (action.TriggerType == Config.TriggerTypes.FromNow)
                 {
                     if (!DateTime.TryParseExact(
                         action.Value,
@@ -118,14 +118,14 @@ namespace WindowsShutdownHelper.functions
                     if (executionDate == nowDate)
                     {
                         ShowCountdownNotification(
-                            language.MessageContentYouCanThat,
+                            Language.MessageContentYouCanThat,
                             settings.CountdownNotifierSeconds,
                             action);
                     }
                 }
 
 
-                else if (action.TriggerType == config.TriggerTypes.certainTime)
+                else if (action.TriggerType == Config.TriggerTypes.CertainTime)
                 {
                     if (!DateTime.TryParseExact(
                         action.Value,
@@ -144,7 +144,7 @@ namespace WindowsShutdownHelper.functions
                     if (executionDate == nowDate)
                     {
                         ShowCountdownNotification(
-                            language.MessageContentYouCanThat,
+                            Language.MessageContentYouCanThat,
                             settings.CountdownNotifierSeconds,
                             action);
                     }
@@ -190,29 +190,29 @@ namespace WindowsShutdownHelper.functions
 
         public static void ActionTypeLocalization(ActionModel action)
         {
-            if (action.ActionType == config.ActionTypes.lockComputer)
+            if (action.ActionType == Config.ActionTypes.LockComputer)
             {
-                ActionTypeName = language.MainCboxActionTypeItemLockComputer;
+                ActionTypeName = Language.MainCboxActionTypeItemLockComputer;
             }
-            else if (action.ActionType == config.ActionTypes.shutdownComputer)
+            else if (action.ActionType == Config.ActionTypes.ShutdownComputer)
             {
-                ActionTypeName = language.MainCboxActionTypeItemShutdownComputer;
+                ActionTypeName = Language.MainCboxActionTypeItemShutdownComputer;
             }
-            else if (action.ActionType == config.ActionTypes.restartComputer)
+            else if (action.ActionType == Config.ActionTypes.RestartComputer)
             {
-                ActionTypeName = language.MainCboxActionTypeItemRestartComputer;
+                ActionTypeName = Language.MainCboxActionTypeItemRestartComputer;
             }
-            else if (action.ActionType == config.ActionTypes.logOffWindows)
+            else if (action.ActionType == Config.ActionTypes.LogOffWindows)
             {
-                ActionTypeName = language.MainCboxActionTypeItemLogOffWindows;
+                ActionTypeName = Language.MainCboxActionTypeItemLogOffWindows;
             }
-            else if (action.ActionType == config.ActionTypes.sleepComputer)
+            else if (action.ActionType == Config.ActionTypes.SleepComputer)
             {
-                ActionTypeName = language.MainCboxActionTypeItemSleepComputer;
+                ActionTypeName = Language.MainCboxActionTypeItemSleepComputer;
             }
-            else if (action.ActionType == config.ActionTypes.turnOffMonitor)
+            else if (action.ActionType == Config.ActionTypes.TurnOffMonitor)
             {
-                ActionTypeName = language.MainCboxActionTypeItemTurnOffMonitor;
+                ActionTypeName = Language.MainCboxActionTypeItemTurnOffMonitor;
             }
         }
     }
