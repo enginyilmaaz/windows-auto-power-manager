@@ -1020,9 +1020,16 @@ namespace WindowsShutdownHelper
 
         public void ShowMain()
         {
-            Show();
-            Focus();
             ShowInTaskbar = true;
+            Show();
+
+            if (WindowState == FormWindowState.Minimized)
+            {
+                WindowState = FormWindowState.Normal;
+            }
+
+            BringToFront();
+            Activate();
         }
 
         private void NotifyIconMain_MouseDoubleClick(object sender, MouseEventArgs e)

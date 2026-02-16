@@ -224,6 +224,14 @@ namespace WindowsShutdownHelper
             _initSent = true;
 
             SendInitData();
+
+            // Fallback: if page is already ready, show immediately.
+            // This avoids missing popups when "initialized" message is delayed.
+            if (_showAfterInitialized)
+            {
+                ShowForUser();
+                StartCountdownTimer();
+            }
         }
 
         private void SendInitData()
