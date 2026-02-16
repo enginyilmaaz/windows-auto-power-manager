@@ -66,10 +66,10 @@ namespace WindowsShutdownHelper.Functions
         {
             Settings settings = new Settings();
 
-            if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
+            if (File.Exists(AppContext.BaseDirectory + "\\Settings.json"))
             {
                 settings = JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
+                    File.ReadAllText(AppContext.BaseDirectory + "\\Settings.json"));
             }
             else
             {

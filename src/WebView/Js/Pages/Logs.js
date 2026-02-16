@@ -68,15 +68,15 @@ window.LogsPage = {
     },
 
     _filterMap: {
-        'locks': ['lockComputer', 'lockComputerManually'],
-        'unlocks': ['unlockComputer'],
-        'turnOffsMonitor': ['turnOffMonitor'],
-        'sleeps': ['sleepComputer'],
-        'logOffs': ['logOffWindows'],
-        'shutdowns': ['shutdownComputer'],
-        'restarts': ['restartComputer'],
-        'appStarts': ['appStarted'],
-        'appTerminates': ['appTerminated']
+        'locks': ['LockComputer', 'LockComputerManually'],
+        'unlocks': ['UnlockComputer'],
+        'turnOffsMonitor': ['TurnOffMonitor'],
+        'sleeps': ['SleepComputer'],
+        'logOffs': ['LogOffWindows'],
+        'shutdowns': ['ShutdownComputer'],
+        'restarts': ['RestartComputer'],
+        'appStarts': ['AppStarted'],
+        'appTerminates': ['AppTerminated']
     },
 
     _applyFilterSort() {

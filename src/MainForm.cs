@@ -377,7 +377,7 @@ namespace WindowsShutdownHelper
         {
             if (raw == Config.TriggerTypes.SystemIdle) return Language.MainCboxTriggerTypeItemSystemIdle;
             if (raw == Config.TriggerTypes.CertainTime) return Language.MainCboxTriggerTypeItemCertainTime;
-            if (raw == Config.TriggerTypes.FromNow || raw?.Trim() == "fromNow") return Language.MainCboxTriggerTypeItemFromNow;
+            if (raw == Config.TriggerTypes.FromNow) return Language.MainCboxTriggerTypeItemFromNow;
             return raw;
         }
 
@@ -385,9 +385,9 @@ namespace WindowsShutdownHelper
         {
             if (string.IsNullOrWhiteSpace(raw)) return "";
             string normalized = raw.Trim();
-            if (normalized == "fromNow") return "fromNow";
-            if (normalized == "systemIdle") return "systemIdle";
-            if (normalized == "certainTime") return "certainTime";
+            if (normalized == "FromNow") return "FromNow";
+            if (normalized == "SystemIdle") return "SystemIdle";
+            if (normalized == "CertainTime") return "CertainTime";
             return normalized;
         }
 
@@ -400,7 +400,7 @@ namespace WindowsShutdownHelper
 
         private Settings LoadSettings()
         {
-            string path = AppContext.BaseDirectory + "\\settings.json";
+            string path = AppContext.BaseDirectory + "\\Settings.json";
             return ReadJsonFileOrDefault(path, Config.SettingsINI.DefaulSettingFile());
         }
 
@@ -680,7 +680,7 @@ namespace WindowsShutdownHelper
 
             try
             {
-                if (triggerType == "fromNow")
+                if (triggerType == "FromNow")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.FromNow;
 
@@ -700,7 +700,7 @@ namespace WindowsShutdownHelper
                     else targetTime = DateTime.Now.AddMinutes(inputValue);
                     parsedAction.Value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
                 }
-                else if (triggerType == "systemIdle")
+                else if (triggerType == "SystemIdle")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.SystemIdle;
 
@@ -722,7 +722,7 @@ namespace WindowsShutdownHelper
                     parsedAction.Value = valueInSeconds.ToString();
                     parsedAction.ValueUnit = "seconds";
                 }
-                else if (triggerType == "certainTime")
+                else if (triggerType == "CertainTime")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.CertainTime;
                     string timeStr = data.GetProperty("time").GetString();
@@ -791,7 +791,7 @@ namespace WindowsShutdownHelper
             };
 
             string currentLang = LoadSettings().Language;
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\Settings.json", true, newSettings);
 
             // Update tray menu renderer and form BackColor based on theme
             bool isDark = DetermineIfDark(newSettings.Theme);
@@ -839,7 +839,7 @@ namespace WindowsShutdownHelper
 
         private void HandleLoadLogs()
         {
-            string logPath = AppContext.BaseDirectory + "\\logs.json";
+            string logPath = AppContext.BaseDirectory + "\\Logs.json";
             if (File.Exists(logPath))
             {
                 var rawLogs = JsonSerializer.Deserialize<List<LogSystem>>(File.ReadAllText(logPath));
@@ -875,7 +875,7 @@ namespace WindowsShutdownHelper
 
         private void HandleClearLogs()
         {
-            string logPath = AppContext.BaseDirectory + "\\logs.json";
+            string logPath = AppContext.BaseDirectory + "\\Logs.json";
             if (File.Exists(logPath)) File.Delete(logPath);
 
             PostMessage("showToast", new

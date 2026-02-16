@@ -429,7 +429,7 @@ namespace WindowsShutdownHelper
                 case "delete":
                     MainForm.ActionList.Remove(Action);
                     MainForm.IsDeletedFromNotifier = true;
-                    JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
+                    JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true,
                         MainForm.ActionList);
                     HideAndReset();
                     break;

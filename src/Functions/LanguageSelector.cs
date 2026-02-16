@@ -32,7 +32,7 @@ namespace WindowsShutdownHelper.Functions
         public static Language LanguageFile()
         {
             Settings settings = new Settings();
-            string settingsPath = AppContext.BaseDirectory + "\\settings.json";
+            string settingsPath = AppContext.BaseDirectory + "\\Settings.json";
             if (File.Exists(settingsPath))
             {
                 settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settingsPath));

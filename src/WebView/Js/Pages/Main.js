@@ -21,24 +21,24 @@ window.MainPage = {
         this._actionTypeByLabel = {};
         this._triggerTypeByLabel = {};
 
-        this._actionTypeByLabel[L('MainCboxActionTypeItemLockComputer')] = 'lockComputer';
-        this._actionTypeByLabel[L('MainCboxActionTypeItemSleepComputer')] = 'sleepComputer';
-        this._actionTypeByLabel[L('MainCboxActionTypeItemTurnOffMonitor')] = 'turnOffMonitor';
-        this._actionTypeByLabel[L('MainCboxActionTypeItemShutdownComputer')] = 'shutdownComputer';
-        this._actionTypeByLabel[L('MainCboxActionTypeItemRestartComputer')] = 'restartComputer';
-        this._actionTypeByLabel[L('MainCboxActionTypeItemLogOffWindows')] = 'logOffWindows';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemLockComputer')] = 'LockComputer';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemSleepComputer')] = 'SleepComputer';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemTurnOffMonitor')] = 'TurnOffMonitor';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemShutdownComputer')] = 'ShutdownComputer';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemRestartComputer')] = 'RestartComputer';
+        this._actionTypeByLabel[L('MainCboxActionTypeItemLogOffWindows')] = 'LogOffWindows';
 
-        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemSystemIdle')] = 'systemIdle';
-        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemFromNow')] = 'fromNow';
-        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemCertainTime')] = 'certainTime';
+        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemSystemIdle')] = 'SystemIdle';
+        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemFromNow')] = 'FromNow';
+        this._triggerTypeByLabel[L('MainCboxTriggerTypeItemCertainTime')] = 'CertainTime';
     },
 
     _normalizeTriggerRaw(value) {
         if (!value) return '';
         var v = String(value).trim();
-        if (v === 'fromNow') return 'fromNow';
-        if (v === 'systemIdle') return 'systemIdle';
-        if (v === 'certainTime') return 'certainTime';
+        if (v === 'FromNow') return 'FromNow';
+        if (v === 'SystemIdle') return 'SystemIdle';
+        if (v === 'CertainTime') return 'CertainTime';
         return v;
     },
 
@@ -82,17 +82,17 @@ window.MainPage = {
         var timeUnit = '1';
         var time = '';
 
-        if (triggerRaw === 'systemIdle') {
+        if (triggerRaw === 'SystemIdle') {
             var seconds = parseInt(action && action.value, 10);
             if (!isNaN(seconds) && seconds > 0) {
                 value = String(seconds);
                 timeUnit = '0';
             }
-        } else if (triggerRaw === 'certainTime') {
+        } else if (triggerRaw === 'CertainTime') {
             var rawTime = String(action && action.value || '');
             var timeMatch = /^(\d{2}:\d{2})/.exec(rawTime);
             time = timeMatch ? timeMatch[1] : '';
-        } else if (triggerRaw === 'fromNow') {
+        } else if (triggerRaw === 'FromNow') {
             var targetDate = this._parseActionDate(action && action.value);
             if (targetDate) {
                 var remainingSeconds = Math.max(1, Math.round((targetDate.getTime() - Date.now()) / 1000));
@@ -142,21 +142,21 @@ window.MainPage = {
                 '<span class="form-label">' + L('MainLabelActionType') + '</span>' +
                 '<select id="sel-action" class="form-select">' +
                     '<option value="0">' + L('MainCboxActionTypeItemChooseAction') + '</option>' +
-                    '<option value="shutdownComputer">' + L('MainCboxActionTypeItemShutdownComputer') + '</option>' +
-                    '<option value="restartComputer">' + L('MainCboxActionTypeItemRestartComputer') + '</option>' +
-                    '<option value="logOffWindows">' + L('MainCboxActionTypeItemLogOffWindows') + '</option>' +
-                    '<option value="sleepComputer">' + L('MainCboxActionTypeItemSleepComputer') + '</option>' +
-                    '<option value="lockComputer">' + L('MainCboxActionTypeItemLockComputer') + '</option>' +
-                    '<option value="turnOffMonitor">' + L('MainCboxActionTypeItemTurnOffMonitor') + '</option>' +
+                    '<option value="ShutdownComputer">' + L('MainCboxActionTypeItemShutdownComputer') + '</option>' +
+                    '<option value="RestartComputer">' + L('MainCboxActionTypeItemRestartComputer') + '</option>' +
+                    '<option value="LogOffWindows">' + L('MainCboxActionTypeItemLogOffWindows') + '</option>' +
+                    '<option value="SleepComputer">' + L('MainCboxActionTypeItemSleepComputer') + '</option>' +
+                    '<option value="LockComputer">' + L('MainCboxActionTypeItemLockComputer') + '</option>' +
+                    '<option value="TurnOffMonitor">' + L('MainCboxActionTypeItemTurnOffMonitor') + '</option>' +
                 '</select>' +
             '</div>' +
             '<div class="form-row">' +
                 '<span class="form-label">' + L('MainLabelTrigger') + '</span>' +
                 '<select id="sel-trigger" class="form-select">' +
                     '<option value="0">' + L('MainCboxTriggerTypeItemChooseTrigger') + '</option>' +
-                    '<option value="systemIdle">' + L('MainCboxTriggerTypeItemSystemIdle') + '</option>' +
-                    '<option value="fromNow">' + L('MainCboxTriggerTypeItemFromNow') + '</option>' +
-                    '<option value="certainTime">' + L('MainCboxTriggerTypeItemCertainTime') + '</option>' +
+                    '<option value="SystemIdle">' + L('MainCboxTriggerTypeItemSystemIdle') + '</option>' +
+                    '<option value="FromNow">' + L('MainCboxTriggerTypeItemFromNow') + '</option>' +
+                    '<option value="CertainTime">' + L('MainCboxTriggerTypeItemCertainTime') + '</option>' +
                 '</select>' +
             '</div>' +
             '<div class="form-row" id="row-value">' +
@@ -195,13 +195,13 @@ window.MainPage = {
                 inp.style.display = 'none';
                 unit.style.display = 'none';
                 time.style.display = 'none';
-            } else if (v === 'systemIdle' || v === 'fromNow') {
+            } else if (v === 'SystemIdle' || v === 'FromNow') {
                 hint.style.display = 'none';
                 inp.style.display = '';
                 unit.style.display = '';
                 time.style.display = 'none';
                 lbl.textContent = L('MainLabelValueDuration') || L('MainLabelValue');
-            } else if (v === 'certainTime') {
+            } else if (v === 'CertainTime') {
                 hint.style.display = 'none';
                 inp.style.display = 'none';
                 unit.style.display = 'none';
@@ -323,12 +323,12 @@ window.MainPage = {
         var filtered = self._rawActions;
         if (self._currentFilter && self._currentFilter !== 'all') {
             var filterMap = {
-                'shutdownComputer': L('MainCboxActionTypeItemShutdownComputer'),
-                'restartComputer': L('MainCboxActionTypeItemRestartComputer'),
-                'sleepComputer': L('MainCboxActionTypeItemSleepComputer'),
-                'lockComputer': L('MainCboxActionTypeItemLockComputer'),
-                'turnOffMonitor': L('MainCboxActionTypeItemTurnOffMonitor'),
-                'logOffWindows': L('MainCboxActionTypeItemLogOffWindows')
+                'ShutdownComputer': L('MainCboxActionTypeItemShutdownComputer'),
+                'RestartComputer': L('MainCboxActionTypeItemRestartComputer'),
+                'SleepComputer': L('MainCboxActionTypeItemSleepComputer'),
+                'LockComputer': L('MainCboxActionTypeItemLockComputer'),
+                'TurnOffMonitor': L('MainCboxActionTypeItemTurnOffMonitor'),
+                'LogOffWindows': L('MainCboxActionTypeItemLogOffWindows')
             };
             var filterText = filterMap[self._currentFilter] || self._currentFilter;
             filtered = filtered.filter(function (a) {

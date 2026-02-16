@@ -456,7 +456,7 @@ namespace WindowsShutdownHelper
 
             try
             {
-                if (triggerType == "fromNow")
+                if (triggerType == "FromNow")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.FromNow;
 
@@ -476,7 +476,7 @@ namespace WindowsShutdownHelper
                     else targetTime = DateTime.Now.AddMinutes(inputValue);
                     parsedAction.Value = targetTime.ToString("dd.MM.yyyy HH:mm:ss");
                 }
-                else if (triggerType == "systemIdle")
+                else if (triggerType == "SystemIdle")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.SystemIdle;
 
@@ -498,7 +498,7 @@ namespace WindowsShutdownHelper
                     parsedAction.Value = valueInSeconds.ToString();
                     parsedAction.ValueUnit = "seconds";
                 }
-                else if (triggerType == "certainTime")
+                else if (triggerType == "CertainTime")
                 {
                     parsedAction.TriggerType = Config.TriggerTypes.CertainTime;
                     string timeStr = data.GetProperty("time").GetString();
@@ -555,7 +555,7 @@ namespace WindowsShutdownHelper
 
         private void WriteActionList()
         {
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true,
                 MainForm.ActionList.ToList());
 
             // Refresh in this window
@@ -583,7 +583,7 @@ namespace WindowsShutdownHelper
             };
 
             string currentLang = LoadSettings().Language;
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\settings.json", true, newSettings);
+            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\Settings.json", true, newSettings);
 
             if (newSettings.StartWithWindows)
                 StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
@@ -624,7 +624,7 @@ namespace WindowsShutdownHelper
 
         private void HandleLoadLogs()
         {
-            string logPath = AppContext.BaseDirectory + "\\logs.json";
+            string logPath = AppContext.BaseDirectory + "\\Logs.json";
             if (File.Exists(logPath))
             {
                 var rawLogs = JsonSerializer.Deserialize<List<LogSystem>>(File.ReadAllText(logPath));
@@ -645,7 +645,7 @@ namespace WindowsShutdownHelper
 
         private void HandleClearLogs()
         {
-            string logPath = AppContext.BaseDirectory + "\\logs.json";
+            string logPath = AppContext.BaseDirectory + "\\Logs.json";
             if (File.Exists(logPath)) File.Delete(logPath);
 
             PostMessage("showToast", new
@@ -674,10 +674,10 @@ namespace WindowsShutdownHelper
 
         private Settings LoadSettings()
         {
-            if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
+            if (File.Exists(AppContext.BaseDirectory + "\\Settings.json"))
             {
                 return JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
+                    File.ReadAllText(AppContext.BaseDirectory + "\\Settings.json"));
             }
             return Config.SettingsINI.DefaulSettingFile();
         }
@@ -718,7 +718,7 @@ namespace WindowsShutdownHelper
         {
             if (raw == Config.TriggerTypes.SystemIdle) return MainForm.Language.MainCboxTriggerTypeItemSystemIdle;
             if (raw == Config.TriggerTypes.CertainTime) return MainForm.Language.MainCboxTriggerTypeItemCertainTime;
-            if (raw == Config.TriggerTypes.FromNow || raw?.Trim() == "fromNow") return MainForm.Language.MainCboxTriggerTypeItemFromNow;
+            if (raw == Config.TriggerTypes.FromNow) return MainForm.Language.MainCboxTriggerTypeItemFromNow;
             return raw;
         }
 
@@ -726,9 +726,9 @@ namespace WindowsShutdownHelper
         {
             if (string.IsNullOrWhiteSpace(raw)) return "";
             string normalized = raw.Trim();
-            if (normalized == "fromNow") return "fromNow";
-            if (normalized == "systemIdle") return "systemIdle";
-            if (normalized == "certainTime") return "certainTime";
+            if (normalized == "FromNow") return "FromNow";
+            if (normalized == "SystemIdle") return "SystemIdle";
+            if (normalized == "CertainTime") return "CertainTime";
             return normalized;
         }
 
