@@ -2,6 +2,7 @@ using System;
 using System.Drawing;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using WindowsShutdownHelper.functions;
@@ -20,7 +21,11 @@ namespace WindowsShutdownHelper
         public Timer timer = new Timer();
 
         private bool _webViewReady;
+        private bool _webViewInitStarted;
         private bool _pageReady;
+        private bool _hasPendingNotification;
+        private bool _showAfterInitialized;
+        private bool _isPrewarmedHidden;
         private bool _initSent;
         private bool _timerStarted;
         private Panel _loadingOverlay;
@@ -31,29 +36,35 @@ namespace WindowsShutdownHelper
         private Point dragStartForm;
         private bool dragging;
 
+        public actionCountdownNotifier()
+        {
+            InitializeComponent();
+            InitializeLoadingOverlay();
+        }
+
         public actionCountdownNotifier(string _messageTitle, string _messageContentCountdownNotify,
             string _messageContentCountdownNotify_2,
             string _messageContentActionType,
             string _messageContentYouCanThat, int _showTimeSecond,
             ActionModel _action)
+            : this()
         {
-            InitializeComponent();
-            InitializeLoadingOverlay();
-            action = _action;
-            showTimeSecond = _showTimeSecond;
-            messageTitle = _messageTitle;
-            messageContentCountdownNotify = _messageContentCountdownNotify;
-            messageContentCountdownNotify_2 = _messageContentCountdownNotify_2;
-            messageContentActionType = _messageContentActionType;
-            messageContentYouCanThat = _messageContentYouCanThat;
+            ConfigureNotification(
+                _messageTitle,
+                _messageContentCountdownNotify,
+                _messageContentCountdownNotify_2,
+                _messageContentActionType,
+                _messageContentYouCanThat,
+                _showTimeSecond,
+                _action);
         }
 
         private async void actionCountdownNotifier_Load(object sender, EventArgs e)
         {
             try
             {
-                ShowLoadingOverlay();
-                await InitializeWebView();
+                await EnsureWebViewInitializedAsync(showLoading: false);
+                TrySendInitData();
             }
             catch (Exception ex)
             {
@@ -65,6 +76,89 @@ namespace WindowsShutdownHelper
                     MessageBoxIcon.Error);
                 Close();
             }
+        }
+
+        public void ConfigureAndShow(
+            string _messageTitle,
+            string _messageContentCountdownNotify,
+            string _messageContentCountdownNotify_2,
+            string _messageContentActionType,
+            string _messageContentYouCanThat,
+            int _showTimeSecond,
+            ActionModel _action)
+        {
+            ConfigureNotification(
+                _messageTitle,
+                _messageContentCountdownNotify,
+                _messageContentCountdownNotify_2,
+                _messageContentActionType,
+                _messageContentYouCanThat,
+                _showTimeSecond,
+                _action);
+
+            _showAfterInitialized = true;
+            _ = EnsureWebViewInitializedAsync(showLoading: false);
+            TrySendInitData();
+        }
+
+        public void PrewarmInBackground()
+        {
+            if (_webViewReady || _webViewInitStarted || IsDisposed) return;
+
+            ShowInTaskbar = false;
+            StartPosition = FormStartPosition.Manual;
+            Location = new Point(-32000, -32000);
+            Opacity = 0;
+            _isPrewarmedHidden = true;
+
+            if (!IsHandleCreated)
+            {
+                var _ = Handle;
+            }
+
+            if (!webView.IsHandleCreated)
+            {
+                webView.CreateControl();
+            }
+
+            _ = EnsureWebViewInitializedAsync(showLoading: false);
+        }
+
+        private void ConfigureNotification(
+            string _messageTitle,
+            string _messageContentCountdownNotify,
+            string _messageContentCountdownNotify_2,
+            string _messageContentActionType,
+            string _messageContentYouCanThat,
+            int _showTimeSecond,
+            ActionModel _action)
+        {
+            action = _action ?? new ActionModel();
+            showTimeSecond = Math.Max(0, _showTimeSecond);
+            messageTitle = _messageTitle;
+            messageContentCountdownNotify = _messageContentCountdownNotify;
+            messageContentCountdownNotify_2 = _messageContentCountdownNotify_2;
+            messageContentActionType = _messageContentActionType;
+            messageContentYouCanThat = _messageContentYouCanThat;
+
+            _hasPendingNotification = true;
+            _showAfterInitialized = false;
+            _initSent = false;
+            _timerStarted = false;
+            timer.Stop();
+        }
+
+        private async Task EnsureWebViewInitializedAsync(bool showLoading)
+        {
+            if (_webViewReady || _webViewInitStarted) return;
+
+            _webViewInitStarted = true;
+            if (showLoading)
+            {
+                ShowLoadingOverlay();
+            }
+
+            await InitializeWebView();
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()
@@ -96,7 +190,7 @@ namespace WindowsShutdownHelper
 
         private void TrySendInitData()
         {
-            if (_initSent || !_webViewReady || !_pageReady) return;
+            if (_initSent || !_hasPendingNotification || !_webViewReady || !_pageReady) return;
             _initSent = true;
 
             SendInitData();
@@ -192,6 +286,50 @@ namespace WindowsShutdownHelper
             _loadingOverlay.Visible = false;
         }
 
+        private void ShowForUser()
+        {
+            _showAfterInitialized = false;
+            ShowInTaskbar = false;
+            if (_isPrewarmedHidden)
+            {
+                StartPosition = FormStartPosition.CenterScreen;
+            }
+            Opacity = 1;
+
+            if (!Visible)
+            {
+                Show();
+            }
+            else
+            {
+                BringToFront();
+            }
+
+            Activate();
+            Focus();
+            _isPrewarmedHidden = false;
+        }
+
+        private void HideAndReset()
+        {
+            timer.Stop();
+            _timerStarted = false;
+            _hasPendingNotification = false;
+            _showAfterInitialized = false;
+            _initSent = false;
+            showTimeSecond = 0;
+
+            if (!IsDisposed)
+            {
+                Hide();
+                ShowInTaskbar = false;
+                StartPosition = FormStartPosition.Manual;
+                Location = new Point(-32000, -32000);
+                Opacity = 0;
+                _isPrewarmedHidden = true;
+            }
+        }
+
         private void PostMessage(string type, object data)
         {
             if (!_webViewReady || webView.CoreWebView2 == null) return;
@@ -203,8 +341,7 @@ namespace WindowsShutdownHelper
         {
             if (showTimeSecond == 0)
             {
-                timer.Stop();
-                Close();
+                HideAndReset();
                 return;
             }
 
@@ -213,8 +350,7 @@ namespace WindowsShutdownHelper
                 uint idleTimeMin = systemIdleDetector.GetLastInputTime();
                 if (idleTimeMin == 0)
                 {
-                    timer.Stop();
-                    Close();
+                    HideAndReset();
                     return;
                 }
             }
@@ -239,24 +375,25 @@ namespace WindowsShutdownHelper
                     break;
                 case "initialized":
                     HideLoadingOverlay();
+                    if (_showAfterInitialized)
+                    {
+                        ShowForUser();
+                    }
                     StartCountdownTimer();
                     break;
                 case "ignore":
-                    timer.Stop();
-                    Close();
+                    HideAndReset();
                     break;
                 case "delete":
-                    timer.Stop();
                     mainForm.actionList.Remove(action);
                     mainForm.isDeletedFromNotifier = true;
                     jsonWriter.WriteJson(AppContext.BaseDirectory + "\\actionList.json", true,
                         mainForm.actionList);
-                    Close();
+                    HideAndReset();
                     break;
                 case "skip":
-                    timer.Stop();
                     mainForm.isSkippedCertainTimeAction = true;
-                    Close();
+                    HideAndReset();
                     break;
                 case "dragStart":
                     var data = msg.RootElement.GetProperty("data");

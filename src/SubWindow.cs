@@ -487,6 +487,11 @@ namespace WindowsShutdownHelper
             else
                 startWithWindows.DeleteStartup(mainForm.language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
 
+            if (newSettings.isCountdownNotifierEnabled)
+            {
+                notifySystem.PrewarmCountdownNotifier();
+            }
+
             if (currentLang != newSettings.language)
             {
                 PostMessage("showToast", new

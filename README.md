@@ -63,19 +63,19 @@ WindowsShutdownHelper/
 │   ├── ActionCountdownNotifier.cs    # Countdown popup before action execution
 │   ├── Settings.cs                   # Settings model
 │   ├── BuildInfo.cs                  # Build commit ID (injected by CI)
-│   ├── config/
+│   ├── Config/
 │   │   ├── ActionTypes.cs            # Action type constants
 │   │   ├── TriggerTypes.cs           # Trigger type constants
 │   │   ├── SettingsINI.cs            # Default settings
 │   │   ├── LanguageINI.cs            # Language model
-│   │   └── lang/                     # Language files
+│   │   └── Lang/                     # Language files
 │   │       ├── English.cs
 │   │       ├── Turkish.cs
 │   │       ├── German.cs
 │   │       ├── French.cs
 │   │       ├── Russian.cs
 │   │       └── Italian.cs
-│   ├── functions/
+│   ├── Functions/
 │   │   ├── Actions.cs                # System action execution (Win32 API calls)
 │   │   ├── SystemIdleDetector.cs     # User idle time detection (Win32 API)
 │   │   ├── DetectScreen.cs           # Session lock/unlock detection
@@ -87,7 +87,7 @@ WindowsShutdownHelper/
 │   │   ├── ActionValidation.cs       # Action conflict validation
 │   │   ├── ModernMenuRenderer.cs     # Custom tray menu renderer
 │   │   └── WebViewEnvironmentProvider.cs # WebView2 environment singleton
-│   ├── enums/                        # UI-related enumerations
+│   ├── Enums/                        # UI-related enumerations
 │   └── wwwroot/                      # Frontend assets
 │       ├── index.html                # Main SPA page
 │       ├── subwindow.html            # Sub-window SPA page

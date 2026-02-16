@@ -291,6 +291,11 @@ namespace WindowsShutdownHelper
                     var win = GetOrCreateSubWindow(pageName);
                     win.PrewarmInBackground();
                 }
+
+                if (_cachedSettings?.isCountdownNotifierEnabled == true)
+                {
+                    notifySystem.PrewarmCountdownNotifier();
+                }
             }));
         }
 
@@ -683,6 +688,11 @@ namespace WindowsShutdownHelper
                 startWithWindows.AddStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
             else
                 startWithWindows.DeleteStartup(language.settingsForm_addStartupAppName ?? "Windows Shutdown Helper");
+
+            if (newSettings.isCountdownNotifierEnabled)
+            {
+                notifySystem.PrewarmCountdownNotifier();
+            }
 
             if (currentLang != newSettings.language)
             {

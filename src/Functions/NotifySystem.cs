@@ -13,10 +13,52 @@ namespace WindowsShutdownHelper.functions
         public static Language language = languageSelector.languageFile();
         public static string actionTypeName;
         private static HashSet<string> _notifiedIdleActions = new HashSet<string>();
+        private static actionCountdownNotifier _sharedCountdownNotifier;
 
         public static void ResetIdleNotifications()
         {
             _notifiedIdleActions.Clear();
+        }
+
+        public static void PrewarmCountdownNotifier()
+        {
+            EnsureCountdownNotifier();
+            _sharedCountdownNotifier.PrewarmInBackground();
+        }
+
+        private static void EnsureCountdownNotifier()
+        {
+            if (_sharedCountdownNotifier == null || _sharedCountdownNotifier.IsDisposed)
+            {
+                _sharedCountdownNotifier = new actionCountdownNotifier();
+            }
+        }
+
+        private static bool IsCountdownNotifierVisible()
+        {
+            return Application.OpenForms.OfType<actionCountdownNotifier>().Any(form => form.Visible);
+        }
+
+        private static bool ShowCountdownNotification(
+            string infoText,
+            int countdownSeconds,
+            ActionModel action)
+        {
+            if (IsCountdownNotifierVisible())
+            {
+                return false;
+            }
+
+            EnsureCountdownNotifier();
+            _sharedCountdownNotifier.ConfigureAndShow(
+                language.messageTitle_info,
+                language.messageContent_CountdownNotify,
+                language.messageContent_CountdownNotify_2,
+                actionTypeName,
+                infoText,
+                countdownSeconds,
+                action);
+            return true;
         }
 
         public static void showNotification(ActionModel action, uint idleTimeMin)
@@ -45,17 +87,13 @@ namespace WindowsShutdownHelper.functions
                     if (idleTimeMin >= actionValue - settings.countdownNotifierSeconds
                         && !_notifiedIdleActions.Contains(actionKey))
                     {
-                        if (Application.OpenForms.OfType<actionCountdownNotifier>().Any() == false)
+                        bool shown = ShowCountdownNotification(
+                            language.messageContent_cancelForSystemIdle,
+                            settings.countdownNotifierSeconds,
+                            action);
+                        if (shown)
                         {
                             _notifiedIdleActions.Add(actionKey);
-                            actionCountdownNotifier actionCountdownNotifier = new actionCountdownNotifier(language.messageTitle_info,
-                                language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
-                                actionTypeName, language.messageContent_cancelForSystemIdle,
-                                settings.countdownNotifierSeconds,
-                                action);
-
-                            actionCountdownNotifier.Show();
-                            actionCountdownNotifier.Focus();
                         }
                     }
                 }
@@ -78,17 +116,10 @@ namespace WindowsShutdownHelper.functions
 
                     if (executionDate == nowDate)
                     {
-                        if (Application.OpenForms.OfType<actionCountdownNotifier>().Any() == false)
-                        {
-                            actionCountdownNotifier actionCountdownNotifier = new actionCountdownNotifier(language.messageTitle_info,
-                                language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
-                                actionTypeName, language.messageContent_youCanThat,
-                                settings.countdownNotifierSeconds,
-                                action);
-
-                            actionCountdownNotifier.Show();
-                            actionCountdownNotifier.Focus();
-                        }
+                        ShowCountdownNotification(
+                            language.messageContent_youCanThat,
+                            settings.countdownNotifierSeconds,
+                            action);
                     }
                 }
 
@@ -111,17 +142,10 @@ namespace WindowsShutdownHelper.functions
 
                     if (executionDate == nowDate)
                     {
-                        if (Application.OpenForms.OfType<actionCountdownNotifier>().Any() == false)
-                        {
-                            actionCountdownNotifier actionCountdownNotifier = new actionCountdownNotifier(language.messageTitle_info,
-                                language.messageContent_CountdownNotify, language.messageContent_CountdownNotify_2,
-                                actionTypeName, language.messageContent_youCanThat,
-                                settings.countdownNotifierSeconds,
-                                action);
-
-                            actionCountdownNotifier.Show();
-                            actionCountdownNotifier.Focus();
-                        }
+                        ShowCountdownNotification(
+                            language.messageContent_youCanThat,
+                            settings.countdownNotifierSeconds,
+                            action);
                     }
                 }
             }
