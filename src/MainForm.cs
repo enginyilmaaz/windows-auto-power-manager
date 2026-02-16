@@ -36,20 +36,11 @@ namespace WindowsShutdownHelper
         private Label _loadingLabel;
         private Timer _loadingDelayTimer;
         private const int LoadingOverlayDelayMs = 350;
-        private const string DefaultPageName = "main";
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "about" };
-        private readonly HashSet<string> _knownPages = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-        {
-            "main",
-            "settings",
-            "logs",
-            "about"
-        };
         private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
         private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
-        private bool _lastPageRestored;
 
         public MainForm()
         {
@@ -288,7 +279,6 @@ namespace WindowsShutdownHelper
             SendInitData();
             HideLoadingOverlay();
             StartSubWindowPrewarm();
-            RestoreLastOpenedPageIfNeeded();
         }
 
         private void StartSubWindowPrewarm()
@@ -315,71 +305,6 @@ namespace WindowsShutdownHelper
         private void StopSubWindowPrewarm()
         {
             _subWindowPrewarmStarted = true;
-        }
-
-        private string NormalizePageName(string pageName)
-        {
-            string normalized = (pageName ?? string.Empty).Trim().ToLowerInvariant();
-            if (_knownPages.Contains(normalized))
-            {
-                return normalized;
-            }
-
-            return DefaultPageName;
-        }
-
-        private string LastPageFilePath()
-        {
-            return Path.Combine(AppContext.BaseDirectory, "LastPage.txt");
-        }
-
-        private void SaveLastOpenedPage(string pageName)
-        {
-            try
-            {
-                File.WriteAllText(LastPageFilePath(), NormalizePageName(pageName));
-            }
-            catch
-            {
-                // Non-critical state file.
-            }
-        }
-
-        private string LoadLastOpenedPage()
-        {
-            try
-            {
-                string path = LastPageFilePath();
-                if (!File.Exists(path))
-                {
-                    return DefaultPageName;
-                }
-
-                return NormalizePageName(File.ReadAllText(path));
-            }
-            catch
-            {
-                return DefaultPageName;
-            }
-        }
-
-        private void RestoreLastOpenedPageIfNeeded()
-        {
-            if (_lastPageRestored || RunInTaskbarCounter > 0 || IsApplicationExiting)
-            {
-                return;
-            }
-
-            _lastPageRestored = true;
-            string pageName = LoadLastOpenedPage();
-            if (pageName == DefaultPageName)
-            {
-                return;
-            }
-
-            OpenSubWindow(pageName, rememberPage: false);
-            Hide();
-            ShowInTaskbar = false;
         }
 
         private void SendInitData()
@@ -1086,24 +1011,7 @@ namespace WindowsShutdownHelper
 
         public void OpenSubWindow(string pageName)
         {
-            OpenSubWindow(pageName, rememberPage: true);
-        }
-
-        private void OpenSubWindow(string pageName, bool rememberPage)
-        {
-            string normalizedPageName = NormalizePageName(pageName);
-            if (normalizedPageName == DefaultPageName)
-            {
-                ShowMain();
-                return;
-            }
-
-            if (rememberPage)
-            {
-                SaveLastOpenedPage(normalizedPageName);
-            }
-
-            var win = GetOrCreateSubWindow(normalizedPageName);
+            var win = GetOrCreateSubWindow(pageName);
             win.ShowForUser();
             win.Focus();
         }
@@ -1334,7 +1242,6 @@ namespace WindowsShutdownHelper
 
         public void ShowMain()
         {
-            SaveLastOpenedPage(DefaultPageName);
             ShowInTaskbar = true;
             Show();
 
