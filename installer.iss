@@ -86,12 +86,12 @@ Name: "startupentry"; Description: "{cm:StartWithWindows}"; GroupDescription: "{
 
 [Files]
 #ifexist "bin\Release\net8.0-windows\win-x64\publish\Windows Shutdown Helper.exe"
-Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,LastPage.txt,lang\*"; Check: Is64BitInstallMode
-Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,LastPage.txt,lang\*"; Check: not Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
 #ifexist "bin\Release\net8.0-windows\win-x86\publish\Windows Shutdown Helper.exe"
-Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,LastPage.txt,lang\*"; Check: Is64BitInstallMode
-Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,LastPage.txt,lang\*"; Check: not Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: Is64BitInstallMode
+Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,ActionList.json,Logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
 Source: "bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "bin\Release\net8.0-windows\WebView\*"; DestDir: "{app}\WebView"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -127,7 +127,6 @@ begin
     FileExists(BaseDir + 'Settings.json') or
     FileExists(BaseDir + 'ActionList.json') or
     FileExists(BaseDir + 'Logs.json') or
-    FileExists(BaseDir + 'LastPage.txt') or
     DirExists(BaseDir + 'lang');
 end;
 
@@ -139,8 +138,15 @@ begin
   DeleteFile(BaseDir + 'Settings.json');
   DeleteFile(BaseDir + 'ActionList.json');
   DeleteFile(BaseDir + 'Logs.json');
-  DeleteFile(BaseDir + 'LastPage.txt');
   DelTree(BaseDir + 'lang', True, True, True);
+end;
+
+procedure DeleteLegacyFiles(const RootDir: string);
+var
+  BaseDir: string;
+begin
+  BaseDir := AddBackslash(RootDir);
+  DeleteFile(BaseDir + 'LastPage.txt');
 end;
 
 function ShouldPreserveUserData(): Boolean;
@@ -184,6 +190,11 @@ begin
   begin
     DeleteUserData(WizardDirValue);
   end;
+
+  if CurStep = ssPostInstall then
+  begin
+    DeleteLegacyFiles(WizardDirValue);
+  end;
 end;
 
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
@@ -209,5 +220,10 @@ begin
   if (CurUninstallStep = usPostUninstall) and RemoveUserDataOnUninstall then
   begin
     DeleteUserData(UninstallDir);
+  end;
+
+  if CurUninstallStep = usPostUninstall then
+  begin
+    DeleteLegacyFiles(UninstallDir);
   end;
 end;
