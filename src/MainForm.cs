@@ -362,7 +362,7 @@ namespace WindowsShutdownHelper
                 language = resolved.Language,
                 theme = resolved.Theme,
                 bluetoothThresholdSeconds = resolved.BluetoothThresholdSeconds > 0 ? resolved.BluetoothThresholdSeconds : 5,
-                appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
+                appVersion = BuildInfo.Version,
                 buildId = BuildInfo.CommitId
             };
         }

@@ -109,11 +109,14 @@ jobs:
           $setupName = "WindowsShutdownHelper_Setup_$( if ('${{ github.ref_name }}' -eq 'master') { $newVersion } else { 'dev' } )_$commitHash"
           echo "setup_name=$setupName" >> $env:GITHUB_OUTPUT
 
-      - name: Inject Build ID
+      - name: Inject Build Metadata
         shell: pwsh
         run: |
           $file = "src/BuildInfo.cs"
-          (Get-Content $file) -replace 'public const string CommitId = "dev"', "public const string CommitId = ""${{ steps.version.outputs.commit_short }}""" | Set-Content $file
+          $content = Get-Content $file -Raw
+          $content = $content -replace 'public const string Version = ".*?"', "public const string Version = ""${{ steps.version.outputs.version }}"""
+          $content = $content -replace 'public const string CommitId = ".*?"', "public const string CommitId = ""${{ steps.version.outputs.commit_short }}"""
+          Set-Content $file $content
 
       - name: Build Release
         run: dotnet build "Windows Shutdown Helper.sln" -c Release --no-restore
