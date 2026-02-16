@@ -24,7 +24,7 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 - **System Idle** - Triggers after the system has been idle for a specified duration
 - **Countdown (From Now)** - Triggers after a specified amount of time from creation
 - **Every Day by Hour (Certain Time)** - Triggers daily at a specific time
-- **Bluetooth Device Not Reachable** - Triggers when a selected BLE device goes out of range (no pairing required)
+- **Bluetooth Lock** - Triggers when a selected Bluetooth device disconnects after previously being reachable
 
 ### General
 - Up to 5 concurrent actions
@@ -33,6 +33,7 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 - Action conflict validation (prevents duplicate or conflicting actions)
 - Search and filter actions by type
 - System tray integration with context menu
+- Built-in **Help** page with trigger usage guidance (available from hamburger menu, tray menu, and action-list right-click menu)
 - Start with Windows (registry-based auto-start)
 - Run in background when window is closed
 - Action logging with log viewer (filtering, sorting, up to 250 entries)
@@ -40,6 +41,30 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 - Multi-language support: English, Turkish, German, French, Russian, Italian
 - Automatic language detection based on system locale
 - Single instance enforcement
+
+## Bluetooth Lock Behavior
+
+The Bluetooth trigger is designed to prevent false one-time locks and now behaves as a disconnect-transition trigger:
+
+1. The selected Bluetooth device must be detected at least once.
+2. While the device is reachable, trigger state is considered "connected".
+3. When the device changes from reachable to not reachable (based on threshold), the action executes.
+4. If the device reconnects and disconnects again, the action executes again.
+
+Notes:
+- The threshold is controlled from Settings as **Bluetooth threshold (sec)**.
+- This allows repeated lock actions on each real disconnect event instead of only the first disconnect.
+
+## Usage Quick Guide
+
+1. Click **New Action**.
+2. Select an action type (Shutdown, Restart, Sleep, Lock, Log Off, Monitor Off).
+3. Select a trigger type.
+4. Enter trigger value and save.
+5. Optionally open **Help** from:
+   - Hamburger menu (`Help`)
+   - Tray context menu (`Help`)
+   - Action table right-click context menu (`Trigger usage help`)
 
 ## Tech Stack
 
@@ -60,7 +85,7 @@ WindowsShutdownHelper/
 ├── src/
 │   ├── Program.cs                    # Entry point, single instance check
 │   ├── MainForm.cs                   # Main form, WebView2 host, timer logic
-│   ├── SubWindow.cs                  # Settings/Logs/About sub-windows
+│   ├── SubWindow.cs                  # Settings/Logs/Help/About sub-windows
 │   ├── ActionCountdownNotifier.cs    # Countdown popup before action execution
 │   ├── Settings.cs                   # Settings model
 │   ├── BuildInfo.cs                  # Build commit ID (injected by CI)
@@ -110,6 +135,7 @@ WindowsShutdownHelper/
 │               ├── Main.js           # Action list page
 │               ├── Settings.js       # Settings page
 │               ├── Logs.js           # Log viewer page
+│               ├── Help.js           # Help and trigger usage page
 │               └── About.js          # About page
 ├── tools/
 │   ├── dotnet/                       # Local .NET 8.0 SDK
@@ -132,10 +158,17 @@ WindowsShutdownHelper/
 
 ### Build
 
-Using the local .NET SDK from `tools/dotnet/`:
+Using the local .NET SDK from `tools/dotnet/` (Linux/macOS shell):
 ```bash
-tools\dotnet\dotnet restore "Windows Shutdown Helper.sln"
-tools\dotnet\dotnet build "Windows Shutdown Helper.sln" -c Release
+DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" restore "Windows Shutdown Helper.sln"
+DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" build "Windows Shutdown Helper.sln" -c Release
+```
+
+Using the local .NET SDK from `tools/dotnet/` (Windows PowerShell):
+```powershell
+$env:DOTNET_ROOT = "$PWD\tools\dotnet"
+.\tools\dotnet\dotnet.exe restore "Windows Shutdown Helper.sln"
+.\tools\dotnet\dotnet.exe build "Windows Shutdown Helper.sln" -c Release
 ```
 
 Or if .NET 8.0 SDK is installed globally:
@@ -167,7 +200,7 @@ The GitHub Actions workflow (`.github/workflows/build-and-release.yml`) runs on 
 The application uses a **hybrid architecture**:
 - **Backend (C#)**: WinForms host with WebView2 controls. Handles system actions via Win32 API calls (`user32.dll`, `PowrProf.dll`), timer-based action scheduling, idle detection, session monitoring, settings/action/log persistence in JSON files, and Windows registry management for auto-start.
 - **Frontend (HTML/JS)**: Single Page Application rendered inside WebView2. Pages are lazy-loaded as separate JS modules. Communication between C# and JS happens via `PostWebMessageAsJson` / `WebMessageReceived` message passing through a Bridge layer.
-- **Sub-windows** (Settings, Logs, About) run in separate WebView2 forms, prewarmed in background for instant opening.
+- **Sub-windows** (Settings, Logs, Help, About) run in separate WebView2 forms, prewarmed in background for faster opening.
 
 ## License
 
