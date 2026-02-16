@@ -34,7 +34,7 @@ namespace WindowsShutdownHelper
         {
             try
             {
-                await EnsureWebViewInitializedAsync();
+                await EnsureWebViewInitializedAsync(true);
             }
             catch (Exception ex)
             {
@@ -71,11 +71,14 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.Navigate("https://app.local/subwindow.html?page=" + _pageName);
         }
 
-        private async System.Threading.Tasks.Task EnsureWebViewInitializedAsync()
+        private async System.Threading.Tasks.Task EnsureWebViewInitializedAsync(bool showLoading)
         {
             if (_webViewReady || _webViewInitStarted) return;
             _webViewInitStarted = true;
-            ShowLoadingOverlay();
+            if (showLoading)
+            {
+                ShowLoadingOverlay();
+            }
             await InitializeWebView();
         }
 
@@ -151,8 +154,17 @@ namespace WindowsShutdownHelper
             Opacity = 0;
             _isPrewarmedHidden = true;
 
-            Show();
-            Hide();
+            if (!IsHandleCreated)
+            {
+                var _ = Handle;
+            }
+
+            if (!webView.IsHandleCreated)
+            {
+                webView.CreateControl();
+            }
+
+            _ = EnsureWebViewInitializedAsync(false);
         }
 
         public void ShowForUser()

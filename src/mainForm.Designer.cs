@@ -20,7 +20,7 @@ namespace WindowsShutdownHelper
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(mainForm));
 
-            this.webView = new Microsoft.Web.WebView2.WinForms.WebView2();
+            this.webViewHost = new System.Windows.Forms.Panel();
             this.notifyIcon_main = new System.Windows.Forms.NotifyIcon(this.components);
             this.contextMenuStrip_notifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.addNewActionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -30,18 +30,15 @@ namespace WindowsShutdownHelper
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.exitTheProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 
-            ((System.ComponentModel.ISupportInitialize)(this.webView)).BeginInit();
             this.contextMenuStrip_notifyIcon.SuspendLayout();
             this.SuspendLayout();
 
-            // webView
-            this.webView.AllowExternalDrop = false;
-            this.webView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.webView.Location = new System.Drawing.Point(0, 0);
-            this.webView.Name = "webView";
-            this.webView.Size = new System.Drawing.Size(529, 484);
-            this.webView.TabIndex = 0;
-            this.webView.ZoomFactor = 1D;
+            // webViewHost
+            this.webViewHost.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.webViewHost.Location = new System.Drawing.Point(0, 0);
+            this.webViewHost.Name = "webViewHost";
+            this.webViewHost.Size = new System.Drawing.Size(529, 484);
+            this.webViewHost.TabIndex = 0;
 
             // contextMenuStrip_notifyIcon
             this.contextMenuStrip_notifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -104,7 +101,7 @@ namespace WindowsShutdownHelper
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(580, 520);
             this.MinimumSize = new System.Drawing.Size(480, 400);
-            this.Controls.Add(this.webView);
+            this.Controls.Add(this.webViewHost);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "mainForm";
@@ -114,14 +111,13 @@ namespace WindowsShutdownHelper
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.mainForm_FormClosed);
             this.Load += new System.EventHandler(this.mainForm_Load);
 
-            ((System.ComponentModel.ISupportInitialize)(this.webView)).EndInit();
             this.contextMenuStrip_notifyIcon.ResumeLayout(false);
             this.ResumeLayout(false);
         }
 
         #endregion
 
-        private Microsoft.Web.WebView2.WinForms.WebView2 webView;
+        private System.Windows.Forms.Panel webViewHost;
         private System.Windows.Forms.NotifyIcon notifyIcon_main;
         private System.Windows.Forms.ContextMenuStrip contextMenuStrip_notifyIcon;
         private System.Windows.Forms.ToolStripMenuItem addNewActionToolStripMenuItem;

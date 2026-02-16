@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
+using Microsoft.Web.WebView2.WinForms;
 using WindowsShutdownHelper.Enums;
 using WindowsShutdownHelper.functions;
 
@@ -30,13 +31,13 @@ namespace WindowsShutdownHelper
         private DateTime? _pauseUntilTime;
         private Settings _cachedSettings;
         private Dictionary<string, SubWindow> _subWindows = new Dictionary<string, SubWindow>();
+        private WebView2 webView;
         private Panel _loadingOverlay;
         private Label _loadingLabel;
         private Timer _loadingDelayTimer;
         private const int LoadingOverlayDelayMs = 350;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "about" };
-        private Timer _subWindowPrewarmTimer;
-        private int _subWindowPrewarmIndex;
+        private bool _subWindowPrewarmStarted;
 
         public mainForm()
         {
@@ -97,11 +98,28 @@ namespace WindowsShutdownHelper
             ShowLoadingOverlay();
 
             // Start WebView initialization in parallel with app boot data setup.
+            CreateWebViewControl();
             _ = InitializeWebView();
 
             Text = language.main_FormName;
             notifyIcon_main.Text = language.main_FormName + " " + language.notifyIcon_main;
             BeginInvoke(new Action(InitializeRuntimeState));
+        }
+
+        private void CreateWebViewControl()
+        {
+            if (webView != null) return;
+
+            webView = new WebView2
+            {
+                AllowExternalDrop = false,
+                Dock = DockStyle.Fill,
+                Name = "webView",
+                ZoomFactor = 1D,
+                TabIndex = 0
+            };
+
+            webViewHost.Controls.Add(webView);
         }
 
         private void InitializeRuntimeState()
@@ -240,43 +258,23 @@ namespace WindowsShutdownHelper
 
         private void StartSubWindowPrewarm()
         {
-            if (_subWindowPrewarmTimer != null) return;
+            if (_subWindowPrewarmStarted || isApplicationExiting || IsDisposed) return;
+            _subWindowPrewarmStarted = true;
 
-            _subWindowPrewarmTimer = new Timer
+            BeginInvoke(new Action(() =>
             {
-                Interval = 900
-            };
-            _subWindowPrewarmTimer.Tick += OnSubWindowPrewarmTick;
-            _subWindowPrewarmTimer.Start();
+                foreach (var pageName in _subWindowPrewarmPages)
+                {
+                    if (isApplicationExiting || IsDisposed) break;
+                    var win = GetOrCreateSubWindow(pageName);
+                    win.PrewarmInBackground();
+                }
+            }));
         }
 
         private void StopSubWindowPrewarm()
         {
-            if (_subWindowPrewarmTimer == null) return;
-
-            _subWindowPrewarmTimer.Stop();
-            _subWindowPrewarmTimer.Tick -= OnSubWindowPrewarmTick;
-            _subWindowPrewarmTimer.Dispose();
-            _subWindowPrewarmTimer = null;
-        }
-
-        private void OnSubWindowPrewarmTick(object sender, EventArgs e)
-        {
-            if (isApplicationExiting || IsDisposed)
-            {
-                StopSubWindowPrewarm();
-                return;
-            }
-
-            if (_subWindowPrewarmIndex >= _subWindowPrewarmPages.Length)
-            {
-                StopSubWindowPrewarm();
-                return;
-            }
-
-            string pageName = _subWindowPrewarmPages[_subWindowPrewarmIndex++];
-            var win = GetOrCreateSubWindow(pageName);
-            win.PrewarmInBackground();
+            _subWindowPrewarmStarted = true;
         }
 
         private void SendInitData()
