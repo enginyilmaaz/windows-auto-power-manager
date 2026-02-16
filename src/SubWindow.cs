@@ -590,7 +590,7 @@ namespace WindowsShutdownHelper
             };
 
             string currentLang = LoadSettings().Language;
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\Settings.json", true, newSettings);
+            SettingsStorage.Save(newSettings);
 
             if (newSettings.StartWithWindows)
                 StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
@@ -681,12 +681,7 @@ namespace WindowsShutdownHelper
 
         private Settings LoadSettings()
         {
-            if (File.Exists(AppContext.BaseDirectory + "\\Settings.json"))
-            {
-                return JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\Settings.json"));
-            }
-            return Config.SettingsINI.DefaulSettingFile();
+            return SettingsStorage.LoadOrDefault();
         }
 
         private List<Dictionary<string, string>> GetTranslatedActions()

@@ -13,16 +13,7 @@ namespace WindowsShutdownHelper.Functions
 
             if (settings == null)
             {
-                if (File.Exists(AppContext.BaseDirectory + "\\Settings.json"))
-                {
-                    settings = JsonSerializer.Deserialize<Settings>(
-                        File.ReadAllText(AppContext.BaseDirectory + "\\Settings.json"));
-                }
-                else
-                {
-                    settings = new Settings();
-                    settings.LogsEnabled = true;
-                }
+                settings = SettingsStorage.LoadOrDefault();
             }
 
             if (settings.LogsEnabled)
@@ -31,8 +22,20 @@ namespace WindowsShutdownHelper.Functions
 
                 if (File.Exists(AppContext.BaseDirectory + "\\Logs.json"))
                 {
-                    logLists = JsonSerializer.Deserialize<List<LogSystem>>(
-                        File.ReadAllText(AppContext.BaseDirectory + "\\Logs.json"));
+                    try
+                    {
+                        logLists = JsonSerializer.Deserialize<List<LogSystem>>(
+                            File.ReadAllText(AppContext.BaseDirectory + "\\Logs.json"));
+                    }
+                    catch
+                    {
+                        logLists = new List<LogSystem>();
+                    }
+                }
+
+                if (logLists == null)
+                {
+                    logLists = new List<LogSystem>();
                 }
 
                 LogSystem newLog = new LogSystem

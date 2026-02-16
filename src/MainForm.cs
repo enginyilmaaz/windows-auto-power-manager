@@ -403,8 +403,7 @@ namespace WindowsShutdownHelper
 
         private Settings LoadSettings()
         {
-            string path = AppContext.BaseDirectory + "\\Settings.json";
-            return ReadJsonFileOrDefault(path, Config.SettingsINI.DefaulSettingFile());
+            return SettingsStorage.LoadOrDefault();
         }
 
         private void ApplySettingsOnStartup(Settings settingsObj)
@@ -816,7 +815,7 @@ namespace WindowsShutdownHelper
             };
 
             string currentLang = LoadSettings().Language;
-            JsonWriter.WriteJson(AppContext.BaseDirectory + "\\Settings.json", true, newSettings);
+            SettingsStorage.Save(newSettings);
 
             // Update tray menu renderer and form BackColor based on theme
             bool isDark = DetermineIfDark(newSettings.Theme);

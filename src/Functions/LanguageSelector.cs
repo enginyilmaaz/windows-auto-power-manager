@@ -4,7 +4,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading.Tasks;
 using WindowsShutdownHelper.Lang;
 
@@ -31,12 +30,7 @@ namespace WindowsShutdownHelper.Functions
 
         public static Language LanguageFile()
         {
-            Settings settings = new Settings();
-            string settingsPath = AppContext.BaseDirectory + "\\Settings.json";
-            if (File.Exists(settingsPath))
-            {
-                settings = JsonSerializer.Deserialize<Settings>(File.ReadAllText(settingsPath));
-            }
+            Settings settings = SettingsStorage.LoadOrDefault();
 
             // Determine language code
             string langCode;

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Windows.Forms;
 
 namespace WindowsShutdownHelper.Functions
@@ -66,17 +64,7 @@ namespace WindowsShutdownHelper.Functions
 
         public static void ShowNotification(ActionModel action, uint idleTimeMin)
         {
-            Settings settings = new Settings();
-
-            if (File.Exists(AppContext.BaseDirectory + "\\Settings.json"))
-            {
-                settings = JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\Settings.json"));
-            }
-            else
-            {
-                settings.IsCountdownNotifierEnabled = false;
-            }
+            Settings settings = SettingsStorage.LoadOrDefault();
 
             if (settings.IsCountdownNotifierEnabled)
             {
