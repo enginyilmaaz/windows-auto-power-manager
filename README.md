@@ -58,27 +58,33 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 WindowsShutdownHelper/
 ├── src/
 │   ├── Program.cs                    # Entry point, single instance check
-│   ├── mainForm.cs                   # Main form, WebView2 host, timer logic
+│   ├── MainForm.cs                   # Main form, WebView2 host, timer logic
 │   ├── SubWindow.cs                  # Settings/Logs/About sub-windows
-│   ├── actionCountdownNotifier.cs    # Countdown popup before action execution
-│   ├── settings.cs                   # Settings model
+│   ├── ActionCountdownNotifier.cs    # Countdown popup before action execution
+│   ├── Settings.cs                   # Settings model
 │   ├── BuildInfo.cs                  # Build commit ID (injected by CI)
 │   ├── config/
-│   │   ├── actionTypes.cs            # Action type constants
-│   │   ├── triggerTypes.cs           # Trigger type constants
-│   │   ├── settingsINI.cs            # Default settings
-│   │   ├── languageINI.cs            # Language model
-│   │   └── lang/                     # Language files (en, tr, de, fr, ru, it)
+│   │   ├── ActionTypes.cs            # Action type constants
+│   │   ├── TriggerTypes.cs           # Trigger type constants
+│   │   ├── SettingsINI.cs            # Default settings
+│   │   ├── LanguageINI.cs            # Language model
+│   │   └── lang/                     # Language files
+│   │       ├── English.cs
+│   │       ├── Turkish.cs
+│   │       ├── German.cs
+│   │       ├── French.cs
+│   │       ├── Russian.cs
+│   │       └── Italian.cs
 │   ├── functions/
 │   │   ├── Actions.cs                # System action execution (Win32 API calls)
-│   │   ├── systemIdleDetector.cs     # User idle time detection (Win32 API)
-│   │   ├── detectScreen.cs           # Session lock/unlock detection
-│   │   ├── notifySystem.cs           # Countdown notification logic
+│   │   ├── SystemIdleDetector.cs     # User idle time detection (Win32 API)
+│   │   ├── DetectScreen.cs           # Session lock/unlock detection
+│   │   ├── NotifySystem.cs           # Countdown notification logic
 │   │   ├── Logger.cs                 # JSON-based logging
-│   │   ├── jsonWriter.cs             # JSON file writer
-│   │   ├── startWithWindows.cs       # Windows startup registry management
-│   │   ├── languageSelector.cs       # Language detection and loading
-│   │   ├── actionValidation.cs       # Action conflict validation
+│   │   ├── JsonWriter.cs             # JSON file writer
+│   │   ├── StartWithWindows.cs       # Windows startup registry management
+│   │   ├── LanguageSelector.cs       # Language detection and loading
+│   │   ├── ActionValidation.cs       # Action conflict validation
 │   │   ├── ModernMenuRenderer.cs     # Custom tray menu renderer
 │   │   └── WebViewEnvironmentProvider.cs # WebView2 environment singleton
 │   ├── enums/                        # UI-related enumerations
