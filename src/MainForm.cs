@@ -154,6 +154,7 @@ namespace WindowsShutdownHelper
 
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
+                ApplySettingsOnStartup(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
                 ContextMenuStripNotifyIcon.Renderer = new WindowsShutdownHelper.Functions.ModernMenuRenderer(isDark);
                 ContextMenuStripNotifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
@@ -402,6 +403,28 @@ namespace WindowsShutdownHelper
         {
             string path = AppContext.BaseDirectory + "\\Settings.json";
             return ReadJsonFileOrDefault(path, Config.SettingsINI.DefaulSettingFile());
+        }
+
+        private void ApplySettingsOnStartup(Settings settingsObj)
+        {
+            if (settingsObj == null) return;
+
+            try
+            {
+                string startupName = Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper";
+                if (settingsObj.StartWithWindows)
+                {
+                    StartWithWindows.AddStartup(startupName);
+                }
+                else
+                {
+                    StartWithWindows.DeleteStartup(startupName);
+                }
+            }
+            catch
+            {
+                // Keep startup resilient if registry access fails.
+            }
         }
 
         private List<ActionModel> LoadActionList()
