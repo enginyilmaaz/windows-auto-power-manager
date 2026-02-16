@@ -183,6 +183,7 @@
         public string BluetoothSelectDevice { get; set; }
         public string BluetoothNotAvailable { get; set; }
         public string BluetoothDeviceLabel { get; set; }
+        public string SettingsFormLabelBluetoothThreshold { get; set; }
 
     }
 }

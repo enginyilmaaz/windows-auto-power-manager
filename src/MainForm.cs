@@ -40,7 +40,6 @@ namespace WindowsShutdownHelper
         private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
         private readonly HashSet<string> _executedBluetoothActionKeys = new HashSet<string>();
         private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
-        private const int BluetoothNotReachableThresholdSeconds = 5;
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
 
@@ -339,6 +338,7 @@ namespace WindowsShutdownHelper
                     countdownNotifierSeconds = settingsObj.CountdownNotifierSeconds,
                     language = settingsObj.Language,
                     theme = settingsObj.Theme,
+                    bluetoothThresholdSeconds = settingsObj.BluetoothThresholdSeconds > 0 ? settingsObj.BluetoothThresholdSeconds : 5,
                     appVersion = Assembly.GetExecutingAssembly().GetName().Version.ToString(),
                     buildId = BuildInfo.CommitId
                 }
@@ -838,11 +838,13 @@ namespace WindowsShutdownHelper
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),
-                Theme = data.GetProperty("theme").GetString()
+                Theme = data.GetProperty("theme").GetString(),
+                BluetoothThresholdSeconds = data.GetProperty("bluetoothThresholdSeconds").GetInt32()
             };
 
             string currentLang = LoadSettings().Language;
             SettingsStorage.Save(newSettings);
+            _cachedSettings = newSettings;
 
             // Update tray menu renderer and form BackColor based on theme
             bool isDark = DetermineIfDark(newSettings.Theme);
@@ -1173,7 +1175,8 @@ namespace WindowsShutdownHelper
             {
                 if (string.IsNullOrWhiteSpace(action.Value)) return;
 
-                bool reachable = BluetoothScanner.IsDeviceReachable(action.Value, BluetoothNotReachableThresholdSeconds);
+                int threshold = (_cachedSettings?.BluetoothThresholdSeconds > 0) ? _cachedSettings.BluetoothThresholdSeconds : 5;
+                bool reachable = BluetoothScanner.IsDeviceReachable(action.Value, threshold);
 
                 if (reachable)
                 {

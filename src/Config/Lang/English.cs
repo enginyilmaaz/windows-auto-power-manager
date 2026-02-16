@@ -172,6 +172,7 @@
                 BluetoothSelectDevice = "Select a device",
                 BluetoothNotAvailable = "Bluetooth is not available",
                 BluetoothDeviceLabel = "Device",
+                SettingsFormLabelBluetoothThreshold = "Bluetooth threshold (sec)",
 
             };
             return lang;

@@ -61,6 +61,11 @@ window.SettingsPage = {
                 '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
             '</div>' +
 
+            '<div class="settings-row">' +
+                '<span class="settings-label">' + (L('SettingsFormLabelBluetoothThreshold') || 'Bluetooth threshold (sec)') + '</span>' +
+                '<input type="number" id="set-bt-threshold" class="form-input" style="max-width:80px;text-align:center" min="1" max="60" value="' + (s.bluetoothThresholdSeconds || 5) + '">' +
+            '</div>' +
+
             '<div class="settings-actions">' +
                 '<button class="btn btn-secondary" id="set-cancel">' + (L('SettingsFormButtonCancel') || 'Cancel') + '</button>' +
                 '<button class="btn btn-success" id="set-save">' + (L('SettingsFormButtonSave') || 'Save') + '</button>' +
@@ -89,6 +94,8 @@ window.SettingsPage = {
             if (el) el.checked = !!s.isCountdownNotifierEnabled;
             el = document.getElementById('set-seconds');
             if (el) el.value = s.countdownNotifierSeconds || 5;
+            el = document.getElementById('set-bt-threshold');
+            if (el) el.value = s.bluetoothThresholdSeconds || 5;
         });
 
         Bridge.on('languageList', function (list) {
@@ -119,6 +126,7 @@ window.SettingsPage = {
                 runInTaskbarWhenClosed: document.getElementById('set-taskbar').checked,
                 isCountdownNotifierEnabled: document.getElementById('set-countdown').checked,
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
+                bluetoothThresholdSeconds: parseInt(document.getElementById('set-bt-threshold').value) || 5,
                 language: document.getElementById('set-lang').value,
                 theme: document.getElementById('set-theme').value
             });

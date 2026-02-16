@@ -12,7 +12,8 @@
                 IsCountdownNotifierEnabled = true,
                 CountdownNotifierSeconds = 5,
                 Language = "auto",
-                Theme = "system"
+                Theme = "system",
+                BluetoothThresholdSeconds = 5
             };
 
 

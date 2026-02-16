@@ -172,6 +172,7 @@ namespace WindowsShutdownHelper.Lang
                 BluetoothSelectDevice = "Seleziona un dispositivo",
                 BluetoothNotAvailable = "Bluetooth non disponibile",
                 BluetoothDeviceLabel = "Dispositivo",
+                SettingsFormLabelBluetoothThreshold = "Soglia Bluetooth (sec)",
 
             };
             return lang;

@@ -173,6 +173,7 @@
                 BluetoothSelectDevice = "Bir cihaz seçin",
                 BluetoothNotAvailable = "Bluetooth kullanılamıyor",
                 BluetoothDeviceLabel = "Cihaz",
+                SettingsFormLabelBluetoothThreshold = "Bluetooth eşik süresi (sn)",
 
             };
 

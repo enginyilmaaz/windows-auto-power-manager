@@ -172,6 +172,7 @@ namespace WindowsShutdownHelper.Lang
                 BluetoothSelectDevice = "Выберите устройство",
                 BluetoothNotAvailable = "Bluetooth недоступен",
                 BluetoothDeviceLabel = "Устройство",
+                SettingsFormLabelBluetoothThreshold = "Порог Bluetooth (сек)",
 
             };
             return lang;
