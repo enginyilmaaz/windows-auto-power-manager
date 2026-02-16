@@ -44,7 +44,7 @@
                 messageContent_actionChoose = "Made the missing choice, correct it",
                 messageContent_maxActionWarn = "You did not choose",
                 messageContent_idleActionConflict =
-                    "This idle-time action conflicts with existing actions. Delete the conflicting action or change the duration.",
+                    "This action conflicts with existing actions. Delete the conflicting action or change its time/duration.",
                 messageContent_datagridMain_actionChoose = "You did not choose a action",
                 messageContent_another = "Another",
                 messageContent_windowAlredyOpen = "window is already open",

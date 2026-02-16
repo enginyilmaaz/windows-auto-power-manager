@@ -44,7 +44,7 @@ namespace WindowsShutdownHelper.lang
                 messageContent_actionChoose = "Неполный выбор, исправьте",
                 messageContent_maxActionWarn = "Максимум 5 действий",
                 messageContent_idleActionConflict =
-                    "Это действие по времени простоя конфликтует с существующими. Удалите конфликтующее действие или измените длительность.",
+                    "Это действие конфликтует с существующими. Удалите конфликтующее действие или измените время/длительность.",
                 messageContent_datagridMain_actionChoose = "Действие не выбрано",
                 messageContent_another = "Другое",
                 messageContent_windowAlredyOpen = "окно уже открыто",

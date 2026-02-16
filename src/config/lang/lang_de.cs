@@ -44,7 +44,7 @@ namespace WindowsShutdownHelper.lang
                 messageContent_actionChoose = "Unvollständige Auswahl, bitte korrigieren",
                 messageContent_maxActionWarn = "Maximal 5 Aktionen möglich",
                 messageContent_idleActionConflict =
-                    "Diese Leerlauf-Aktion steht im Konflikt mit vorhandenen Aktionen. Bitte die konfliktierende Aktion löschen oder die Dauer ändern.",
+                    "Diese Aktion steht im Konflikt mit vorhandenen Aktionen. Bitte die konfliktierende Aktion löschen oder Zeit/Dauer ändern.",
                 messageContent_datagridMain_actionChoose = "Keine Aktion ausgewählt",
                 messageContent_another = "Andere",
                 messageContent_windowAlredyOpen = "Fenster ist bereits geöffnet",
