@@ -67,7 +67,7 @@ jobs:
         run: dotnet build "Windows Shutdown Helper.sln" -c Release --no-restore
 
       - name: Publish Release (win-x64)
-        run: dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x64 --self-contained false --no-restore -p:PublishReadyToRun=true -p:PublishSingleFile=false
+        run: dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
 
       - name: Build Installer
         shell: pwsh
