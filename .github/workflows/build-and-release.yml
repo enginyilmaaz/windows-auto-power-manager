@@ -136,8 +136,8 @@ jobs:
         with:
           name: WindowsShutdownHelper_Portable
           path: |
-            bin/Release/net8.0-windows/win-x64/publish/
-            bin/Release/net8.0-windows/win-x86/publish/
+            bin/Release/**/win-x64/publish/**
+            bin/Release/**/win-x86/publish/**
 
       - name: Upload Installer (dev)
         if: github.ref_name != 'master'
