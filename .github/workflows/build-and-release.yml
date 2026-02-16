@@ -66,6 +66,9 @@ jobs:
       - name: Build Release
         run: dotnet build "Windows Shutdown Helper.sln" -c Release --no-restore
 
+      - name: Publish Release (win-x64)
+        run: dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x64 --self-contained false --no-restore -p:PublishReadyToRun=true -p:PublishSingleFile=false
+
       - name: Build Installer
         shell: pwsh
         run: |
@@ -79,9 +82,7 @@ jobs:
         with:
           name: WindowsShutdownHelper_Portable
           path: |
-            bin/Release/net8.0-windows/Windows Shutdown Helper.exe
-            bin/Release/net8.0-windows/wwwroot/
-            bin/Release/net8.0-windows/runtimes/
+            bin/Release/net8.0-windows/win-x64/publish/
 
       - name: Upload Installer (dev)
         if: github.ref_name != 'master'

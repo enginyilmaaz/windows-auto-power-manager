@@ -38,6 +38,7 @@ namespace WindowsShutdownHelper
         private const int LoadingOverlayDelayMs = 350;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "about" };
         private bool _subWindowPrewarmStarted;
+        private bool _startupErrorShown;
 
         public mainForm()
         {
@@ -97,9 +98,12 @@ namespace WindowsShutdownHelper
         {
             ShowLoadingOverlay();
 
-            // Start WebView initialization in parallel with app boot data setup.
-            CreateWebViewControl();
-            _ = InitializeWebView();
+            // First paint as fast as possible, then initialize heavy components.
+            BeginInvoke(new Action(() =>
+            {
+                CreateWebViewControl();
+                _ = InitializeWebViewSafeAsync();
+            }));
 
             Text = language.main_FormName;
             notifyIcon_main.Text = language.main_FormName + " " + language.notifyIcon_main;
@@ -124,47 +128,53 @@ namespace WindowsShutdownHelper
 
         private void InitializeRuntimeState()
         {
-            detectScreen.manuelLockingActionLogger();
-            if (File.Exists(AppContext.BaseDirectory + "\\actionList.json"))
+            try
             {
-                actionList =
-                    JsonSerializer.Deserialize<List<ActionModel>>(
-                        File.ReadAllText(AppContext.BaseDirectory + "\\actionList.json"));
+                detectScreen.manuelLockingActionLogger();
+                actionList = LoadActionList();
+
+                deleteExpriedAction();
+
+                // Setup timer
+                timer.Interval = 1000;
+                timer.Tick += timerTick;
+                timer.Start();
+
+                // Setup notify icon context menu text
+                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.AddNewAction].Text =
+                    language.contextMenuStrip_notifyIcon_addNewAction;
+                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ExitTheProgram].Text =
+                    language.contextMenuStrip_notifyIcon_exitProgram;
+                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.Settings].Text =
+                    language.contextMenuStrip_notifyIcon_showSettings;
+                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ShowLogs].Text =
+                    language.contextMenuStrip_notifyIcon_showLogs;
+                contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.About].Text =
+                    language.about_menuItem ?? "About";
+
+                // Apply modern tray menu renderer based on theme
+                _cachedSettings = LoadSettings();
+                bool isDark = DetermineIfDark(_cachedSettings.theme);
+                contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
+                contextMenuStrip_notifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
+                BackColor = isDark
+                    ? System.Drawing.Color.FromArgb(26, 27, 46)
+                    : System.Drawing.Color.FromArgb(240, 242, 245);
             }
+            catch (Exception ex)
+            {
+                actionList = new List<ActionModel>();
+                _cachedSettings = config.settingsINI.defaulSettingFile();
+                ReportStartupError("Baslangic verileri yuklenemedi", ex);
+            }
+            finally
+            {
+                _bootDataReady = true;
+                TrySendInitData();
 
-            deleteExpriedAction();
-
-            // Setup timer
-            timer.Interval = 1000;
-            timer.Tick += timerTick;
-            timer.Start();
-
-            // Setup notify icon context menu text
-            contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.AddNewAction].Text =
-                language.contextMenuStrip_notifyIcon_addNewAction;
-            contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ExitTheProgram].Text =
-                language.contextMenuStrip_notifyIcon_exitProgram;
-            contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.Settings].Text =
-                language.contextMenuStrip_notifyIcon_showSettings;
-            contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.ShowLogs].Text =
-                language.contextMenuStrip_notifyIcon_showLogs;
-            contextMenuStrip_notifyIcon.Items[(int)enum_cmStrip_notifyIcon.About].Text =
-                language.about_menuItem ?? "About";
-
-            // Apply modern tray menu renderer based on theme
-            _cachedSettings = LoadSettings();
-            bool isDark = DetermineIfDark(_cachedSettings.theme);
-            contextMenuStrip_notifyIcon.Renderer = new WindowsShutdownHelper.functions.ModernMenuRenderer(isDark);
-            contextMenuStrip_notifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
-            BackColor = isDark
-                ? System.Drawing.Color.FromArgb(26, 27, 46)
-                : System.Drawing.Color.FromArgb(240, 242, 245);
-
-            _bootDataReady = true;
-            TrySendInitData();
-
-            // Log app started in background
-            _ = System.Threading.Tasks.Task.Run(() => Logger.doLog(config.actionTypes.appStarted, _cachedSettings));
+                // Log app started in background
+                _ = System.Threading.Tasks.Task.Run(() => Logger.doLog(config.actionTypes.appStarted, _cachedSettings));
+            }
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()
@@ -185,6 +195,18 @@ namespace WindowsShutdownHelper
             webView.CoreWebView2.DOMContentLoaded += OnDomContentLoaded;
 
             webView.CoreWebView2.Navigate("https://app.local/index.html");
+        }
+
+        private async System.Threading.Tasks.Task InitializeWebViewSafeAsync()
+        {
+            try
+            {
+                await InitializeWebView();
+            }
+            catch (Exception ex)
+            {
+                ReportStartupError("Web arayuzu yuklenemedi", ex);
+            }
         }
 
         private void OnDomContentLoaded(object sender, CoreWebView2DOMContentLoadedEventArgs e)
@@ -360,12 +382,63 @@ namespace WindowsShutdownHelper
 
         private Settings LoadSettings()
         {
-            if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
+            string path = AppContext.BaseDirectory + "\\settings.json";
+            return ReadJsonFileOrDefault(path, config.settingsINI.defaulSettingFile());
+        }
+
+        private List<ActionModel> LoadActionList()
+        {
+            string path = AppContext.BaseDirectory + "\\actionList.json";
+            return ReadJsonFileOrDefault(path, new List<ActionModel>());
+        }
+
+        private static T ReadJsonFileOrDefault<T>(string path, T fallback)
+        {
+            try
             {
-                return JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
+                if (!File.Exists(path))
+                {
+                    return fallback;
+                }
+
+                string json = File.ReadAllText(path);
+                if (string.IsNullOrWhiteSpace(json))
+                {
+                    return fallback;
+                }
+
+                var parsed = JsonSerializer.Deserialize<T>(json);
+                return parsed == null ? fallback : parsed;
             }
-            return config.settingsINI.defaulSettingFile();
+            catch
+            {
+                return fallback;
+            }
+        }
+
+        private void ReportStartupError(string title, Exception ex)
+        {
+            if (_startupErrorShown) return;
+            _startupErrorShown = true;
+
+            if (_loadingDelayTimer != null)
+            {
+                _loadingDelayTimer.Stop();
+            }
+
+            if (_loadingOverlay != null)
+            {
+                _loadingOverlay.Visible = true;
+                _loadingOverlay.BringToFront();
+                _loadingLabel.Text = language?.messageTitle_error ?? "Error";
+            }
+
+            MessageBox.Show(
+                this,
+                title + ".\r\n\r\nDetay: " + ex.Message,
+                language?.messageTitle_error ?? "Error",
+                MessageBoxButtons.OK,
+                MessageBoxIcon.Error);
         }
 
         private void PostMessage(string type, object data)
@@ -925,16 +998,11 @@ namespace WindowsShutdownHelper
         {
             StopSubWindowPrewarm();
 
-            if (File.Exists(AppContext.BaseDirectory + "\\settings.json"))
+            settings = LoadSettings();
+            if (settings.runInTaskbarWhenClosed)
             {
-                settings = JsonSerializer.Deserialize<Settings>(
-                    File.ReadAllText(AppContext.BaseDirectory + "\\settings.json"));
-
-                if (settings.runInTaskbarWhenClosed)
-                {
-                    e.Cancel = true;
-                    Hide();
-                }
+                e.Cancel = true;
+                Hide();
             }
 
             if (!e.Cancel)
