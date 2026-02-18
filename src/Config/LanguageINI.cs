@@ -105,6 +105,9 @@
         public string LogViewerFormFilterSleeps { get; set; }
         public string LogViewerFormFilterAppStarts { get; set; }
         public string LogViewerFormFilterAppTerminates { get; set; }
+        public string LogViewerFormDateFrom { get; set; }
+        public string LogViewerFormDateTo { get; set; }
+        public string LogViewerFormButtonResetFilters { get; set; }
 
         public string MessageContentCountdownNotify { get; set; }
         public string MessageContentCountdownNotify2 { get; set; }

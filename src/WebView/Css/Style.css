@@ -1180,20 +1180,67 @@ body {
 }
 
 /* ─── Logs Page ─── */
-.logs-toolbar {
-    display: flex;
-    gap: 12px;
+.logs-filter-panel {
+    border: 1px solid var(--border-row);
+    background: var(--bg-panel);
+    border-radius: 10px;
+    padding: 12px;
     margin-bottom: 14px;
-    align-items: center;
-    flex-wrap: wrap;
 }
 
-.logs-toolbar .form-label {
-    min-width: auto;
+.logs-search-row {
+    margin-bottom: 10px;
 }
 
-.logs-toolbar .form-select {
-    flex: 0 1 180px;
+.logs-toolbar-search {
+    width: 100%;
+    max-width: none;
+    height: 34px;
+}
+
+.logs-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 10px;
+    align-items: end;
+}
+
+.logs-filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-width: 0;
+}
+
+.logs-filter-item .form-label {
+    min-width: 0;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.4px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+}
+
+.logs-filter-item .form-select,
+.logs-filter-item .form-input {
+    width: 100%;
+}
+
+.logs-filter-actions-row {
+    align-self: end;
+}
+
+.logs-filter-reset {
+    width: 100%;
+    padding: 8px 10px;
+}
+
+.logs-result-meta {
+    margin-top: 10px;
+    text-align: right;
+    color: var(--text-dim);
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
 }
 
 .logs-actions {
@@ -1201,6 +1248,20 @@ body {
     gap: 10px;
     margin-top: 14px;
     justify-content: flex-end;
+}
+
+@media (max-width: 640px) {
+    .logs-filter-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .logs-actions {
+        flex-direction: column;
+    }
+
+    .logs-actions .btn {
+        width: 100%;
+    }
 }
 
 /* ─── Scrollbar ─── */

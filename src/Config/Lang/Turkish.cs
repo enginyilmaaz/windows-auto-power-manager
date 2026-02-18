@@ -93,6 +93,9 @@
                 LogViewerFormFilterSleeps = "Uyutulma",
                 LogViewerFormFilterTurnOffsMonitor = "Ekranın kapanması",
                 LogViewerFormFilterUnlocks = "Kilidin açılması",
+                LogViewerFormDateFrom = "Başlangıç tarihi",
+                LogViewerFormDateTo = "Bitiş tarihi",
+                LogViewerFormButtonResetFilters = "Filtreleri sıfırla",
 
 
                 MessageContentClearedLogs = "Tüm kayıtlar başarıyla silindi",
