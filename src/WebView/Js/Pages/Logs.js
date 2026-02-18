@@ -21,6 +21,12 @@ window.LogsPage = {
         }
     },
 
+    _isSubWindowHost() {
+        var path = window.location.pathname || '';
+        var href = window.location.href || '';
+        return /SubWindow\.html/i.test(path) || href.indexOf('SubWindow.html') >= 0;
+    },
+
     render() {
         var self = this;
         var L = Bridge.lang.bind(Bridge);
@@ -165,6 +171,11 @@ window.LogsPage = {
 
         var backEl = document.getElementById('log-back');
         var onBackClick = function () {
+            if (self._isSubWindowHost()) {
+                Bridge.send('closeWindow', {});
+                return;
+            }
+
             App.navigate('main');
         };
         backEl.addEventListener('click', onBackClick);

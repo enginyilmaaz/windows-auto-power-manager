@@ -193,6 +193,12 @@ namespace WindowsShutdownHelper
                 WindowState = FormWindowState.Normal;
             }
 
+            // Always restore the assigned page when reopening a hidden sub-window.
+            if (_webViewReady)
+            {
+                PostMessage("navigate", _pageName);
+            }
+
             BringToFront();
             Activate();
         }
