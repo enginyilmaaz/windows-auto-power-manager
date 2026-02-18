@@ -71,7 +71,21 @@ namespace WindowsAutoPowerManager
         public MainForm()
         {
             InitializeComponent();
+            ApplyExecutableIcon();
             InitializeLoadingOverlay();
+        }
+
+        private void ApplyExecutableIcon()
+        {
+            System.Drawing.Icon appIcon =
+                System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath);
+            if (appIcon == null)
+            {
+                return;
+            }
+
+            Icon = appIcon;
+            NotifyIconMain.Icon = appIcon;
         }
 
         protected override void OnLoad(EventArgs e)

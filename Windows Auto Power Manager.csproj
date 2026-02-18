@@ -6,7 +6,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <RootNamespace>WindowsAutoPowerManager</RootNamespace>
     <AssemblyName>Windows Auto Power Manager</AssemblyName>
-    <ApplicationIcon>src\setup.ico</ApplicationIcon>
+    <ApplicationIcon>src\Assets\app-icon.ico</ApplicationIcon>
     <StartupObject>WindowsAutoPowerManager.Program</StartupObject>
     <PublishSingleFile>false</PublishSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
