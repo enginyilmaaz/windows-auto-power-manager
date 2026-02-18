@@ -2,10 +2,10 @@
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
-using WindowsShutdownHelper.Config;
-using WindowsShutdownHelper.Functions;
+using WindowsAutoPowerManager.Config;
+using WindowsAutoPowerManager.Functions;
 
-namespace WindowsShutdownHelper
+namespace WindowsAutoPowerManager
 {
     internal static class Program
     {
@@ -57,7 +57,7 @@ namespace WindowsShutdownHelper
             {
                 MessageBox.Show(
                     ex.ToString(),
-                    "Windows Shutdown Helper - Startup Error",
+                    Constants.AppName + " - Startup Error",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);
             }

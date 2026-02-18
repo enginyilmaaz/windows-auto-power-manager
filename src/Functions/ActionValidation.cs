@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal static class ActionValidation
     {

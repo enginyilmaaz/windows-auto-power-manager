@@ -4,10 +4,10 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
-    <RootNamespace>WindowsShutdownHelper</RootNamespace>
-    <AssemblyName>Windows Shutdown Helper</AssemblyName>
+    <RootNamespace>WindowsAutoPowerManager</RootNamespace>
+    <AssemblyName>Windows Auto Power Manager</AssemblyName>
     <ApplicationIcon>src\setup.ico</ApplicationIcon>
-    <StartupObject>WindowsShutdownHelper.Program</StartupObject>
+    <StartupObject>WindowsAutoPowerManager.Program</StartupObject>
     <PublishSingleFile>false</PublishSingleFile>
     <PublishReadyToRun>true</PublishReadyToRun>
     <SelfContained>false</SelfContained>
@@ -16,8 +16,8 @@
     <AssemblyVersion>1.0.0.0</AssemblyVersion>
     <FileVersion>1.0.0.0</FileVersion>
     <Company>enginyilmaaz</Company>
-    <Product>Windows Shutdown Helper</Product>
-    <Description>Windows Shutdown Helper</Description>
+    <Product>Windows Auto Power Manager</Product>
+    <Description>Windows Auto Power Manager</Description>
     <Copyright>Copyright © 2020</Copyright>
   </PropertyGroup>
 
@@ -36,7 +36,7 @@
     <EmbeddedResource Update="src\Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <LogicalName>WindowsShutdownHelper.Properties.Resources.resources</LogicalName>
+      <LogicalName>WindowsAutoPowerManager.Properties.Resources.resources</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 

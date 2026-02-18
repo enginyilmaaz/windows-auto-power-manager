@@ -1,7 +1,7 @@
-; Windows Shutdown Helper - Inno Setup Script
+; Windows Auto Power Manager - Inno Setup Script
 ; Build: once tools\create-build.ps1 ile publish alin, sonra bu .iss dosyasini Inno Setup ile derleyin.
 
-#define MyAppName "Windows Shutdown Helper"
+#define MyAppName "Windows Auto Power Manager"
 #ifndef MyAppVersion
   #define MyAppVersion "1.0.0"
 #endif
@@ -9,17 +9,17 @@
   #define CommitHash "000000"
 #endif
 #ifndef OutputName
-  #define OutputName "WindowsShutdownHelper_Setup_" + MyAppVersion + "_" + CommitHash
+  #define OutputName "WindowsAutoPowerManager_Setup_" + MyAppVersion + "_" + CommitHash
 #endif
 #define MyAppPublisher "enginyilmaaz"
-#define MyAppExeName "Windows Shutdown Helper.exe"
+#define MyAppExeName "Windows Auto Power Manager.exe"
 
 [Setup]
 AppId={{9E741018-0E77-4458-BCDE-803A66EEF48C}
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
-DefaultDirName={localappdata}\Programs\{#MyAppName}
+DefaultDirName={userprofile}\Apps\{#MyAppName}
 DefaultGroupName={#MyAppName}
 DisableProgramGroupPage=yes
 OutputDir=installer_output
@@ -85,11 +85,11 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 Name: "startupentry"; Description: "{cm:StartWithWindows}"; GroupDescription: "{cm:OtherOptions}"; Flags: unchecked
 
 [Files]
-#ifexist "bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Windows Shutdown Helper.exe"
+#ifexist "bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\Windows Auto Power Manager.exe"
 Source: "bin\Release\net8.0-windows10.0.19041.0\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: Is64BitInstallMode
 Source: "bin\Release\net8.0-windows10.0.19041.0\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
-#ifexist "bin\Release\net8.0-windows\win-x64\publish\Windows Shutdown Helper.exe"
+#ifexist "bin\Release\net8.0-windows\win-x64\publish\Windows Auto Power Manager.exe"
 Source: "bin\Release\net8.0-windows\win-x64\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: Is64BitInstallMode
 Source: "bin\Release\net8.0-windows\win-x86\publish\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "Settings.json,settings.json,ActionList.json,actionList.json,actionlist.json,Logs.json,logs.json,lang\*"; Check: not Is64BitInstallMode
 #else
@@ -97,12 +97,12 @@ Source: "bin\Release\net8.0-windows10.0.19041.0\{#MyAppExeName}"; DestDir: "{app
 Source: "bin\Release\net8.0-windows10.0.19041.0\WebView\*"; DestDir: "{app}\WebView"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows10.0.19041.0\runtimes\*"; DestDir: "{app}\runtimes"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows10.0.19041.0\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "bin\Release\net8.0-windows10.0.19041.0\Windows Shutdown Helper.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "bin\Release\net8.0-windows10.0.19041.0\Windows Auto Power Manager.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows\WebView\*"; DestDir: "{app}\WebView"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows\runtimes\*"; DestDir: "{app}\runtimes"; Flags: ignoreversion recursesubdirs createallsubdirs skipifsourcedoesntexist
 Source: "bin\Release\net8.0-windows\*.dll"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
-Source: "bin\Release\net8.0-windows\Windows Shutdown Helper.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
+Source: "bin\Release\net8.0-windows\Windows Auto Power Manager.runtimeconfig.json"; DestDir: "{app}"; Flags: ignoreversion skipifsourcedoesntexist
 #endif
 #endif
 

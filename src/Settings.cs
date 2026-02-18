@@ -1,4 +1,4 @@
-﻿namespace WindowsShutdownHelper
+﻿namespace WindowsAutoPowerManager
 {
     public class Settings
     {

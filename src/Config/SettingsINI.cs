@@ -1,4 +1,4 @@
-﻿namespace WindowsShutdownHelper.Config
+﻿namespace WindowsAutoPowerManager.Config
 {
     public static class SettingsINI
     {

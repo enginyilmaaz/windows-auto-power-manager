@@ -1,4 +1,4 @@
-﻿namespace WindowsShutdownHelper.Functions
+﻿namespace WindowsAutoPowerManager.Functions
 {
     public class LogSystem
     {

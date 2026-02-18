@@ -1,4 +1,6 @@
-﻿namespace WindowsShutdownHelper.Lang
+﻿using WindowsAutoPowerManager.Config;
+
+namespace WindowsAutoPowerManager.Lang
 {
     public static class Turkish
     {
@@ -6,7 +8,7 @@
         {
             Language lang = new Language
             {
-                MainFormName = "Sistem Güç Yardımcısı",
+                MainFormName = Constants.AppName,
                 LangNativeName = "Türkçe",
                 MainGroupboxNewAction = "Yeni Görev",
                 MainLabelActionType = "Görev Türü",
@@ -117,7 +119,7 @@
                 SettingsFormCheckboxEnabled = "Aktif",
                 SettingsFormButtonSave = "Kaydet",
                 SettingsFormButtonCancel = "Vazgeç",
-                SettingsFormAddStartupAppName = "Shutdown Helper for Windows",
+                SettingsFormAddStartupAppName = Constants.AppName,
                 MessageContentSettingsSaved = "Ayarlar başarıyla kaydedildi",
                 MessageContentSettingSavedWithLangChanged =
                     "Değişiklikleri uygulamak için lütfen programı yeniden başlatın.",

@@ -1,4 +1,6 @@
-namespace WindowsShutdownHelper.Lang
+using WindowsAutoPowerManager.Config;
+
+namespace WindowsAutoPowerManager.Lang
 {
     public static class French
     {
@@ -6,7 +8,7 @@ namespace WindowsShutdownHelper.Lang
         {
             Language lang = new Language
             {
-                MainFormName = "Assistant d'arrêt Windows",
+                MainFormName = Constants.AppName,
                 LangNativeName = "Français",
                 MainGroupboxNewAction = "Nouvelle Action",
                 MainLabelActionType = "Type d'action",
@@ -117,7 +119,7 @@ namespace WindowsShutdownHelper.Lang
                 SettingsFormCheckboxEnabled = "Activé",
                 SettingsFormButtonSave = "Enregistrer",
                 SettingsFormButtonCancel = "Annuler",
-                SettingsFormAddStartupAppName = "Shutdown Helper for Windows",
+                SettingsFormAddStartupAppName = Constants.AppName,
                 MessageContentSettingsSaved = "Paramètres enregistrés avec succès",
                 MessageContentSettingSavedWithLangChanged = "Veuillez redémarrer le programme pour appliquer les modifications",
 

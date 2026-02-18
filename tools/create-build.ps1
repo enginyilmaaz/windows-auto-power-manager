@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Windows Shutdown Helper - Local Build Script
+    Windows Auto Power Manager - Local Build Script
 .DESCRIPTION
     Builds the project using the local .NET 8 SDK from tools/dotnet/.
 .PARAMETER Configuration
@@ -31,8 +31,8 @@ $ErrorActionPreference = "Stop"
 # --- Paths ---
 $toolsDir     = $PSScriptRoot
 $projectRoot  = Split-Path $toolsDir -Parent
-$solutionFile = Join-Path $projectRoot "Windows Shutdown Helper.sln"
-$projectFile  = Join-Path $projectRoot "Windows Shutdown Helper.csproj"
+$solutionFile = Join-Path $projectRoot "Windows Auto Power Manager.sln"
+$projectFile  = Join-Path $projectRoot "Windows Auto Power Manager.csproj"
 $localDotnet  = Join-Path $toolsDir "dotnet"
 
 if ($IsWindows -or $env:OS -eq "Windows_NT") {
@@ -54,7 +54,7 @@ function Write-Step {
 
 Write-Host ""
 Write-Host "============================================" -ForegroundColor White
-Write-Host "  Windows Shutdown Helper - Build Script" -ForegroundColor White
+Write-Host "  Windows Auto Power Manager - Build Script" -ForegroundColor White
 Write-Host "============================================" -ForegroundColor White
 Write-Host "  Configuration : $Configuration"
 Write-Host "  Project Root  : $projectRoot"

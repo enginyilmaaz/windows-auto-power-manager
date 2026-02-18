@@ -1,4 +1,6 @@
-namespace WindowsShutdownHelper.Lang
+using WindowsAutoPowerManager.Config;
+
+namespace WindowsAutoPowerManager.Lang
 {
     public static class Russian
     {
@@ -6,7 +8,7 @@ namespace WindowsShutdownHelper.Lang
         {
             Language lang = new Language
             {
-                MainFormName = "Помощник выключения Windows",
+                MainFormName = Constants.AppName,
                 LangNativeName = "Русский",
                 MainGroupboxNewAction = "Новое действие",
                 MainLabelActionType = "Тип действия",
@@ -117,7 +119,7 @@ namespace WindowsShutdownHelper.Lang
                 SettingsFormCheckboxEnabled = "Включено",
                 SettingsFormButtonSave = "Сохранить",
                 SettingsFormButtonCancel = "Отмена",
-                SettingsFormAddStartupAppName = "Shutdown Helper for Windows",
+                SettingsFormAddStartupAppName = Constants.AppName,
                 MessageContentSettingsSaved = "Настройки успешно сохранены",
                 MessageContentSettingSavedWithLangChanged = "Перезапустите программу для применения изменений",
 

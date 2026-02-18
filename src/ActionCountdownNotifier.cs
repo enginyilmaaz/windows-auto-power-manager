@@ -5,9 +5,9 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
-using WindowsShutdownHelper.Functions;
+using WindowsAutoPowerManager.Functions;
 
-namespace WindowsShutdownHelper
+namespace WindowsAutoPowerManager
 {
     public partial class ActionCountdownNotifier : Form
     {

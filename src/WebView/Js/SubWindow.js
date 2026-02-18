@@ -96,7 +96,7 @@
         } else if (pageName === 'about') {
             title.textContent = L('AboutMenuItem') || 'About';
         } else {
-            title.textContent = L('MainFormName') || 'Windows Shutdown Helper';
+            title.textContent = L('MainFormName') || 'Windows Auto Power Manager';
         }
     }
 

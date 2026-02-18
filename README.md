@@ -1,4 +1,4 @@
-# Windows Shutdown Helper
+# Windows Auto Power Manager
 
 A Windows desktop application that schedules system actions like shutdown, restart, sleep, lock, log off, and monitor off based on configurable triggers.
 
@@ -81,7 +81,7 @@ Notes:
 ## Project Structure
 
 ```
-WindowsShutdownHelper/
+WindowsAutoPowerManager/
 ├── src/
 │   ├── Program.cs                    # Entry point, single instance check
 │   ├── MainForm.cs                   # Main form, WebView2 host, timer logic
@@ -142,8 +142,8 @@ WindowsShutdownHelper/
 │   ├── create-build.ps1              # PowerShell build script
 │   └── create-build.sh               # Bash build script
 ├── installer.iss                     # Inno Setup installer script
-├── Windows Shutdown Helper.csproj    # .NET project file
-├── Windows Shutdown Helper.sln       # Solution file
+├── Windows Auto Power Manager.csproj    # .NET project file
+├── Windows Auto Power Manager.sln       # Solution file
 └── .github/
     └── workflows/
         └── build-and-release.yml     # CI/CD pipeline
@@ -160,26 +160,26 @@ WindowsShutdownHelper/
 
 Using the local .NET SDK from `tools/dotnet/` (Linux/macOS shell):
 ```bash
-DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" restore "Windows Shutdown Helper.sln"
-DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" build "Windows Shutdown Helper.sln" -c Release
+DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" restore "Windows Auto Power Manager.sln"
+DOTNET_ROOT="$PWD/tools/dotnet" "$PWD/tools/dotnet/dotnet" build "Windows Auto Power Manager.sln" -c Release
 ```
 
 Using the local .NET SDK from `tools/dotnet/` (Windows PowerShell):
 ```powershell
 $env:DOTNET_ROOT = "$PWD\tools\dotnet"
-.\tools\dotnet\dotnet.exe restore "Windows Shutdown Helper.sln"
-.\tools\dotnet\dotnet.exe build "Windows Shutdown Helper.sln" -c Release
+.\tools\dotnet\dotnet.exe restore "Windows Auto Power Manager.sln"
+.\tools\dotnet\dotnet.exe build "Windows Auto Power Manager.sln" -c Release
 ```
 
 Or if .NET 8.0 SDK is installed globally:
 ```bash
-dotnet restore "Windows Shutdown Helper.sln"
-dotnet build "Windows Shutdown Helper.sln" -c Release
+dotnet restore "Windows Auto Power Manager.sln"
+dotnet build "Windows Auto Power Manager.sln" -c Release
 ```
 
 ### Publish (self-contained x64)
 ```bash
-dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true
+dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true
 ```
 
 ### Create Installer

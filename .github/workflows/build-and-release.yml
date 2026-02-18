@@ -38,7 +38,7 @@ jobs:
           dotnet-version: '8.0.x'
 
       - name: Restore NuGet packages
-        run: dotnet restore "Windows Shutdown Helper.sln"
+        run: dotnet restore "Windows Auto Power Manager.sln"
 
       - name: Determine version and commit info
         id: version
@@ -106,7 +106,7 @@ jobs:
             echo "is_release=false" >> $env:GITHUB_OUTPUT
           }
 
-          $setupName = "WindowsShutdownHelper_Setup_$( if ('${{ github.ref_name }}' -eq 'master') { $newVersion } else { 'dev' } )_$commitHash"
+          $setupName = "WindowsAutoPowerManager_Setup_$( if ('${{ github.ref_name }}' -eq 'master') { $newVersion } else { 'dev' } )_$commitHash"
           echo "setup_name=$setupName" >> $env:GITHUB_OUTPUT
 
       - name: Inject Build Metadata
@@ -119,12 +119,12 @@ jobs:
           Set-Content $file $content
 
       - name: Build Release
-        run: dotnet build "Windows Shutdown Helper.sln" -c Release --no-restore
+        run: dotnet build "Windows Auto Power Manager.sln" -c Release --no-restore
 
       - name: Publish Release (win-x64/win-x86)
         run: |
-          dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
-          dotnet publish "Windows Shutdown Helper.csproj" -c Release -r win-x86 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
+          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
+          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x86 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
 
       - name: Build Installer
         shell: pwsh
@@ -137,7 +137,7 @@ jobs:
       - name: Upload Portable EXE
         uses: actions/upload-artifact@v4
         with:
-          name: WindowsShutdownHelper_Portable
+          name: WindowsAutoPowerManager_Portable
           path: |
             bin/Release/**/win-x64/publish/**
             bin/Release/**/win-x86/publish/**

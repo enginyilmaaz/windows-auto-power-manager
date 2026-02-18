@@ -1,4 +1,6 @@
-namespace WindowsShutdownHelper.Lang
+using WindowsAutoPowerManager.Config;
+
+namespace WindowsAutoPowerManager.Lang
 {
     public static class Italian
     {
@@ -6,7 +8,7 @@ namespace WindowsShutdownHelper.Lang
         {
             Language lang = new Language
             {
-                MainFormName = "Assistente Spegnimento Windows",
+                MainFormName = Constants.AppName,
                 LangNativeName = "Italiano",
                 MainGroupboxNewAction = "Nuova Azione",
                 MainLabelActionType = "Tipo di Azione",
@@ -117,7 +119,7 @@ namespace WindowsShutdownHelper.Lang
                 SettingsFormCheckboxEnabled = "Attivo",
                 SettingsFormButtonSave = "Salva",
                 SettingsFormButtonCancel = "Annulla",
-                SettingsFormAddStartupAppName = "Shutdown Helper for Windows",
+                SettingsFormAddStartupAppName = Constants.AppName,
                 MessageContentSettingsSaved = "Impostazioni salvate con successo",
                 MessageContentSettingSavedWithLangChanged = "Riavvia il programma per applicare le modifiche",
 

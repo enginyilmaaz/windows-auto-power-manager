@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal class SystemIdleDetector
     {

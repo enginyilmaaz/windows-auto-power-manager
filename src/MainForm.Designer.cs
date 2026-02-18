@@ -1,4 +1,4 @@
-namespace WindowsShutdownHelper
+namespace WindowsAutoPowerManager
 {
     partial class MainForm
     {
@@ -56,42 +56,42 @@ namespace WindowsShutdownHelper
             this.ContextMenuStripNotifyIcon.Size = new System.Drawing.Size(200, 156);
 
             // addNewActionToolStripMenuItem
-            this.addNewActionToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.add;
+            this.addNewActionToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.add;
             this.addNewActionToolStripMenuItem.Name = "addNewActionToolStripMenuItem";
             this.addNewActionToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.addNewActionToolStripMenuItem.Text = "Add new action";
             this.addNewActionToolStripMenuItem.Click += new System.EventHandler(this.addNewActionToolStripMenuItem_Click);
 
             // settingsToolStripMenuItem
-            this.settingsToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.settings;
+            this.settingsToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.settings;
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
 
             // showTheLogsToolStripMenuItem
-            this.showTheLogsToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.logs;
+            this.showTheLogsToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.logs;
             this.showTheLogsToolStripMenuItem.Name = "showTheLogsToolStripMenuItem";
             this.showTheLogsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.showTheLogsToolStripMenuItem.Text = "Show logs";
             this.showTheLogsToolStripMenuItem.Click += new System.EventHandler(this.showTheLogsToolStripMenuItem_Click);
 
             // helpToolStripMenuItem
-            this.helpToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.info;
+            this.helpToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.info;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
             this.helpToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
 
             // aboutToolStripMenuItem
-            this.aboutToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.about;
+            this.aboutToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.about;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
 
             // exitTheProgramToolStripMenuItem
-            this.exitTheProgramToolStripMenuItem.Image = global::WindowsShutdownHelper.Properties.Resources.exit;
+            this.exitTheProgramToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.exit;
             this.exitTheProgramToolStripMenuItem.Name = "exitTheProgramToolStripMenuItem";
             this.exitTheProgramToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.exitTheProgramToolStripMenuItem.Text = "Exit the program";
@@ -115,7 +115,7 @@ namespace WindowsShutdownHelper
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "MainForm";
             this.BackColor = System.Drawing.Color.FromArgb(26, 27, 46);
-            this.Text = "Windows Shutdown Helper";
+            this.Text = Config.Constants.AppName;
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.mainForm_FormClosing);
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.mainForm_FormClosed);
             this.Load += new System.EventHandler(this.mainForm_Load);

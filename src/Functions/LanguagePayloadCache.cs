@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal static class LanguagePayloadCache
     {

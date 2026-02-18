@@ -1,4 +1,6 @@
-namespace WindowsShutdownHelper.Lang
+using WindowsAutoPowerManager.Config;
+
+namespace WindowsAutoPowerManager.Lang
 {
     public static class German
     {
@@ -6,7 +8,7 @@ namespace WindowsShutdownHelper.Lang
         {
             Language lang = new Language
             {
-                MainFormName = "Windows Herunterfahren-Helfer",
+                MainFormName = Constants.AppName,
                 LangNativeName = "Deutsch",
                 MainGroupboxNewAction = "Neue Aktion",
                 MainLabelActionType = "Aktionstyp",
@@ -117,7 +119,7 @@ namespace WindowsShutdownHelper.Lang
                 SettingsFormCheckboxEnabled = "Aktiviert",
                 SettingsFormButtonSave = "Speichern",
                 SettingsFormButtonCancel = "Abbrechen",
-                SettingsFormAddStartupAppName = "Shutdown Helper for Windows",
+                SettingsFormAddStartupAppName = Constants.AppName,
                 MessageContentSettingsSaved = "Einstellungen erfolgreich gespeichert",
                 MessageContentSettingSavedWithLangChanged = "Bitte starten Sie das Programm neu, um die Änderungen anzuwenden",
 

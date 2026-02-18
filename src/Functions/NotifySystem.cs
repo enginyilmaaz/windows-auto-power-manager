@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal class NotifySystem
     {

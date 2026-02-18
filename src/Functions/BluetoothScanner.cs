@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Enumeration;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     public class BleDeviceInfo
     {

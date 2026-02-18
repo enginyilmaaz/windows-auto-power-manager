@@ -1,4 +1,4 @@
-﻿namespace WindowsShutdownHelper
+﻿namespace WindowsAutoPowerManager
 {
     internal static class BuildInfo
     {

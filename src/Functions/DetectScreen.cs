@@ -1,6 +1,6 @@
 ﻿using Microsoft.Win32;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     public static class DetectScreen
     {

@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Core;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal static class WebViewEnvironmentProvider
     {
@@ -41,7 +41,7 @@ namespace WindowsShutdownHelper.Functions
         {
             string userDataFolder = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "WindowsShutdownHelper",
+                "WindowsAutoPowerManager",
                 "WebView2");
 
             Directory.CreateDirectory(userDataFolder);

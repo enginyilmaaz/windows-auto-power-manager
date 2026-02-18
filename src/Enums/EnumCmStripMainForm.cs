@@ -1,4 +1,4 @@
-﻿namespace WindowsShutdownHelper.Enums
+﻿namespace WindowsAutoPowerManager.Enums
 {
 
     public enum EnumCmStripMainForm

@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text.Json;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     public class JsonWriter
     {

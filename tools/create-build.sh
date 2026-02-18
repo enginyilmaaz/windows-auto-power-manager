@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================
-#  Windows Shutdown Helper - Build Script
+#  Windows Auto Power Manager - Build Script
 #  Uses local .NET 8 SDK from tools/dotnet/
 # =============================================
 
@@ -17,7 +17,7 @@ NC='\033[0m'
 # --- Paths ---
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$TOOLS_DIR")"
-SOLUTION_FILE="$PROJECT_ROOT/Windows Shutdown Helper.sln"
+SOLUTION_FILE="$PROJECT_ROOT/Windows Auto Power Manager.sln"
 LOCAL_DOTNET="$TOOLS_DIR/dotnet/dotnet"
 
 # --- Defaults ---
@@ -80,7 +80,7 @@ step() {
 
 echo ""
 echo -e "${WHITE}============================================${NC}"
-echo -e "${WHITE}  Windows Shutdown Helper - Build Script${NC}"
+echo -e "${WHITE}  Windows Auto Power Manager - Build Script${NC}"
 echo -e "${WHITE}============================================${NC}"
 echo "  Configuration : $CONFIGURATION"
 echo "  Project Root  : $PROJECT_ROOT"

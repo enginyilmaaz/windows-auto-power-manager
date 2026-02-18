@@ -4,9 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
-using WindowsShutdownHelper.Lang;
+using WindowsAutoPowerManager.Lang;
 
-namespace WindowsShutdownHelper.Functions
+namespace WindowsAutoPowerManager.Functions
 {
     internal class LanguageSelector
 

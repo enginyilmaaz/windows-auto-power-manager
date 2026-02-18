@@ -8,10 +8,11 @@ using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.WinForms;
-using WindowsShutdownHelper.Enums;
-using WindowsShutdownHelper.Functions;
+using WindowsAutoPowerManager.Config;
+using WindowsAutoPowerManager.Enums;
+using WindowsAutoPowerManager.Functions;
 
-namespace WindowsShutdownHelper
+namespace WindowsAutoPowerManager
 {
     public partial class MainForm : Form
     {
@@ -185,7 +186,7 @@ namespace WindowsShutdownHelper
                 Logger.Initialize(_cachedSettings);
                 ApplySettingsOnStartup(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
-                ContextMenuStripNotifyIcon.Renderer = new WindowsShutdownHelper.Functions.ModernMenuRenderer(isDark);
+                ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
                 ContextMenuStripNotifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
                 BackColor = isDark
                     ? System.Drawing.Color.FromArgb(26, 27, 46)
@@ -440,7 +441,7 @@ namespace WindowsShutdownHelper
 
             try
             {
-                string startupName = Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper";
+                string startupName = Language.SettingsFormAddStartupAppName ?? Constants.AppName;
                 if (settingsObj.StartWithWindows)
                 {
                     StartWithWindows.AddStartup(startupName);
@@ -907,15 +908,15 @@ namespace WindowsShutdownHelper
 
             // Update tray menu renderer and form BackColor based on theme
             bool isDark = DetermineIfDark(newSettings.Theme);
-            ContextMenuStripNotifyIcon.Renderer = new WindowsShutdownHelper.Functions.ModernMenuRenderer(isDark);
+            ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
             BackColor = isDark
                 ? System.Drawing.Color.FromArgb(26, 27, 46)
                 : System.Drawing.Color.FromArgb(240, 242, 245);
 
             if (newSettings.StartWithWindows)
-                StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
             else
-                StartWithWindows.DeleteStartup(Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.DeleteStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
 
             if (newSettings.IsCountdownNotifierEnabled)
             {
@@ -1269,7 +1270,7 @@ namespace WindowsShutdownHelper
                 case "about":
                     return Language.AboutMenuItem ?? "About";
                 default:
-                    return Language.MainFormName ?? "Windows Shutdown Helper";
+                    return Language.MainFormName ?? Constants.AppName;
             }
         }
 

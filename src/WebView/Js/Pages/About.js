@@ -12,7 +12,7 @@ window.AboutPage = {
                 (L('AboutMenuItem') || 'About') +
             '</div>' +
             '<div class="about-content">' +
-                '<div class="about-app-name">' + (L('MainFormName') || 'Windows Shutdown Helper') + '</div>' +
+                '<div class="about-app-name">' + (L('MainFormName') || 'Windows Auto Power Manager') + '</div>' +
                 '<div class="about-row">' +
                     '<span class="about-label">' + (L('AboutLabelVersion') || 'Version') + '</span>' +
                     '<span class="about-value">' + version + '</span>' +

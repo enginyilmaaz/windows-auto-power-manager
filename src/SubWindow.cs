@@ -6,9 +6,10 @@ using System.Reflection;
 using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
-using WindowsShutdownHelper.Functions;
+using WindowsAutoPowerManager.Config;
+using WindowsAutoPowerManager.Functions;
 
-namespace WindowsShutdownHelper
+namespace WindowsAutoPowerManager
 {
     public partial class SubWindow : Form
     {
@@ -629,9 +630,9 @@ namespace WindowsShutdownHelper
             main?.UpdateCachedSettings(newSettings);
 
             if (newSettings.StartWithWindows)
-                StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
             else
-                StartWithWindows.DeleteStartup(MainForm.Language.SettingsFormAddStartupAppName ?? "Windows Shutdown Helper");
+                StartWithWindows.DeleteStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
 
             if (newSettings.IsCountdownNotifierEnabled)
             {
