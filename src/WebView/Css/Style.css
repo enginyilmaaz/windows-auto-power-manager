@@ -774,6 +774,15 @@ body {
     opacity: 0.5;
 }
 
+/* Sub windows already show page title in header; hide repeated card heading. */
+body.subwindow-host .card-title {
+    display: none;
+}
+
+body.subwindow-host .card {
+    padding-top: 14px;
+}
+
 .menu-item .mi {
     font-size: 18px;
 }
