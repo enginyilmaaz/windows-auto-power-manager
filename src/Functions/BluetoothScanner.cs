@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Devices.Bluetooth;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Enumeration;
 
@@ -101,6 +102,11 @@ namespace WindowsAutoPowerManager.Functions
                 // Seed paired classic devices immediately so phones that do not actively advertise
                 // can still appear in the device list.
                 _ = RefreshClassicDiscoverySnapshotAsync();
+
+                // Also enumerate all paired Bluetooth devices directly via the
+                // Windows BluetoothDevice / BluetoothLEDevice APIs.  This catches
+                // phones and other devices that the AEP-based Classic watcher may miss.
+                _ = RefreshPairedDevicesSnapshotAsync();
             }
         }
 
@@ -335,23 +341,112 @@ namespace WindowsAutoPowerManager.Functions
 
                 foreach (DeviceInformation device in devices)
                 {
-                    bool includeDevice = true;
-                    if (TryGetBoolProperty(device.Properties, "System.Devices.Aep.IsPaired", out bool isPaired))
-                    {
-                        includeDevice = isPaired;
-                    }
-
-                    if (!includeDevice)
-                    {
-                        continue;
-                    }
-
                     AddOrUpdateClassicDevice(device.Id, device.Name, device.Properties);
                 }
             }
             catch
             {
                 // Snapshot is best-effort. Discovery watcher continues to run.
+            }
+        }
+
+        private static async Task RefreshPairedDevicesSnapshotAsync()
+        {
+            // Query paired AND unpaired devices via the Windows BluetoothDevice /
+            // BluetoothLEDevice APIs.  This catches phones and other devices that
+            // the AEP-based Classic watcher may miss.
+            await RefreshBluetoothDevicesByPairingState(paired: true);
+            await RefreshBluetoothDevicesByPairingState(paired: false);
+        }
+
+        private static async Task RefreshBluetoothDevicesByPairingState(bool paired)
+        {
+            try
+            {
+                // Classic Bluetooth devices
+                string classicSelector = BluetoothDevice.GetDeviceSelectorFromPairingState(paired);
+                DeviceInformationCollection classicDevices =
+                    await DeviceInformation.FindAllAsync(classicSelector);
+
+                if (!_isDiscovering) return;
+
+                foreach (DeviceInformation devInfo in classicDevices)
+                {
+                    try
+                    {
+                        using var btDevice = await BluetoothDevice.FromIdAsync(devInfo.Id);
+                        if (btDevice == null || btDevice.BluetoothAddress == 0) continue;
+                        AddPairedDeviceToDiscovery(btDevice.BluetoothAddress, btDevice.Name);
+                    }
+                    catch { }
+                }
+
+                // BLE devices
+                string bleSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(paired);
+                DeviceInformationCollection bleDevices =
+                    await DeviceInformation.FindAllAsync(bleSelector);
+
+                if (!_isDiscovering) return;
+
+                foreach (DeviceInformation devInfo in bleDevices)
+                {
+                    try
+                    {
+                        using var bleDevice = await BluetoothLEDevice.FromIdAsync(devInfo.Id);
+                        if (bleDevice == null || bleDevice.BluetoothAddress == 0) continue;
+                        AddPairedDeviceToDiscovery(bleDevice.BluetoothAddress, bleDevice.Name);
+                    }
+                    catch { }
+                }
+            }
+            catch
+            {
+                // Best-effort. Other discovery mechanisms continue to run.
+            }
+        }
+
+        private static void AddPairedDeviceToDiscovery(ulong macLong, string name)
+        {
+            if (macLong == 0) return;
+
+            string displayName = !string.IsNullOrWhiteSpace(name)
+                ? name
+                : FormatMacAddress(macLong);
+
+            var info = new BleDeviceInfo
+            {
+                BluetoothAddress = macLong,
+                MacAddress = FormatMacAddress(macLong),
+                LocalName = displayName,
+                RssiDbm = 0,
+                LastSeen = DateTime.Now
+            };
+
+            bool changed = false;
+            _discoveredDevices.AddOrUpdate(
+                macLong,
+                _ =>
+                {
+                    changed = true;
+                    return info;
+                },
+                (key, existing) =>
+                {
+                    if (!string.IsNullOrEmpty(displayName) &&
+                        !string.Equals(existing.LocalName, displayName, StringComparison.Ordinal) &&
+                        string.Equals(existing.LocalName, FormatMacAddress(macLong), StringComparison.Ordinal))
+                    {
+                        existing.LocalName = displayName;
+                        changed = true;
+                    }
+                    existing.LastSeen = DateTime.Now;
+                    return existing;
+                });
+
+            if (changed)
+            {
+                Interlocked.Increment(ref _discoveryVersion);
+                DeviceDiscovered?.Invoke(info);
             }
         }
 
