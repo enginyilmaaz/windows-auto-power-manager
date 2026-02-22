@@ -24,7 +24,9 @@ namespace WindowsAutoPowerManager.Functions
         private static BluetoothLEAdvertisementWatcher _discoveryWatcher;
         private static BluetoothLEAdvertisementWatcher _monitorWatcher;
         private static DeviceWatcher _classicBtWatcher;
+        private static DeviceWatcher _bleAepWatcher;
         private static DeviceWatcher _classicMonitorWatcher;
+        private static DeviceWatcher _bleMonitorWatcher;
         private static Timer _classicMonitorHeartbeatTimer;
 
         private static readonly ConcurrentDictionary<ulong, BleDeviceInfo> _discoveredDevices = new();
@@ -47,8 +49,9 @@ namespace WindowsAutoPowerManager.Functions
 
         public static event Action<BleDeviceInfo> DeviceDiscovered;
 
-        // Bluetooth Classic protocol ID for DeviceWatcher
+        // Bluetooth protocol IDs for DeviceWatcher
         private const string ClassicBtProtocolId = "{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}";
+        private const string BleLowEnergyProtocolId = "{bb7bb05e-5972-42b5-94fc-76eaa7084d49}";
         private const int ClassicPresenceRefreshIntervalMs = 5000;
         private const int ClassicPresenceRefreshFailureTolerance = 3;
 
@@ -74,18 +77,18 @@ namespace WindowsAutoPowerManager.Functions
                 _discoveryWatcher.Received += OnDiscoveryReceived;
                 _discoveryWatcher.Start();
 
-                // Classic Bluetooth device watcher
+                // Classic Bluetooth device watcher (live inquiry scan)
                 try
                 {
-                    string selector = "System.Devices.Aep.ProtocolId:=\"" + ClassicBtProtocolId + "\"";
-                    var requestedProps = new string[]
+                    string classicSelector = "System.Devices.Aep.ProtocolId:=\"" + ClassicBtProtocolId + "\"";
+                    var classicProps = new string[]
                     {
                         "System.Devices.Aep.DeviceAddress",
                         "System.ItemNameDisplay",
                         "System.Devices.Aep.IsPaired"
                     };
                     _classicBtWatcher = DeviceInformation.CreateWatcher(
-                        selector, requestedProps, DeviceInformationKind.AssociationEndpoint);
+                        classicSelector, classicProps, DeviceInformationKind.AssociationEndpoint);
 
                     _classicBtWatcher.Added += OnClassicDeviceAdded;
                     _classicBtWatcher.Updated += OnClassicDeviceUpdated;
@@ -93,8 +96,30 @@ namespace WindowsAutoPowerManager.Functions
                 }
                 catch
                 {
-                    // Classic BT not available, continue with BLE only
                     _classicBtWatcher = null;
+                }
+
+                // BLE device watcher (live scan for BLE devices that don't advertise,
+                // e.g. phones whose BLE AEP is known to Windows but not broadcasting)
+                try
+                {
+                    string bleSelector = "System.Devices.Aep.ProtocolId:=\"" + BleLowEnergyProtocolId + "\"";
+                    var bleProps = new string[]
+                    {
+                        "System.Devices.Aep.DeviceAddress",
+                        "System.ItemNameDisplay",
+                        "System.Devices.Aep.IsPaired"
+                    };
+                    _bleAepWatcher = DeviceInformation.CreateWatcher(
+                        bleSelector, bleProps, DeviceInformationKind.AssociationEndpoint);
+
+                    _bleAepWatcher.Added += OnClassicDeviceAdded;
+                    _bleAepWatcher.Updated += OnClassicDeviceUpdated;
+                    _bleAepWatcher.Start();
+                }
+                catch
+                {
+                    _bleAepWatcher = null;
                 }
 
                 _isDiscovering = true;
@@ -133,6 +158,18 @@ namespace WindowsAutoPowerManager.Functions
                     }
                     catch { }
                     _classicBtWatcher = null;
+                }
+
+                if (_bleAepWatcher != null)
+                {
+                    try
+                    {
+                        _bleAepWatcher.Added -= OnClassicDeviceAdded;
+                        _bleAepWatcher.Updated -= OnClassicDeviceUpdated;
+                        _bleAepWatcher.Stop();
+                    }
+                    catch { }
+                    _bleAepWatcher = null;
                 }
 
                 _classicDiscoveryIdToAddress.Clear();
@@ -494,6 +531,7 @@ namespace WindowsAutoPowerManager.Functions
                 _monitorWatcher.Start();
 
                 StartClassicMonitoringLocked();
+                StartBleMonitoringLocked();
                 _isMonitoring = true;
                 Interlocked.Exchange(ref _classicPresenceRefreshFailureCount, 0);
                 StartClassicMonitorHeartbeatLocked();
@@ -515,6 +553,7 @@ namespace WindowsAutoPowerManager.Functions
                 }
 
                 StopClassicMonitoringLocked();
+                StopBleMonitoringLocked();
                 StopClassicMonitorHeartbeatLocked();
 
                 _monitorLastSeen.Clear();
@@ -668,6 +707,58 @@ namespace WindowsAutoPowerManager.Functions
             _classicMonitorWatcher = null;
         }
 
+        private static void StartBleMonitoringLocked()
+        {
+            try
+            {
+                if (_bleMonitorWatcher != null)
+                {
+                    return;
+                }
+
+                string selector = "System.Devices.Aep.ProtocolId:=\"" + BleLowEnergyProtocolId + "\"";
+                var requestedProps = new string[]
+                {
+                    "System.Devices.Aep.DeviceAddress",
+                    "System.Devices.Aep.IsPresent",
+                    "System.Devices.Aep.SignalStrength"
+                };
+
+                _bleMonitorWatcher = DeviceInformation.CreateWatcher(
+                    selector, requestedProps, DeviceInformationKind.AssociationEndpoint);
+
+                _bleMonitorWatcher.Added += OnClassicMonitorAdded;
+                _bleMonitorWatcher.Updated += OnClassicMonitorUpdated;
+                _bleMonitorWatcher.Removed += OnClassicMonitorRemoved;
+                _bleMonitorWatcher.Start();
+            }
+            catch
+            {
+                _bleMonitorWatcher = null;
+            }
+        }
+
+        private static void StopBleMonitoringLocked()
+        {
+            if (_bleMonitorWatcher == null)
+            {
+                return;
+            }
+
+            try
+            {
+                _bleMonitorWatcher.Added -= OnClassicMonitorAdded;
+                _bleMonitorWatcher.Updated -= OnClassicMonitorUpdated;
+                _bleMonitorWatcher.Removed -= OnClassicMonitorRemoved;
+                _bleMonitorWatcher.Stop();
+            }
+            catch
+            {
+            }
+
+            _bleMonitorWatcher = null;
+        }
+
         private static void OnClassicMonitorAdded(DeviceWatcher sender, DeviceInformation info)
         {
             UpdateClassicMonitorPresence(info.Id, info.Properties, isPresentFallback: null);
@@ -808,7 +899,7 @@ namespace WindowsAutoPowerManager.Functions
 
         private static void ScheduleClassicPresenceRefresh(bool force)
         {
-            if (!_isMonitoring || _classicMonitorWatcher == null)
+            if (!_isMonitoring || (_classicMonitorWatcher == null && _bleMonitorWatcher == null))
             {
                 return;
             }
@@ -856,7 +947,6 @@ namespace WindowsAutoPowerManager.Functions
         {
             try
             {
-                string selector = "System.Devices.Aep.ProtocolId:=\"" + ClassicBtProtocolId + "\"";
                 var requestedProps = new string[]
                 {
                     "System.Devices.Aep.DeviceAddress",
@@ -864,48 +954,56 @@ namespace WindowsAutoPowerManager.Functions
                     "System.Devices.Aep.SignalStrength"
                 };
 
-                DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(
-                    selector,
-                    requestedProps,
-                    DeviceInformationKind.AssociationEndpoint);
-
-                if (!_isMonitoring)
-                {
-                    return false;
-                }
-
                 DateTime now = DateTime.Now;
                 var presentAddresses = new HashSet<ulong>();
 
-                foreach (DeviceInformation device in devices)
+                // Query both Classic BT and BLE AEP devices
+                string[] protocolIds = { ClassicBtProtocolId, BleLowEnergyProtocolId };
+
+                foreach (string protocolId in protocolIds)
                 {
-                    if (!TryGetAddressFromProperties(device.Properties, out ulong address))
+                    string selector = "System.Devices.Aep.ProtocolId:=\"" + protocolId + "\"";
+
+                    DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(
+                        selector,
+                        requestedProps,
+                        DeviceInformationKind.AssociationEndpoint);
+
+                    if (!_isMonitoring)
                     {
-                        continue;
+                        return false;
                     }
 
-                    if (!string.IsNullOrWhiteSpace(device.Id))
+                    foreach (DeviceInformation device in devices)
                     {
-                        _classicMonitorIdToAddress[device.Id] = address;
-                    }
-
-                    if (TryGetBoolProperty(device.Properties, "System.Devices.Aep.IsPresent", out bool isPresent) &&
-                        isPresent)
-                    {
-                        presentAddresses.Add(address);
-                        _classicMonitorPresent[address] = 1;
-                        _monitorLastSeen[address] = now;
-
-                        if (device.Properties.TryGetValue("System.Devices.Aep.SignalStrength", out object sigObj) &&
-                            sigObj != null)
+                        if (!TryGetAddressFromProperties(device.Properties, out ulong address))
                         {
-                            if (sigObj is int intRssi)
+                            continue;
+                        }
+
+                        if (!string.IsNullOrWhiteSpace(device.Id))
+                        {
+                            _classicMonitorIdToAddress[device.Id] = address;
+                        }
+
+                        if (TryGetBoolProperty(device.Properties, "System.Devices.Aep.IsPresent", out bool isPresent) &&
+                            isPresent)
+                        {
+                            presentAddresses.Add(address);
+                            _classicMonitorPresent[address] = 1;
+                            _monitorLastSeen[address] = now;
+
+                            if (device.Properties.TryGetValue("System.Devices.Aep.SignalStrength", out object sigObj) &&
+                                sigObj != null)
                             {
-                                _monitorLastRssi[address] = (short)intRssi;
-                            }
-                            else if (int.TryParse(sigObj.ToString(), out int parsedRssi))
-                            {
-                                _monitorLastRssi[address] = (short)parsedRssi;
+                                if (sigObj is int intRssi)
+                                {
+                                    _monitorLastRssi[address] = (short)intRssi;
+                                }
+                                else if (int.TryParse(sigObj.ToString(), out int parsedRssi))
+                                {
+                                    _monitorLastRssi[address] = (short)parsedRssi;
+                                }
                             }
                         }
                     }
