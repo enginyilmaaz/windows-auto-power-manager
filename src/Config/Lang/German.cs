@@ -194,6 +194,11 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelBluetoothThreshold = "Bluetooth-Schwelle (Sek.)",
                 SettingsFormLabelBluetoothRssiThreshold = "Bluetooth-Signalschwelle (dBm)",
 
+                // Settings tooltips
+                TooltipCountdownSeconds = "Wie lange die Warnung vor der Aktion angezeigt wird.\nEmpfohlen: 5-10 Sekunden.\nWeitere Infos auf der Hilfe-Seite.",
+                TooltipBluetoothThreshold = "Wartezeit nach Geräteverlust, bevor die Aktion ausgelöst wird.\nEmpfohlen: 5-15 Sekunden.\nWeitere Infos auf der Hilfe-Seite.",
+                TooltipBluetoothRssi = "Minimale Signalstärke, um das Gerät als verbunden zu betrachten.\n0 = Prüfung deaktivieren.\nEmpfohlen: -70 bis -50.\nWeitere Infos auf der Hilfe-Seite.",
+
             };
             return lang;
         }

@@ -195,6 +195,11 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelBluetoothThreshold = "Bluetooth eşik süresi (sn)",
                 SettingsFormLabelBluetoothRssiThreshold = "Bluetooth sinyal eşiği (dBm)",
 
+                // Settings tooltips
+                TooltipCountdownSeconds = "İşlem yapılmadan önce gösterilecek uyarı süresi.\nÖnerilen: 5-10 saniye.\nDaha fazla bilgi için Yardım sayfasına bakın.",
+                TooltipBluetoothThreshold = "Cihaz algılanmadığında işlem başlatmadan önceki bekleme süresi.\nÖnerilen: 5-15 saniye.\nDaha fazla bilgi için Yardım sayfasına bakın.",
+                TooltipBluetoothRssi = "Cihazın bağlı sayılması için gereken minimum sinyal gücü.\n0 = kontrolü devre dışı bırakır.\nÖnerilen: -70 ile -50 arası.\nDaha fazla bilgi için Yardım sayfasına bakın.",
+
             };
 
 

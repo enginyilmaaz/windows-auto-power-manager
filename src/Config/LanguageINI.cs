@@ -203,5 +203,10 @@
         public string SettingsFormLabelBluetoothThreshold { get; set; }
         public string SettingsFormLabelBluetoothRssiThreshold { get; set; }
 
+        // Settings tooltips
+        public string TooltipCountdownSeconds { get; set; }
+        public string TooltipBluetoothThreshold { get; set; }
+        public string TooltipBluetoothRssi { get; set; }
+
     }
 }

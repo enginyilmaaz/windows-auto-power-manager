@@ -294,9 +294,9 @@ window.MainPage = {
                     '<option value="2">' + (L('MainTimeUnitHours') || 'Hours') + '</option>' +
                 '</select>' +
                 '<input type="time" id="inp-time" class="form-input form-input-small" style="display:none">' +
-                '<div id="bt-panel" style="display:none">' +
-                    '<select id="sel-bt-device" class="form-select">' +
-                        '<option value="">' + 'Click to search' + '</option>' +
+                '<div id="bt-panel" style="display:none; flex:1">' +
+                    '<select id="sel-bt-device" class="form-select" style="width:100%">' +
+                        '<option value="">' + (L('BluetoothSelectDevice') || 'Select a device') + '</option>' +
                     '</select>' +
                     '<input type="hidden" id="inp-bt-mac" value="">' +
                     '<input type="hidden" id="inp-bt-name" value="">' +
@@ -765,11 +765,14 @@ window.MainPage = {
             var entry = filtered[rowIndex];
             var a = entry.action || {};
             var selectedClass = entry.idx === self._selectedRow ? ' class="selected"' : '';
+            var isBt = (a.triggerTypeRaw === 'BluetoothNotReachable');
+            var displayValue = isBt ? (a.valueUnit || a.value || '') : (a.value || '');
+            var displayUnit = isBt ? '-' : (a.valueUnit || '');
             html += '<tr data-idx="' + entry.idx + '"' + selectedClass + '>' +
                 '<td>' + (a.triggerType || '') + '</td>' +
                 '<td>' + (a.actionType || '') + '</td>' +
-                '<td>' + (a.value || '') + '</td>' +
-                '<td>' + (a.valueUnit || '') + '</td>' +
+                '<td>' + displayValue + '</td>' +
+                '<td>' + displayUnit + '</td>' +
                 '<td>' + (a.createdDate || '') + '</td>' +
                 '<td class="row-actions-cell">' +
                     (canEdit

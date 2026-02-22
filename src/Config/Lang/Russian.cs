@@ -194,6 +194,11 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelBluetoothThreshold = "Порог Bluetooth (сек)",
                 SettingsFormLabelBluetoothRssiThreshold = "Порог сигнала Bluetooth (дБм)",
 
+                // Settings tooltips
+                TooltipCountdownSeconds = "Сколько времени показывается предупреждение перед действием.\nРекомендуется: 5-10 секунд.\nПодробнее на странице Справка.",
+                TooltipBluetoothThreshold = "Время ожидания после потери устройства перед выполнением действия.\nРекомендуется: 5-15 секунд.\nПодробнее на странице Справка.",
+                TooltipBluetoothRssi = "Минимальная сила сигнала для определения устройства как подключённого.\n0 = отключает проверку.\nРекомендуется: от -70 до -50.\nПодробнее на странице Справка.",
+
             };
             return lang;
         }

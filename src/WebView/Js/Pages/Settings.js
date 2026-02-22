@@ -74,17 +74,26 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelCountdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
+                '<div class="settings-label-group">' +
+                    '<span class="settings-label">' + (L('SettingsFormLabelCountdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
+                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipCountdownSeconds') || 'How long the warning is shown before the action runs.\nRecommended: 5-10 seconds.').replace(/"/g, '&quot;')) + '">info</span>' +
+                '</div>' +
                 '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelBluetoothThreshold') || 'Bluetooth threshold (sec)') + '</span>' +
+                '<div class="settings-label-group">' +
+                    '<span class="settings-label">' + (L('SettingsFormLabelBluetoothThreshold') || 'Bluetooth threshold (sec)') + '</span>' +
+                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipBluetoothThreshold') || 'Wait time after device is lost before triggering the action.\nRecommended: 5-15 seconds.').replace(/"/g, '&quot;')) + '">info</span>' +
+                '</div>' +
                 '<input type="number" id="set-bt-threshold" class="form-input" style="max-width:80px;text-align:center" min="1" max="60" value="' + (s.bluetoothThresholdSeconds || 5) + '">' +
             '</div>' +
 
             '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelBluetoothRssiThreshold') || 'Bluetooth signal threshold (dBm)') + '</span>' +
+                '<div class="settings-label-group">' +
+                    '<span class="settings-label">' + (L('SettingsFormLabelBluetoothRssiThreshold') || 'Bluetooth signal threshold (dBm)') + '</span>' +
+                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipBluetoothRssi') || 'Minimum signal strength to consider the device connected.\n0 = disables the check.\nRecommended: -70 to -50.').replace(/"/g, '&quot;')) + '">info</span>' +
+                '</div>' +
                 '<input type="number" id="set-bt-rssi" class="form-input" style="max-width:80px;text-align:center" min="-100" max="0" value="' + (s.bluetoothRssiThreshold || 0) + '">' +
             '</div>' +
 

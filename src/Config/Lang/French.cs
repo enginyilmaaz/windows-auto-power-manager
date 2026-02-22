@@ -194,6 +194,11 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelBluetoothThreshold = "Seuil Bluetooth (sec)",
                 SettingsFormLabelBluetoothRssiThreshold = "Seuil de signal Bluetooth (dBm)",
 
+                // Settings tooltips
+                TooltipCountdownSeconds = "Durée d'affichage de l'avertissement avant l'action.\nRecommandé : 5-10 secondes.\nVoir la page Aide pour plus d'infos.",
+                TooltipBluetoothThreshold = "Temps d'attente après la perte de l'appareil avant de déclencher l'action.\nRecommandé : 5-15 secondes.\nVoir la page Aide pour plus d'infos.",
+                TooltipBluetoothRssi = "Force minimale du signal pour considérer l'appareil comme connecté.\n0 = désactive la vérification.\nRecommandé : -70 à -50.\nVoir la page Aide pour plus d'infos.",
+
             };
             return lang;
         }

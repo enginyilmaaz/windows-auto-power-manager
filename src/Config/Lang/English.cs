@@ -194,6 +194,11 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelBluetoothThreshold = "Bluetooth threshold (sec)",
                 SettingsFormLabelBluetoothRssiThreshold = "Bluetooth signal threshold (dBm)",
 
+                // Settings tooltips
+                TooltipCountdownSeconds = "How long the warning is shown before the action runs.\nRecommended: 5-10 seconds.\nSee the Help page for more info.",
+                TooltipBluetoothThreshold = "Wait time after device is lost before triggering the action.\nRecommended: 5-15 seconds.\nSee the Help page for more info.",
+                TooltipBluetoothRssi = "Minimum signal strength to consider the device connected.\n0 = disables the check.\nRecommended: -70 to -50.\nSee the Help page for more info.",
+
             };
             return lang;
         }
