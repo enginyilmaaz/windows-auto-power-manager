@@ -1227,9 +1227,9 @@ body.subwindow-host .card {
     left: 50%;
     bottom: calc(100% + 8px);
     transform: translateX(-50%);
-    background: var(--bg-panel);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-input);
+    background: #1a1b2e;
+    color: #e0e0ef;
+    border: 1px solid #3a3b55;
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 12px;
@@ -1238,7 +1238,7 @@ body.subwindow-host .card {
     line-height: 1.45;
     white-space: pre-line;
     width: 260px;
-    box-shadow: var(--shadow-ctx);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
     z-index: 1200;
     pointer-events: none;
 }
@@ -1250,7 +1250,7 @@ body.subwindow-host .card {
     bottom: calc(100% + 2px);
     transform: translateX(-50%);
     border: 6px solid transparent;
-    border-top-color: var(--border-input);
+    border-top-color: #3a3b55;
     z-index: 1201;
     pointer-events: none;
 }

@@ -129,8 +129,20 @@ jobs:
       - name: Build Installer
         shell: pwsh
         run: |
+          $ProgressPreference = 'SilentlyContinue'
           $url = "https://github.com/jrsoftware/issrc/releases/download/is-6_7_0/innosetup-6.7.0.exe"
-          Invoke-WebRequest -Uri $url -OutFile innosetup.exe
+          $maxRetries = 3
+          for ($i = 1; $i -le $maxRetries; $i++) {
+            try {
+              Write-Host "Downloading Inno Setup (attempt $i/$maxRetries)..."
+              Invoke-WebRequest -Uri $url -OutFile innosetup.exe -UseBasicParsing -TimeoutSec 120
+              break
+            } catch {
+              Write-Host "Download failed: $_"
+              if ($i -eq $maxRetries) { throw }
+              Start-Sleep -Seconds (10 * $i)
+            }
+          }
           Start-Process -Wait -FilePath .\innosetup.exe -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES /NORESTART /DIR=C:\InnoSetup"
           C:\InnoSetup\ISCC.exe "/DMyAppVersion=${{ steps.version.outputs.version }}" "/DCommitHash=${{ steps.version.outputs.commit_short }}" installer.iss
 
