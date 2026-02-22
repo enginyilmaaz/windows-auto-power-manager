@@ -20,15 +20,19 @@ namespace WindowsAutoPowerManager
         private bool _allowClose;
         private Panel _loadingOverlay;
         private Label _loadingLabel;
-        private Timer _loadingDelayTimer;
-        private const int LoadingOverlayDelayMs = 350;
 
         public SubWindow(string pageName, string title)
         {
             InitializeComponent();
             _pageName = pageName;
             Text = title;
-            InitializeLoadingOverlay();
+
+            bool isDark = DetermineIfDark();
+            webView.DefaultBackgroundColor = isDark
+                ? System.Drawing.Color.FromArgb(26, 27, 46)
+                : System.Drawing.Color.FromArgb(240, 242, 245);
+
+            InitializeLoadingOverlay(isDark);
         }
 
         private async void SubWindow_Load(object sender, EventArgs e)
@@ -91,35 +95,25 @@ namespace WindowsAutoPowerManager
             SendInitData();
         }
 
-        private void InitializeLoadingOverlay()
+        private void InitializeLoadingOverlay(bool isDark)
         {
-            _loadingDelayTimer = new Timer
-            {
-                Interval = LoadingOverlayDelayMs
-            };
-            _loadingDelayTimer.Tick += (s, e) =>
-            {
-                _loadingDelayTimer.Stop();
-                if (!_webViewReady && _loadingOverlay != null)
-                {
-                    _loadingOverlay.Visible = true;
-                    _loadingOverlay.BringToFront();
-                }
-            };
-
             _loadingLabel = new Label
             {
                 Dock = DockStyle.Fill,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold),
-                ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
+                ForeColor = isDark
+                    ? System.Drawing.Color.FromArgb(160, 163, 180)
+                    : System.Drawing.Color.FromArgb(95, 99, 112),
                 Text = MainForm.Language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = System.Drawing.Color.FromArgb(240, 242, 245)
+                BackColor = isDark
+                    ? System.Drawing.Color.FromArgb(26, 27, 46)
+                    : System.Drawing.Color.FromArgb(240, 242, 245)
             };
 
             _loadingOverlay.Controls.Add(_loadingLabel);
@@ -132,15 +126,13 @@ namespace WindowsAutoPowerManager
         {
             if (_loadingOverlay == null) return;
             _loadingLabel.Text = MainForm.Language?.CommonLoading ?? "Yükleniyor...";
-            _loadingOverlay.Visible = false;
-            _loadingDelayTimer?.Stop();
-            _loadingDelayTimer?.Start();
+            _loadingOverlay.Visible = true;
+            _loadingOverlay.BringToFront();
         }
 
         private void HideLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingDelayTimer?.Stop();
             _loadingOverlay.Visible = false;
         }
 
@@ -842,6 +834,36 @@ namespace WindowsAutoPowerManager
             string configFilesLabel = MainForm.Language.SettingsFormDialogFilterConfigFiles ?? "Configuration Files";
             string allFilesLabel = MainForm.Language.SettingsFormDialogFilterAllFiles ?? "All Files";
             return $"{configFilesLabel} (*.conf)|*.conf|{allFilesLabel} (*.*)|*.*";
+        }
+
+        // =============== Theme Helpers ===============
+
+        private bool DetermineIfDark()
+        {
+            var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
+            Settings settings = main?.GetCachedSettingsOrDefault();
+            string theme = settings?.Theme ?? "system";
+            if (theme == "dark") return true;
+            if (theme == "light") return false;
+            return IsSystemDarkTheme();
+        }
+
+        private static bool IsSystemDarkTheme()
+        {
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        var val = key.GetValue("AppsUseLightTheme");
+                        if (val != null) return (int)val == 0;
+                    }
+                }
+            }
+            catch { }
+            return true;
         }
 
         // =============== Helpers ===============

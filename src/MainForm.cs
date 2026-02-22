@@ -34,8 +34,6 @@ namespace WindowsAutoPowerManager
         private WebView2 webView;
         private Panel _loadingOverlay;
         private Label _loadingLabel;
-        private Timer _loadingDelayTimer;
-        private const int LoadingOverlayDelayMs = 350;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "help", "about" };
         private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
         private readonly Dictionary<string, bool> _bluetoothReachabilityByActionKey =
@@ -72,7 +70,10 @@ namespace WindowsAutoPowerManager
         {
             InitializeComponent();
             ApplyExecutableIcon();
-            InitializeLoadingOverlay();
+
+            bool isDark = ReadCachedThemeIsDark();
+            CreateWebViewControl(isDark);
+            InitializeLoadingOverlay(isDark);
         }
 
         private void ApplyExecutableIcon()
@@ -133,23 +134,24 @@ namespace WindowsAutoPowerManager
             }
         }
 
-        private void mainForm_Load(object sender, EventArgs e)
+        private async void mainForm_Load(object sender, EventArgs e)
         {
-            ShowLoadingOverlay();
-
-            // First paint as fast as possible, then initialize heavy components.
-            BeginInvoke(new Action(() =>
-            {
-                CreateWebViewControl();
-                _ = InitializeWebViewSafeAsync();
-            }));
-
             Text = Language.MainFormName;
             NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
+
+            // Start WebView initialization directly -- no BeginInvoke round-trip.
+            // The first await inside yields to the message pump, allowing
+            // InitializeRuntimeState to run while EnsureCoreWebView2Async proceeds.
+            var webViewTask = InitializeWebViewSafeAsync();
+
+            // Queue runtime state initialization -- runs when the pump is free
+            // (immediately after the first await in webViewTask yields).
             BeginInvoke(new Action(InitializeRuntimeState));
+
+            await webViewTask;
         }
 
-        private void CreateWebViewControl()
+        private void CreateWebViewControl(bool isDark)
         {
             if (webView != null) return;
 
@@ -159,7 +161,10 @@ namespace WindowsAutoPowerManager
                 Dock = DockStyle.Fill,
                 Name = "webView",
                 ZoomFactor = 1D,
-                TabIndex = 0
+                TabIndex = 0,
+                DefaultBackgroundColor = isDark
+                    ? System.Drawing.Color.FromArgb(26, 27, 46)
+                    : System.Drawing.Color.FromArgb(240, 242, 245)
             };
 
             webViewHost.Controls.Add(webView);
@@ -260,40 +265,30 @@ namespace WindowsAutoPowerManager
             TrySendInitData();
         }
 
-        private void InitializeLoadingOverlay()
+        private void InitializeLoadingOverlay(bool isDark)
         {
-            _loadingDelayTimer = new Timer
-            {
-                Interval = LoadingOverlayDelayMs
-            };
-            _loadingDelayTimer.Tick += (s, e) =>
-            {
-                _loadingDelayTimer.Stop();
-                if (!_initSent && _loadingOverlay != null)
-                {
-                    _loadingOverlay.Visible = true;
-                    _loadingOverlay.BringToFront();
-                }
-            };
-
             _loadingLabel = new Label
             {
                 Dock = DockStyle.Fill,
                 TextAlign = System.Drawing.ContentAlignment.MiddleCenter,
                 Font = new System.Drawing.Font("Segoe UI", 11F, System.Drawing.FontStyle.Bold),
-                ForeColor = System.Drawing.Color.FromArgb(95, 99, 112),
+                ForeColor = isDark
+                    ? System.Drawing.Color.FromArgb(160, 163, 180)
+                    : System.Drawing.Color.FromArgb(95, 99, 112),
                 Text = Language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = System.Drawing.Color.FromArgb(240, 242, 245)
+                BackColor = isDark
+                    ? System.Drawing.Color.FromArgb(26, 27, 46)
+                    : System.Drawing.Color.FromArgb(240, 242, 245)
             };
 
             _loadingOverlay.Controls.Add(_loadingLabel);
             Controls.Add(_loadingOverlay);
-            _loadingOverlay.Visible = false;
+            _loadingOverlay.Visible = true;
             _loadingOverlay.BringToFront();
         }
 
@@ -301,15 +296,13 @@ namespace WindowsAutoPowerManager
         {
             if (_loadingOverlay == null) return;
             _loadingLabel.Text = Language?.CommonLoading ?? "Yükleniyor...";
-            _loadingOverlay.Visible = false;
-            _loadingDelayTimer?.Stop();
-            _loadingDelayTimer?.Start();
+            _loadingOverlay.Visible = true;
+            _loadingOverlay.BringToFront();
         }
 
         private void HideLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingDelayTimer?.Stop();
             _loadingOverlay.Visible = false;
         }
 
@@ -498,11 +491,6 @@ namespace WindowsAutoPowerManager
         {
             if (_startupErrorShown) return;
             _startupErrorShown = true;
-
-            if (_loadingDelayTimer != null)
-            {
-                _loadingDelayTimer.Stop();
-            }
 
             if (_loadingOverlay != null)
             {
@@ -1870,6 +1858,30 @@ namespace WindowsAutoPowerManager
         }
 
         // =============== Theme Helpers ===============
+
+        private static bool ReadCachedThemeIsDark()
+        {
+            try
+            {
+                string path = SettingsStorage.SettingsPath;
+                if (File.Exists(path))
+                {
+                    string json = File.ReadAllText(path);
+                    if (!string.IsNullOrWhiteSpace(json))
+                    {
+                        using var doc = JsonDocument.Parse(json);
+                        if (doc.RootElement.TryGetProperty("Theme", out JsonElement themeEl))
+                        {
+                            string theme = themeEl.GetString();
+                            if (theme == "dark") return true;
+                            if (theme == "light") return false;
+                        }
+                    }
+                }
+            }
+            catch { }
+            return IsSystemDarkTheme();
+        }
 
         private static bool IsSystemDarkTheme()
         {

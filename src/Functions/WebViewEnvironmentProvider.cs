@@ -45,7 +45,11 @@ namespace WindowsAutoPowerManager.Functions
                 "WebView2");
 
             Directory.CreateDirectory(userDataFolder);
-            return CoreWebView2Environment.CreateAsync(null, userDataFolder);
+
+            var options = new CoreWebView2EnvironmentOptions(
+                "--disable-features=msEdgeEnhanceTextContrast");
+
+            return CoreWebView2Environment.CreateAsync(null, userDataFolder, options);
         }
     }
 }
