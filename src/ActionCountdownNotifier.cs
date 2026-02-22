@@ -1,6 +1,7 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -30,8 +31,6 @@ namespace WindowsAutoPowerManager
         private bool _timerStarted;
         private Panel _loadingOverlay;
         private Label _loadingLabel;
-        private Timer _loadingDelayTimer;
-        private const int LoadingOverlayDelayMs = 350;
         private Point dragStartCursor;
         private Point dragStartForm;
         private bool dragging;
@@ -39,7 +38,13 @@ namespace WindowsAutoPowerManager
         public ActionCountdownNotifier()
         {
             InitializeComponent();
-            InitializeLoadingOverlay();
+
+            bool isDark = DetermineIfDark();
+            webView.DefaultBackgroundColor = isDark
+                ? Color.FromArgb(26, 27, 46)
+                : Color.FromArgb(241, 245, 249);
+
+            InitializeLoadingOverlay(isDark);
         }
 
         public ActionCountdownNotifier(string _messageTitle, string _messageContentCountdownNotify,
@@ -271,35 +276,25 @@ namespace WindowsAutoPowerManager
             Timer.Start();
         }
 
-        private void InitializeLoadingOverlay()
+        private void InitializeLoadingOverlay(bool isDark)
         {
-            _loadingDelayTimer = new Timer
-            {
-                Interval = LoadingOverlayDelayMs
-            };
-            _loadingDelayTimer.Tick += (s, e) =>
-            {
-                _loadingDelayTimer.Stop();
-                if (!_timerStarted && _loadingOverlay != null)
-                {
-                    _loadingOverlay.Visible = true;
-                    _loadingOverlay.BringToFront();
-                }
-            };
-
             _loadingLabel = new Label
             {
                 Dock = DockStyle.Fill,
                 TextAlign = ContentAlignment.MiddleCenter,
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-                ForeColor = Color.FromArgb(97, 106, 124),
+                ForeColor = isDark
+                    ? Color.FromArgb(160, 163, 180)
+                    : Color.FromArgb(97, 106, 124),
                 Text = Language?.CommonLoading ?? "Yükleniyor..."
             };
 
             _loadingOverlay = new Panel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.FromArgb(241, 245, 249)
+                BackColor = isDark
+                    ? Color.FromArgb(26, 27, 46)
+                    : Color.FromArgb(241, 245, 249)
             };
 
             _loadingOverlay.Controls.Add(_loadingLabel);
@@ -312,15 +307,13 @@ namespace WindowsAutoPowerManager
         {
             if (_loadingOverlay == null) return;
             _loadingLabel.Text = Language?.CommonLoading ?? "Yükleniyor...";
-            _loadingOverlay.Visible = false;
-            _loadingDelayTimer?.Stop();
-            _loadingDelayTimer?.Start();
+            _loadingOverlay.Visible = true;
+            _loadingOverlay.BringToFront();
         }
 
         private void HideLoadingOverlay()
         {
             if (_loadingOverlay == null) return;
-            _loadingDelayTimer?.Stop();
             _loadingOverlay.Visible = false;
         }
 
@@ -480,6 +473,29 @@ namespace WindowsAutoPowerManager
                     }
                     break;
             }
+        }
+
+        private bool DetermineIfDark()
+        {
+            var main = Application.OpenForms.Cast<Form>().OfType<MainForm>().FirstOrDefault();
+            var settings = main?.GetCachedSettingsOrDefault();
+            string theme = settings?.Theme ?? "system";
+            if (theme == "dark") return true;
+            if (theme == "light") return false;
+            try
+            {
+                using (var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(
+                    @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    if (key != null)
+                    {
+                        var val = key.GetValue("AppsUseLightTheme");
+                        if (val != null) return (int)val == 0;
+                    }
+                }
+            }
+            catch { }
+            return true;
         }
 
         private void StartDrag(int screenX, int screenY)
