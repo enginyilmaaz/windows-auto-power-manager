@@ -190,6 +190,7 @@ namespace WindowsAutoPowerManager.Lang
                 BluetoothNoDeviceFound = "Устройства не найдены",
                 BluetoothSelectDevice = "Выберите устройство",
                 BluetoothNotAvailable = "Bluetooth недоступен",
+                BluetoothSearchingDevices = "Поиск Bluetooth-устройств",
                 BluetoothDeviceLabel = "Устройство",
                 SettingsFormLabelBluetoothThreshold = "Порог Bluetooth (сек)",
                 SettingsFormLabelBluetoothRssiThreshold = "Порог сигнала Bluetooth (дБм)",

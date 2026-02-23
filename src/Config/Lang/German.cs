@@ -190,6 +190,7 @@ namespace WindowsAutoPowerManager.Lang
                 BluetoothNoDeviceFound = "Kein Gerät gefunden",
                 BluetoothSelectDevice = "Gerät auswählen",
                 BluetoothNotAvailable = "Bluetooth nicht verfügbar",
+                BluetoothSearchingDevices = "Bluetooth-Geräte werden gesucht",
                 BluetoothDeviceLabel = "Gerät",
                 SettingsFormLabelBluetoothThreshold = "Bluetooth-Schwelle (Sek.)",
                 SettingsFormLabelBluetoothRssiThreshold = "Bluetooth-Signalschwelle (dBm)",

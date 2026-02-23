@@ -191,6 +191,7 @@ namespace WindowsAutoPowerManager.Lang
                 BluetoothNoDeviceFound = "Cihaz bulunamadı",
                 BluetoothSelectDevice = "Bir cihaz seçin",
                 BluetoothNotAvailable = "Bluetooth kullanılamıyor",
+                BluetoothSearchingDevices = "Bluetooth cihazları aranıyor",
                 BluetoothDeviceLabel = "Cihaz",
                 SettingsFormLabelBluetoothThreshold = "Bluetooth eşik süresi (sn)",
                 SettingsFormLabelBluetoothRssiThreshold = "Bluetooth sinyal eşiği (dBm)",

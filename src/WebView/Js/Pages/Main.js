@@ -318,7 +318,8 @@ window.MainPage = {
 
         function showBtSearchingToast() {
             if (typeof Toast !== 'undefined' && Toast && typeof Toast.show === 'function') {
-                Toast.show('', 'Searching bluetooth devices', 'info', 2000);
+                var L = Bridge.lang.bind(Bridge);
+                Toast.show('', L('BluetoothSearchingDevices') || 'Searching bluetooth devices', 'info', 2000);
             }
         }
 
