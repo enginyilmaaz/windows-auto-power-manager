@@ -267,7 +267,7 @@ const App = {
     _showPageLoading() {
         var container = document.getElementById('page-container');
         if (!container) return;
-        container.innerHTML = '<div class="table-empty">' + this._getLoadingText() + '</div>';
+        container.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><div class="loading-text">' + this._getLoadingText() + '</div></div>';
     },
 
     _showPageLoadError() {

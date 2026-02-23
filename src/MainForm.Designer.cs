@@ -38,7 +38,7 @@ namespace WindowsAutoPowerManager
             this.webViewHost.Dock = System.Windows.Forms.DockStyle.Fill;
             this.webViewHost.Location = new System.Drawing.Point(0, 0);
             this.webViewHost.Name = "webViewHost";
-            this.webViewHost.Size = new System.Drawing.Size(529, 484);
+            this.webViewHost.Size = new System.Drawing.Size(629, 484);
             this.webViewHost.TabIndex = 0;
 
             // ContextMenuStripNotifyIcon
@@ -108,7 +108,7 @@ namespace WindowsAutoPowerManager
             // MainForm
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(580, 520);
+            this.ClientSize = new System.Drawing.Size(680, 520);
             this.MinimumSize = new System.Drawing.Size(480, 400);
             this.Controls.Add(this.webViewHost);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Sizable;

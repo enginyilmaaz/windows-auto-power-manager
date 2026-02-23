@@ -119,7 +119,7 @@
         var container = document.getElementById('page-container');
         if (!container) return;
 
-        container.innerHTML = '<div class="table-empty">' + getLoadingText() + '</div>';
+        container.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><div class="loading-text">' + getLoadingText() + '</div></div>';
         var token = ++navigationToken;
         var targetPage = pageName;
         disposePageHandlers(targetPage);

@@ -917,29 +917,16 @@ namespace WindowsAutoPowerManager
 
             if (!string.Equals(currentLang, newSettings.Language, StringComparison.Ordinal))
             {
-                LanguagePayloadCache.Invalidate();
+                RefreshLanguageUI();
             }
 
-            if (currentLang != newSettings.Language)
+            PostMessage("showToast", new
             {
-                PostMessage("showToast", new
-                {
-                    title = Language.MessageTitleSuccess,
-                    message = Language.MessageContentSettingSavedWithLangChanged,
-                    type = "info",
-                    duration = 4000
-                });
-            }
-            else
-            {
-                PostMessage("showToast", new
-                {
-                    title = Language.MessageTitleSuccess,
-                    message = Language.MessageContentSettingsSaved,
-                    type = "success",
-                    duration = 2000
-                });
-            }
+                title = Language.MessageTitleSuccess,
+                message = Language.MessageContentSettingsSaved,
+                type = "success",
+                duration = 2000
+            });
         }
 
         private void HandleLoadSettings()
@@ -1192,7 +1179,7 @@ namespace WindowsAutoPowerManager
 
             if (!string.Equals(currentLang, resolved.Language, StringComparison.Ordinal))
             {
-                LanguagePayloadCache.Invalidate();
+                RefreshLanguageUI();
             }
         }
 
@@ -1857,6 +1844,59 @@ namespace WindowsAutoPowerManager
         private void showTheLogsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenSubWindow("logs");
+        }
+
+        // =============== Language Hot-Reload ===============
+
+        public void RefreshLanguageUI()
+        {
+            Language = LanguageSelector.LanguageFile();
+            LanguagePayloadCache.Invalidate();
+
+            // Update native UI texts
+            Text = Language.MainFormName;
+            NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
+
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
+                Language.ContextMenuStripNotifyIconAddNewAction;
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
+                Language.ContextMenuStripNotifyIconExitProgram;
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
+                Language.ContextMenuStripNotifyIconShowSettings;
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
+                Language.ContextMenuStripNotifyIconShowLogs;
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Help].Text =
+                Language.ContextMenuStripNotifyIconShowHelp ?? "Help";
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
+                Language.AboutMenuItem ?? "About";
+
+            // Update sub-window titles
+            foreach (var kvp in _subWindows)
+            {
+                if (!kvp.Value.IsDisposed)
+                {
+                    kvp.Value.Text = GetSubWindowTitle(kvp.Key);
+                }
+            }
+
+            // Re-send full init data to main WebView and all sub-windows
+            SendInitData();
+            BroadcastSubWindowFullRefresh();
+        }
+
+        private void BroadcastSubWindowFullRefresh()
+        {
+            var langDict = LanguagePayloadCache.Get(Language);
+            var displayActions = GetTranslatedActions();
+            var settingsObj = _cachedSettings ?? LoadSettings();
+
+            foreach (SubWindow subWindow in _subWindows.Values.ToList())
+            {
+                if (!subWindow.IsDisposed)
+                {
+                    subWindow.BroadcastFullRefresh(langDict, displayActions, BuildSettingsPayload(settingsObj));
+                }
+            }
         }
 
         // =============== Theme Helpers ===============

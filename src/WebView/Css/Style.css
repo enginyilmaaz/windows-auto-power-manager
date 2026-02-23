@@ -752,7 +752,7 @@ body {
 .card {
     background: var(--bg-card);
     border: 1px solid var(--border-main);
-    border-radius: 10px;
+    border-radius: 14px;
     padding: 18px;
     margin-bottom: 14px;
 }
@@ -994,9 +994,8 @@ body.subwindow-host .card {
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transform: translateX(4px);
+    opacity: 0.5;
+    pointer-events: auto;
     transition: all 0.14s ease;
 }
 
@@ -1007,8 +1006,6 @@ body.subwindow-host .card {
 .data-table tr:hover .row-action-btn,
 .data-table tr.selected .row-action-btn {
     opacity: 1;
-    pointer-events: auto;
-    transform: translateX(0);
 }
 
 .row-action-btn:hover {
@@ -1209,22 +1206,18 @@ body.subwindow-host .card {
 
 .settings-info-icon {
     position: relative;
-    font-size: 12px;
-    color: #ffffff;
-    background: #1a2744;
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 18px;
+    color: var(--text-primary);
+    background: none;
+    border: none;
     cursor: help;
-    transition: opacity 0.2s, background 0.2s;
+    opacity: 0.8;
+    transition: opacity 0.2s, color 0.2s;
 }
 
 .settings-info-icon:hover {
     opacity: 1;
-    background: #243a5e;
+    color: var(--accent-blue);
 }
 
 .settings-info-icon:hover::after {
@@ -1498,12 +1491,72 @@ body.subwindow-host .card {
     color: var(--text-hint);
 }
 
-.help-toc {
-    border: 1px solid var(--border-row);
-    border-radius: 8px;
-    padding: 10px 14px;
-    margin-bottom: 14px;
+/* ─── TOC Sidebar (Right, Collapsible) ─── */
+.help-toc-toggle {
+    position: fixed;
+    right: 16px;
+    top: 56px;
+    z-index: 800;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border-input);
+    background: var(--bg-card);
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s;
+}
+
+.help-toc-toggle:hover {
+    color: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.help-toc-toggle .mi {
+    font-size: 18px;
+}
+
+.help-toc-sidebar {
+    position: fixed;
+    right: 0;
+    top: 44px;
+    bottom: 0;
+    width: 240px;
     background: var(--bg-panel);
+    border-left: 1px solid var(--border-main);
+    box-shadow: -4px 0 16px rgba(0,0,0,0.12);
+    z-index: 790;
+    transform: translateX(100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+}
+
+.help-toc-sidebar.open {
+    transform: translateX(0);
+}
+
+.help-toc-sidebar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.help-toc-sidebar::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 2px;
+}
+
+.help-toc-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    flex-shrink: 0;
 }
 
 .help-toc-title {
@@ -1512,40 +1565,85 @@ body.subwindow-host .card {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-faint);
-    margin-bottom: 8px;
+}
+
+.help-toc-close {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    transition: all 0.15s;
+}
+
+.help-toc-close:hover {
+    color: var(--text-primary);
+    background: var(--hover-white);
+}
+
+.help-toc-close .mi {
+    font-size: 18px;
 }
 
 .help-toc-list {
     list-style: none;
     padding: 0;
     margin: 0;
+    flex: 1;
 }
 
 .help-toc-list li {
-    padding: 4px 0;
+    padding: 0;
 }
 
 .help-toc-link {
-    font-size: 13px;
-    color: var(--accent-blue);
+    font-size: 12px;
+    color: var(--text-muted);
     text-decoration: none;
     cursor: pointer;
-    transition: opacity 0.2s;
+    transition: all 0.15s;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 6px;
 }
 
 .help-toc-link:hover {
-    opacity: 0.8;
-    text-decoration: underline;
+    color: var(--accent-blue);
+    background: var(--accent-blue-bg);
+}
+
+.help-toc-link.active {
+    color: var(--accent-blue);
+    background: var(--accent-blue-bg);
+    font-weight: 600;
 }
 
 .help-toc-link .mi {
     font-size: 16px;
-    opacity: 0.7;
+    opacity: 0.6;
+    flex-shrink: 0;
 }
 
+.help-toc-num {
+    font-size: 10px;
+    font-weight: 700;
+    color: #ffffff;
+    background: #1a2744;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* ─── Chapter Cards ─── */
 .help-chapter {
     border: 1px solid var(--border-row);
     border-radius: 10px;
@@ -1646,6 +1744,11 @@ body.subwindow-host .card {
     border-left: 3px solid var(--color-warn);
 }
 
+.help-tip-box.success {
+    background: rgba(46,204,113,0.08);
+    border-left: 3px solid var(--color-success);
+}
+
 .help-tip-box .mi {
     font-size: 18px;
     flex-shrink: 0;
@@ -1658,6 +1761,10 @@ body.subwindow-host .card {
 
 .help-tip-box.warn .mi {
     color: var(--color-warn);
+}
+
+.help-tip-box.success .mi {
+    color: var(--color-success);
 }
 
 .help-desc-item {
@@ -1676,7 +1783,9 @@ body.subwindow-host .card {
     font-size: 13px;
     font-weight: 700;
     color: var(--text-primary);
-    margin: 10px 0 6px;
+    margin: 12px 0 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-row);
 }
 
 .help-no-result {
@@ -1684,4 +1793,156 @@ body.subwindow-host .card {
     padding: 24px;
     color: var(--text-hint);
     font-size: 13px;
+}
+
+/* ─── Help Page Navigation ─── */
+.help-page-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 0 4px;
+    margin-top: 8px;
+    border-top: 1px solid var(--border-row);
+}
+
+.help-page-nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 16px;
+    border: 1px solid var(--border-input);
+    border-radius: 8px;
+    background: var(--bg-btn-secondary);
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.help-page-nav-btn:hover:not(:disabled) {
+    background: var(--bg-btn-secondary-hover);
+    color: var(--text-primary);
+    border-color: var(--accent-blue);
+}
+
+.help-page-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.help-page-nav-btn .mi {
+    font-size: 20px;
+}
+
+.help-page-indicator {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
+}
+
+/* ─── Help Search Results ─── */
+.help-search-results-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+}
+
+.help-search-results-header .mi {
+    font-size: 16px;
+    opacity: 0.6;
+}
+
+.help-search-results-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.help-search-result-item {
+    border: 1px solid var(--border-row);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.help-search-result-item:hover {
+    border-color: var(--accent-blue);
+    background: var(--accent-blue-bg);
+}
+
+.help-search-result-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+
+.help-search-result-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.help-search-result-snippet {
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--text-dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.help-search-result-snippet mark {
+    background: rgba(91,154,255,0.25);
+    color: var(--accent-blue);
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+/* ─── Modern Loading Spinner ─── */
+.loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 20px;
+    gap: 18px;
+    animation: fadeIn 0.3s ease;
+}
+
+.loading-spinner {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 3px solid var(--border-main);
+    border-top-color: var(--accent-blue);
+    animation: spin 0.8s linear infinite;
+}
+
+.loading-text {
+    font-size: 13px;
+    color: var(--text-muted);
+    letter-spacing: 0.3px;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }

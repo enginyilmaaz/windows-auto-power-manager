@@ -285,6 +285,17 @@ namespace WindowsAutoPowerManager
             PostMessage("logsLoaded", logs);
         }
 
+        public void BroadcastFullRefresh(object langDict, object actions, object settings)
+        {
+            if (!_webViewReady) return;
+            PostMessage("init", new
+            {
+                language = langDict,
+                actions,
+                settings
+            });
+        }
+
         // =============== WebMessage Handler ===============
 
         private void OnWebMessageReceived(object sender, CoreWebView2WebMessageReceivedEventArgs e)
@@ -656,29 +667,16 @@ namespace WindowsAutoPowerManager
 
             if (!string.Equals(currentLang, newSettings.Language, StringComparison.Ordinal))
             {
-                LanguagePayloadCache.Invalidate();
+                main?.RefreshLanguageUI();
             }
 
-            if (currentLang != newSettings.Language)
+            PostMessage("showToast", new
             {
-                PostMessage("showToast", new
-                {
-                    title = MainForm.Language.MessageTitleSuccess,
-                    message = MainForm.Language.MessageContentSettingSavedWithLangChanged,
-                    type = "info",
-                    duration = 4000
-                });
-            }
-            else
-            {
-                PostMessage("showToast", new
-                {
-                    title = MainForm.Language.MessageTitleSuccess,
-                    message = MainForm.Language.MessageContentSettingsSaved,
-                    type = "success",
-                    duration = 2000
-                });
-            }
+                title = MainForm.Language.MessageTitleSuccess,
+                message = MainForm.Language.MessageContentSettingsSaved,
+                type = "success",
+                duration = 2000
+            });
         }
 
         private void HandleLoadSettings()
