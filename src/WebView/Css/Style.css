@@ -1941,6 +1941,40 @@ body.subwindow-host .card {
     padding: 0 2px;
 }
 
+/* ─── Help Page Sticky Layout (SubWindow) ─── */
+body.subwindow-host .help-search-box {
+    position: sticky;
+    top: -18px;
+    z-index: 10;
+    background: var(--bg-card);
+    padding-top: 14px;
+    padding-bottom: 10px;
+    margin-bottom: 2px;
+}
+
+body.subwindow-host .help-page-nav {
+    position: sticky;
+    bottom: -18px;
+    z-index: 10;
+    background: var(--bg-card);
+    padding-top: 10px;
+    padding-bottom: 14px;
+}
+
+body.subwindow-host #help-search-results {
+    overflow-y: auto;
+    max-height: calc(100vh - 180px);
+}
+
+body.subwindow-host #help-search-results::-webkit-scrollbar {
+    width: 5px;
+}
+
+body.subwindow-host #help-search-results::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+}
+
 /* ─── Modern Loading Spinner ─── */
 .loading-container {
     display: flex;

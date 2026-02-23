@@ -1519,6 +1519,12 @@ namespace WindowsAutoPowerManager
             }
 
             var win = new SubWindow(pageName, GetSubWindowTitle(pageName));
+
+            if (pageName == "help")
+            {
+                win.ClientSize = new System.Drawing.Size(680, 640);
+            }
+
             _subWindows[pageName] = win;
 
             win.FormClosed += (s, args) =>
