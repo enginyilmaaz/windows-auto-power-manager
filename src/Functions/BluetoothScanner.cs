@@ -22,11 +22,9 @@ namespace WindowsAutoPowerManager.Functions
     internal static class BluetoothScanner
     {
         private static BluetoothLEAdvertisementWatcher _discoveryWatcher;
-        private static BluetoothLEAdvertisementWatcher _monitorWatcher;
         private static DeviceWatcher _classicBtWatcher;
         private static DeviceWatcher _bleAepWatcher;
         private static DeviceWatcher _classicMonitorWatcher;
-        private static DeviceWatcher _bleMonitorWatcher;
         private static Timer _classicMonitorHeartbeatTimer;
 
         private static readonly ConcurrentDictionary<ulong, BleDeviceInfo> _discoveredDevices = new();
@@ -36,6 +34,7 @@ namespace WindowsAutoPowerManager.Functions
         private static readonly ConcurrentDictionary<string, ulong> _classicDiscoveryIdToAddress = new();
         private static readonly ConcurrentDictionary<string, ulong> _classicMonitorIdToAddress = new();
         private static readonly ConcurrentDictionary<ulong, byte> _classicMonitorPresent = new();
+        private static readonly ConcurrentDictionary<ulong, int> _classicMonitorConsecutiveMisses = new();
         private static int _classicPresenceRefreshInProgress;
         private static int _classicPresenceRefreshFailureCount;
         private static long _lastClassicPresenceRefreshTick = -ClassicPresenceRefreshIntervalMs;
@@ -54,6 +53,7 @@ namespace WindowsAutoPowerManager.Functions
         private const string BleLowEnergyProtocolId = "{bb7bb05e-5972-42b5-94fc-76eaa7084d49}";
         private const int ClassicPresenceRefreshIntervalMs = 5000;
         private const int ClassicPresenceRefreshFailureTolerance = 3;
+        private const int ClassicDeviceMissTolerance = 3;
 
         // ---------- Discovery Scan (UI device list) ----------
 
@@ -522,16 +522,7 @@ namespace WindowsAutoPowerManager.Functions
             {
                 if (_isMonitoring) return;
 
-                _monitorWatcher = new BluetoothLEAdvertisementWatcher
-                {
-                    ScanningMode = BluetoothLEScanningMode.Passive
-                };
-
-                _monitorWatcher.Received += OnMonitorReceived;
-                _monitorWatcher.Start();
-
                 StartClassicMonitoringLocked();
-                StartBleMonitoringLocked();
                 _isMonitoring = true;
                 Interlocked.Exchange(ref _classicPresenceRefreshFailureCount, 0);
                 StartClassicMonitorHeartbeatLocked();
@@ -545,21 +536,14 @@ namespace WindowsAutoPowerManager.Functions
             {
                 if (!_isMonitoring) return;
 
-                if (_monitorWatcher != null)
-                {
-                    _monitorWatcher.Received -= OnMonitorReceived;
-                    _monitorWatcher.Stop();
-                    _monitorWatcher = null;
-                }
-
                 StopClassicMonitoringLocked();
-                StopBleMonitoringLocked();
                 StopClassicMonitorHeartbeatLocked();
 
                 _monitorLastSeen.Clear();
                 _monitorLastRssi.Clear();
                 _classicMonitorIdToAddress.Clear();
                 _classicMonitorPresent.Clear();
+                _classicMonitorConsecutiveMisses.Clear();
                 Interlocked.Exchange(ref _classicPresenceRefreshInProgress, 0);
                 Interlocked.Exchange(ref _classicPresenceRefreshFailureCount, 0);
                 Interlocked.Exchange(ref _lastClassicPresenceRefreshTick, -ClassicPresenceRefreshIntervalMs);
@@ -647,14 +631,6 @@ namespace WindowsAutoPowerManager.Functions
             _monitorLastSeen[address] = DateTime.Now;
         }
 
-        private static void OnMonitorReceived(
-            BluetoothLEAdvertisementWatcher sender,
-            BluetoothLEAdvertisementReceivedEventArgs args)
-        {
-            _monitorLastSeen[args.BluetoothAddress] = DateTime.Now;
-            _monitorLastRssi[args.BluetoothAddress] = args.RawSignalStrengthInDBm;
-        }
-
         private static void StartClassicMonitoringLocked()
         {
             try
@@ -705,58 +681,6 @@ namespace WindowsAutoPowerManager.Functions
             }
 
             _classicMonitorWatcher = null;
-        }
-
-        private static void StartBleMonitoringLocked()
-        {
-            try
-            {
-                if (_bleMonitorWatcher != null)
-                {
-                    return;
-                }
-
-                string selector = "System.Devices.Aep.ProtocolId:=\"" + BleLowEnergyProtocolId + "\"";
-                var requestedProps = new string[]
-                {
-                    "System.Devices.Aep.DeviceAddress",
-                    "System.Devices.Aep.IsPresent",
-                    "System.Devices.Aep.SignalStrength"
-                };
-
-                _bleMonitorWatcher = DeviceInformation.CreateWatcher(
-                    selector, requestedProps, DeviceInformationKind.AssociationEndpoint);
-
-                _bleMonitorWatcher.Added += OnClassicMonitorAdded;
-                _bleMonitorWatcher.Updated += OnClassicMonitorUpdated;
-                _bleMonitorWatcher.Removed += OnClassicMonitorRemoved;
-                _bleMonitorWatcher.Start();
-            }
-            catch
-            {
-                _bleMonitorWatcher = null;
-            }
-        }
-
-        private static void StopBleMonitoringLocked()
-        {
-            if (_bleMonitorWatcher == null)
-            {
-                return;
-            }
-
-            try
-            {
-                _bleMonitorWatcher.Added -= OnClassicMonitorAdded;
-                _bleMonitorWatcher.Updated -= OnClassicMonitorUpdated;
-                _bleMonitorWatcher.Removed -= OnClassicMonitorRemoved;
-                _bleMonitorWatcher.Stop();
-            }
-            catch
-            {
-            }
-
-            _bleMonitorWatcher = null;
         }
 
         private static void OnClassicMonitorAdded(DeviceWatcher sender, DeviceInformation info)
@@ -899,7 +823,7 @@ namespace WindowsAutoPowerManager.Functions
 
         private static void ScheduleClassicPresenceRefresh(bool force)
         {
-            if (!_isMonitoring || (_classicMonitorWatcher == null && _bleMonitorWatcher == null))
+            if (!_isMonitoring || _classicMonitorWatcher == null)
             {
                 return;
             }
@@ -957,53 +881,48 @@ namespace WindowsAutoPowerManager.Functions
                 DateTime now = DateTime.Now;
                 var presentAddresses = new HashSet<ulong>();
 
-                // Query both Classic BT and BLE AEP devices
-                string[] protocolIds = { ClassicBtProtocolId, BleLowEnergyProtocolId };
+                string selector = "System.Devices.Aep.ProtocolId:=\"" + ClassicBtProtocolId + "\"";
 
-                foreach (string protocolId in protocolIds)
+                DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(
+                    selector,
+                    requestedProps,
+                    DeviceInformationKind.AssociationEndpoint);
+
+                if (!_isMonitoring)
                 {
-                    string selector = "System.Devices.Aep.ProtocolId:=\"" + protocolId + "\"";
+                    return false;
+                }
 
-                    DeviceInformationCollection devices = await DeviceInformation.FindAllAsync(
-                        selector,
-                        requestedProps,
-                        DeviceInformationKind.AssociationEndpoint);
-
-                    if (!_isMonitoring)
+                foreach (DeviceInformation device in devices)
+                {
+                    if (!TryGetAddressFromProperties(device.Properties, out ulong address))
                     {
-                        return false;
+                        continue;
                     }
 
-                    foreach (DeviceInformation device in devices)
+                    if (!string.IsNullOrWhiteSpace(device.Id))
                     {
-                        if (!TryGetAddressFromProperties(device.Properties, out ulong address))
-                        {
-                            continue;
-                        }
+                        _classicMonitorIdToAddress[device.Id] = address;
+                    }
 
-                        if (!string.IsNullOrWhiteSpace(device.Id))
-                        {
-                            _classicMonitorIdToAddress[device.Id] = address;
-                        }
+                    if (TryGetBoolProperty(device.Properties, "System.Devices.Aep.IsPresent", out bool isPresent) &&
+                        isPresent)
+                    {
+                        presentAddresses.Add(address);
+                        _classicMonitorPresent[address] = 1;
+                        _classicMonitorConsecutiveMisses.TryRemove(address, out _);
+                        _monitorLastSeen[address] = now;
 
-                        if (TryGetBoolProperty(device.Properties, "System.Devices.Aep.IsPresent", out bool isPresent) &&
-                            isPresent)
+                        if (device.Properties.TryGetValue("System.Devices.Aep.SignalStrength", out object sigObj) &&
+                            sigObj != null)
                         {
-                            presentAddresses.Add(address);
-                            _classicMonitorPresent[address] = 1;
-                            _monitorLastSeen[address] = now;
-
-                            if (device.Properties.TryGetValue("System.Devices.Aep.SignalStrength", out object sigObj) &&
-                                sigObj != null)
+                            if (sigObj is int intRssi)
                             {
-                                if (sigObj is int intRssi)
-                                {
-                                    _monitorLastRssi[address] = (short)intRssi;
-                                }
-                                else if (int.TryParse(sigObj.ToString(), out int parsedRssi))
-                                {
-                                    _monitorLastRssi[address] = (short)parsedRssi;
-                                }
+                                _monitorLastRssi[address] = (short)intRssi;
+                            }
+                            else if (int.TryParse(sigObj.ToString(), out int parsedRssi))
+                            {
+                                _monitorLastRssi[address] = (short)parsedRssi;
                             }
                         }
                     }
@@ -1013,7 +932,14 @@ namespace WindowsAutoPowerManager.Functions
                 {
                     if (!presentAddresses.Contains(address))
                     {
-                        _classicMonitorPresent.TryRemove(address, out _);
+                        int misses = _classicMonitorConsecutiveMisses.AddOrUpdate(
+                            address, 1, (_, existing) => existing + 1);
+
+                        if (misses >= ClassicDeviceMissTolerance)
+                        {
+                            _classicMonitorPresent.TryRemove(address, out _);
+                            _classicMonitorConsecutiveMisses.TryRemove(address, out _);
+                        }
                     }
                 }
 
