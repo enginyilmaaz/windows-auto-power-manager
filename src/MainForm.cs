@@ -956,6 +956,7 @@ namespace WindowsAutoPowerManager
             var rawLogs = Logger.GetRecentLogs(250);
             var logs = rawLogs.Select(l => new
             {
+                id = l.Id ?? "",
                 actionExecutedDate = l.ActionExecutedDate,
                 actionType = TranslateLogAction(l.ActionType),
                 actionTypeRaw = l.ActionType
@@ -1212,6 +1213,7 @@ namespace WindowsAutoPowerManager
             var rawLogs = Logger.GetRecentLogs(250);
             var logs = rawLogs.Select(l => new
             {
+                id = l.Id ?? "",
                 actionExecutedDate = l.ActionExecutedDate,
                 actionType = TranslateLogAction(l.ActionType),
                 actionTypeRaw = l.ActionType

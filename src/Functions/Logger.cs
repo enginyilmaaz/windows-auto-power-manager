@@ -51,6 +51,7 @@ namespace WindowsAutoPowerManager.Functions
 
                 _logCache.Add(new LogSystem
                 {
+                    Id = Guid.NewGuid().ToString("N").Substring(0, 8),
                     ActionType = actionType,
                     ActionExecutedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")
                 });
@@ -126,6 +127,7 @@ namespace WindowsAutoPowerManager.Functions
                     .Where(log => log != null)
                     .Select(log => new LogSystem
                     {
+                        Id = !string.IsNullOrWhiteSpace(log.Id) ? log.Id : Guid.NewGuid().ToString("N").Substring(0, 8),
                         ActionType = log.ActionType,
                         ActionExecutedDate = log.ActionExecutedDate
                     })
