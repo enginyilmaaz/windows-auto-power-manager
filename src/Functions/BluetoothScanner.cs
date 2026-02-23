@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Devices.Bluetooth;
-using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Enumeration;
 
 namespace WindowsAutoPowerManager.Functions
@@ -21,14 +20,11 @@ namespace WindowsAutoPowerManager.Functions
 
     internal static class BluetoothScanner
     {
-        private static BluetoothLEAdvertisementWatcher _discoveryWatcher;
         private static DeviceWatcher _classicBtWatcher;
-        private static DeviceWatcher _bleAepWatcher;
         private static DeviceWatcher _classicMonitorWatcher;
         private static Timer _classicMonitorHeartbeatTimer;
 
         private static readonly ConcurrentDictionary<ulong, BleDeviceInfo> _discoveredDevices = new();
-        private static readonly ConcurrentDictionary<ulong, int> _namelessBleAdvertisementCounts = new();
         private static readonly ConcurrentDictionary<ulong, DateTime> _monitorLastSeen = new();
         private static readonly ConcurrentDictionary<ulong, short> _monitorLastRssi = new();
         private static readonly ConcurrentDictionary<string, ulong> _classicDiscoveryIdToAddress = new();
@@ -50,7 +46,6 @@ namespace WindowsAutoPowerManager.Functions
 
         // Bluetooth protocol IDs for DeviceWatcher
         private const string ClassicBtProtocolId = "{e0cbf06c-cd8b-4647-bb8a-263b43f0f974}";
-        private const string BleLowEnergyProtocolId = "{bb7bb05e-5972-42b5-94fc-76eaa7084d49}";
         private const int ClassicPresenceRefreshIntervalMs = 5000;
         private const int ClassicPresenceRefreshFailureTolerance = 3;
         private const int ClassicDeviceMissTolerance = 3;
@@ -64,18 +59,8 @@ namespace WindowsAutoPowerManager.Functions
                 if (_isDiscovering) return;
 
                 _discoveredDevices.Clear();
-                _namelessBleAdvertisementCounts.Clear();
                 _classicDiscoveryIdToAddress.Clear();
                 Interlocked.Increment(ref _discoveryVersion);
-
-                // BLE advertisement watcher
-                _discoveryWatcher = new BluetoothLEAdvertisementWatcher
-                {
-                    ScanningMode = BluetoothLEScanningMode.Active
-                };
-
-                _discoveryWatcher.Received += OnDiscoveryReceived;
-                _discoveryWatcher.Start();
 
                 // Classic Bluetooth device watcher (live inquiry scan)
                 try
@@ -99,29 +84,6 @@ namespace WindowsAutoPowerManager.Functions
                     _classicBtWatcher = null;
                 }
 
-                // BLE device watcher (live scan for BLE devices that don't advertise,
-                // e.g. phones whose BLE AEP is known to Windows but not broadcasting)
-                try
-                {
-                    string bleSelector = "System.Devices.Aep.ProtocolId:=\"" + BleLowEnergyProtocolId + "\"";
-                    var bleProps = new string[]
-                    {
-                        "System.Devices.Aep.DeviceAddress",
-                        "System.ItemNameDisplay",
-                        "System.Devices.Aep.IsPaired"
-                    };
-                    _bleAepWatcher = DeviceInformation.CreateWatcher(
-                        bleSelector, bleProps, DeviceInformationKind.AssociationEndpoint);
-
-                    _bleAepWatcher.Added += OnClassicDeviceAdded;
-                    _bleAepWatcher.Updated += OnClassicDeviceUpdated;
-                    _bleAepWatcher.Start();
-                }
-                catch
-                {
-                    _bleAepWatcher = null;
-                }
-
                 _isDiscovering = true;
 
                 // Seed paired classic devices immediately so phones that do not actively advertise
@@ -129,8 +91,7 @@ namespace WindowsAutoPowerManager.Functions
                 _ = RefreshClassicDiscoverySnapshotAsync();
 
                 // Also enumerate all paired Bluetooth devices directly via the
-                // Windows BluetoothDevice / BluetoothLEDevice APIs.  This catches
-                // phones and other devices that the AEP-based Classic watcher may miss.
+                // Windows BluetoothDevice API.
                 _ = RefreshPairedDevicesSnapshotAsync();
             }
         }
@@ -140,13 +101,6 @@ namespace WindowsAutoPowerManager.Functions
             lock (_discoveryLock)
             {
                 if (!_isDiscovering) return;
-
-                if (_discoveryWatcher != null)
-                {
-                    _discoveryWatcher.Received -= OnDiscoveryReceived;
-                    _discoveryWatcher.Stop();
-                    _discoveryWatcher = null;
-                }
 
                 if (_classicBtWatcher != null)
                 {
@@ -160,20 +114,7 @@ namespace WindowsAutoPowerManager.Functions
                     _classicBtWatcher = null;
                 }
 
-                if (_bleAepWatcher != null)
-                {
-                    try
-                    {
-                        _bleAepWatcher.Added -= OnClassicDeviceAdded;
-                        _bleAepWatcher.Updated -= OnClassicDeviceUpdated;
-                        _bleAepWatcher.Stop();
-                    }
-                    catch { }
-                    _bleAepWatcher = null;
-                }
-
                 _classicDiscoveryIdToAddress.Clear();
-                _namelessBleAdvertisementCounts.Clear();
                 _isDiscovering = false;
                 Interlocked.Increment(ref _discoveryVersion);
             }
@@ -199,76 +140,6 @@ namespace WindowsAutoPowerManager.Functions
             knownVersion = latestVersion;
             devices = GetDiscoveredDevices();
             return true;
-        }
-
-        private static void OnDiscoveryReceived(
-            BluetoothLEAdvertisementWatcher sender,
-            BluetoothLEAdvertisementReceivedEventArgs args)
-        {
-            string name = args.Advertisement.LocalName;
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                int seenCount = _namelessBleAdvertisementCounts.AddOrUpdate(
-                    args.BluetoothAddress,
-                    1,
-                    (_, existing) => existing + 1);
-                if (seenCount >= 3)
-                {
-                    name = FormatMacAddress(args.BluetoothAddress);
-                }
-            }
-            else
-            {
-                _namelessBleAdvertisementCounts.TryRemove(args.BluetoothAddress, out _);
-            }
-
-            var info = new BleDeviceInfo
-            {
-                BluetoothAddress = args.BluetoothAddress,
-                MacAddress = FormatMacAddress(args.BluetoothAddress),
-                LocalName = name,
-                RssiDbm = args.RawSignalStrengthInDBm,
-                LastSeen = DateTime.Now
-            };
-
-            bool changed = false;
-            _discoveredDevices.AddOrUpdate(
-                args.BluetoothAddress,
-                _ =>
-                {
-                    changed = true;
-                    return info;
-                },
-                (key, existing) =>
-                {
-                    if (existing.RssiDbm != info.RssiDbm)
-                    {
-                        existing.RssiDbm = info.RssiDbm;
-                        changed = true;
-                    }
-
-                    existing.LastSeen = info.LastSeen;
-                    if (!string.IsNullOrEmpty(name))
-                    {
-                        if (!string.Equals(existing.LocalName, name, StringComparison.Ordinal))
-                        {
-                            changed = true;
-                        }
-
-                        existing.LocalName = name;
-                    }
-                    return existing;
-                });
-
-            if (changed)
-            {
-                Interlocked.Increment(ref _discoveryVersion);
-            }
-
-            if (!string.IsNullOrEmpty(name))
-            {
-                DeviceDiscovered?.Invoke(info);
-            }
         }
 
         private static void OnClassicDeviceAdded(DeviceWatcher sender, DeviceInformation info)
@@ -389,18 +260,15 @@ namespace WindowsAutoPowerManager.Functions
 
         private static async Task RefreshPairedDevicesSnapshotAsync()
         {
-            // Query paired AND unpaired devices via the Windows BluetoothDevice /
-            // BluetoothLEDevice APIs.  This catches phones and other devices that
-            // the AEP-based Classic watcher may miss.
-            await RefreshBluetoothDevicesByPairingState(paired: true);
-            await RefreshBluetoothDevicesByPairingState(paired: false);
+            // Query paired AND unpaired Classic Bluetooth devices.
+            await RefreshClassicDevicesByPairingState(paired: true);
+            await RefreshClassicDevicesByPairingState(paired: false);
         }
 
-        private static async Task RefreshBluetoothDevicesByPairingState(bool paired)
+        private static async Task RefreshClassicDevicesByPairingState(bool paired)
         {
             try
             {
-                // Classic Bluetooth devices
                 string classicSelector = BluetoothDevice.GetDeviceSelectorFromPairingState(paired);
                 DeviceInformationCollection classicDevices =
                     await DeviceInformation.FindAllAsync(classicSelector);
@@ -417,28 +285,10 @@ namespace WindowsAutoPowerManager.Functions
                     }
                     catch { }
                 }
-
-                // BLE devices
-                string bleSelector = BluetoothLEDevice.GetDeviceSelectorFromPairingState(paired);
-                DeviceInformationCollection bleDevices =
-                    await DeviceInformation.FindAllAsync(bleSelector);
-
-                if (!_isDiscovering) return;
-
-                foreach (DeviceInformation devInfo in bleDevices)
-                {
-                    try
-                    {
-                        using var bleDevice = await BluetoothLEDevice.FromIdAsync(devInfo.Id);
-                        if (bleDevice == null || bleDevice.BluetoothAddress == 0) continue;
-                        AddPairedDeviceToDiscovery(bleDevice.BluetoothAddress, bleDevice.Name);
-                    }
-                    catch { }
-                }
             }
             catch
             {
-                // Best-effort. Other discovery mechanisms continue to run.
+                // Best-effort. Discovery watcher continues to run.
             }
         }
 
@@ -695,15 +545,9 @@ namespace WindowsAutoPowerManager.Functions
 
         private static void OnClassicMonitorRemoved(DeviceWatcher sender, DeviceInformationUpdate update)
         {
-            if (update == null || string.IsNullOrWhiteSpace(update.Id))
-            {
-                return;
-            }
-
-            if (_classicMonitorIdToAddress.TryGetValue(update.Id, out ulong address) && address != 0)
-            {
-                _classicMonitorPresent.TryRemove(address, out _);
-            }
+            // Do not immediately remove from _classicMonitorPresent.
+            // The periodic RefreshClassicPresenceSnapshotAsync will handle
+            // removal with miss tolerance to avoid false triggers.
         }
 
         private static void UpdateClassicMonitorPresence(
@@ -757,6 +601,7 @@ namespace WindowsAutoPowerManager.Functions
             if (isPresent)
             {
                 _classicMonitorPresent[address] = 1;
+                _classicMonitorConsecutiveMisses.TryRemove(address, out _);
                 _monitorLastSeen[address] = DateTime.Now;
 
                 if (properties != null &&
@@ -773,10 +618,9 @@ namespace WindowsAutoPowerManager.Functions
                     }
                 }
             }
-            else
-            {
-                _classicMonitorPresent.TryRemove(address, out _);
-            }
+            // When isPresent is false, do NOT immediately remove from
+            // _classicMonitorPresent. The snapshot refresh handles removal
+            // with miss tolerance to prevent false triggers.
         }
 
         private static void StartClassicMonitorHeartbeatLocked()
@@ -937,13 +781,54 @@ namespace WindowsAutoPowerManager.Functions
 
                         if (misses >= ClassicDeviceMissTolerance)
                         {
-                            _classicMonitorPresent.TryRemove(address, out _);
-                            _classicMonitorConsecutiveMisses.TryRemove(address, out _);
+                            // Active probe: try direct SDP query before declaring device gone
+                            bool stillReachable = await ProbeDeviceActivelyAsync(address);
+                            if (stillReachable)
+                            {
+                                _classicMonitorConsecutiveMisses.TryRemove(address, out _);
+                                _monitorLastSeen[address] = now;
+                            }
+                            else
+                            {
+                                _classicMonitorPresent.TryRemove(address, out _);
+                                _classicMonitorConsecutiveMisses.TryRemove(address, out _);
+                            }
                         }
                     }
                 }
 
                 return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        private static async Task<bool> ProbeDeviceActivelyAsync(ulong bluetoothAddress)
+        {
+            try
+            {
+                var connectTask = BluetoothDevice.FromBluetoothAddressAsync(bluetoothAddress).AsTask();
+                if (await Task.WhenAny(connectTask, Task.Delay(3000)) != connectTask)
+                {
+                    return false;
+                }
+
+                using var device = connectTask.Result;
+                if (device == null)
+                {
+                    return false;
+                }
+
+                var servicesTask = device.GetRfcommServicesAsync(BluetoothCacheMode.Uncached).AsTask();
+                if (await Task.WhenAny(servicesTask, Task.Delay(3000)) != servicesTask)
+                {
+                    return false;
+                }
+
+                var result = servicesTask.Result;
+                return result?.Error == BluetoothError.Success;
             }
             catch
             {
