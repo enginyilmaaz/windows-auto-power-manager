@@ -200,6 +200,10 @@ namespace WindowsAutoPowerManager.Lang
                 TooltipBluetoothThreshold = "Wartezeit nach Geräteverlust, bevor die Aktion ausgelöst wird.\nEmpfohlen: 5-15 Sekunden.\nWeitere Infos auf der Hilfe-Seite.",
                 TooltipBluetoothRssi = "Minimale Signalstärke, um das Gerät als verbunden zu betrachten.\n0 = Prüfung deaktivieren.\nEmpfohlen: -70 bis -50.\nWeitere Infos auf der Hilfe-Seite.",
 
+                // Action toggle
+                ActionStart = "Aktion starten",
+                ActionStop = "Vorübergehend anhalten",
+
             };
             return lang;
         }

@@ -12,6 +12,7 @@ namespace WindowsAutoPowerManager.Functions
         public string Value { get; set; }
         public string ValueUnit { get; set; }
         public string CreatedDate { get; set; }
+        public bool IsEnabled { get; set; } = true;
     }
 
     public class Actions

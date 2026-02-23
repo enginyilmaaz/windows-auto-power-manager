@@ -377,12 +377,12 @@ namespace WindowsAutoPowerManager
             };
         }
 
-        private List<Dictionary<string, string>> GetTranslatedActions()
+        private List<Dictionary<string, object>> GetTranslatedActions()
         {
-            var list = new List<Dictionary<string, string>>();
+            var list = new List<Dictionary<string, object>>();
             foreach (var act in ActionList)
             {
-                var d = new Dictionary<string, string>
+                var d = new Dictionary<string, object>
                 {
                     ["triggerType"] = TranslateTrigger(act.TriggerType),
                     ["triggerTypeRaw"] = NormalizeTriggerTypeRaw(act.TriggerType),
@@ -391,7 +391,8 @@ namespace WindowsAutoPowerManager
                     ["value"] = act.Value ?? "",
                     ["valueUnit"] = TranslateUnit(act.ValueUnit),
                     ["valueUnitRaw"] = act.ValueUnit ?? "",
-                    ["createdDate"] = act.CreatedDate ?? ""
+                    ["createdDate"] = act.CreatedDate ?? "",
+                    ["isEnabled"] = act.IsEnabled
                 };
                 list.Add(d);
             }
@@ -554,6 +555,9 @@ namespace WindowsAutoPowerManager
                     break;
                 case "deleteAction":
                     HandleDeleteAction(data);
+                    break;
+                case "toggleAction":
+                    HandleToggleAction(data);
                     break;
                 case "clearAllActions":
                     HandleClearAllActions();
@@ -724,6 +728,7 @@ namespace WindowsAutoPowerManager
                 return;
             }
 
+            updatedAction.IsEnabled = ActionList[index].IsEnabled;
             ActionList[index] = updatedAction;
             WriteJsonToActionList();
 
@@ -735,6 +740,17 @@ namespace WindowsAutoPowerManager
                 duration = 2000
             });
             PostMessage("updateActionResult", new { success = true });
+        }
+
+        private void HandleToggleAction(JsonElement data)
+        {
+            int index = data.GetProperty("index").GetInt32();
+            if (index < 0 || index >= ActionList.Count) return;
+
+            ActionList[index].IsEnabled = !ActionList[index].IsEnabled;
+            WriteJsonToActionList();
+            RebuildActionRuntimeStates();
+            RefreshActionsInUI();
         }
 
         private static bool TryCreateActionModel(JsonElement data, string createdDate, out ActionModel action)
@@ -1435,6 +1451,13 @@ namespace WindowsAutoPowerManager
             return state;
         }
 
+        public void RefreshUIAfterToggle()
+        {
+            WriteJsonToActionList();
+            RebuildActionRuntimeStates();
+            RefreshActionsInUI();
+        }
+
         private void RefreshActionsInUI()
         {
             PostMessage("refreshActions", GetTranslatedActions());
@@ -1722,6 +1745,8 @@ namespace WindowsAutoPowerManager
             for (int index = 0; index < ActionList.Count; ++index)
             {
                 ActionModel action = ActionList[index];
+                if (!action.IsEnabled) continue;
+
                 ActionRuntimeState state = GetOrCreateActionRuntimeState(action);
                 ActionExecutionResult actionResult = DoAction(action, state, idleTimeSec, now);
 

@@ -596,6 +596,11 @@ window.MainPage = {
             if (!window.App || typeof window.App.openEditActionModal !== 'function') return;
             var editable = this._toEditableAction(idx, this._rawActions[idx]);
             window.App.openEditActionModal(editable);
+            return;
+        }
+
+        if (rowAction === 'toggle') {
+            Bridge.send('toggleAction', { index: idx });
         }
     },
 
@@ -761,21 +766,31 @@ window.MainPage = {
         var canEdit = !!(window.App && typeof window.App.openEditActionModal === 'function');
         var editTitle = L('ContextMenuStripMainGridEditSelectedAction') || 'Edit action';
         var deleteTitle = L('ContextMenuStripMainGridDeleteSelectedAction') || 'Delete selected action';
+        var enableTitle = L('ActionStart') || 'Start';
+        var disableTitle = L('ActionStop') || 'Stop';
 
         for (var rowIndex = 0; rowIndex < filtered.length; rowIndex++) {
             var entry = filtered[rowIndex];
             var a = entry.action || {};
-            var selectedClass = entry.idx === self._selectedRow ? ' class="selected"' : '';
+            var isEnabled = a.isEnabled !== false;
+            var rowClasses = [];
+            if (entry.idx === self._selectedRow) rowClasses.push('selected');
+            if (!isEnabled) rowClasses.push('row-disabled');
+            var rowClassAttr = rowClasses.length ? ' class="' + rowClasses.join(' ') + '"' : '';
             var isBt = (a.triggerTypeRaw === 'BluetoothNotReachable');
             var displayValue = isBt ? (a.valueUnit || a.value || '') : (a.value || '');
             var displayUnit = isBt ? '-' : (a.valueUnit || '');
-            html += '<tr data-idx="' + entry.idx + '"' + selectedClass + '>' +
+            var toggleIcon = isEnabled ? 'pause' : 'play_arrow';
+            var toggleTitle = isEnabled ? disableTitle : enableTitle;
+            var toggleClass = isEnabled ? 'row-action-stop' : 'row-action-start';
+            html += '<tr data-idx="' + entry.idx + '"' + rowClassAttr + '>' +
                 '<td>' + (a.triggerType || '') + '</td>' +
                 '<td>' + (a.actionType || '') + '</td>' +
                 '<td>' + displayValue + '</td>' +
                 '<td>' + displayUnit + '</td>' +
                 '<td>' + (a.createdDate || '') + '</td>' +
                 '<td class="row-actions-cell">' +
+                    '<button class="row-action-btn ' + toggleClass + '" data-row-action="toggle" title="' + toggleTitle + '"><span class="mi">' + toggleIcon + '</span></button>' +
                     (canEdit
                         ? '<button class="row-action-btn row-action-edit" data-row-action="edit" title="' + editTitle + '"><span class="mi">edit</span></button>'
                         : '') +

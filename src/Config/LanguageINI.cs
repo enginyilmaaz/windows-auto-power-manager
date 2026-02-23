@@ -209,5 +209,9 @@
         public string TooltipBluetoothThreshold { get; set; }
         public string TooltipBluetoothRssi { get; set; }
 
+        // Action toggle
+        public string ActionStart { get; set; }
+        public string ActionStop { get; set; }
+
     }
 }

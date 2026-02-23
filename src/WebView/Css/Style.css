@@ -954,8 +954,8 @@ body.subwindow-host .card {
 
 .data-table th.row-actions-col,
 .data-table td.row-actions-cell {
-    width: 84px;
-    min-width: 84px;
+    width: 116px;
+    min-width: 116px;
     text-align: right;
 }
 
@@ -1016,6 +1016,36 @@ body.subwindow-host .card {
 .row-action-btn.row-action-delete:hover {
     color: var(--color-danger-text);
     background: var(--color-danger-bg-hover);
+}
+
+/* ─── Toggle (Start/Stop) Button ─── */
+.row-action-btn.row-action-start {
+    color: var(--color-success);
+    opacity: 0.8;
+}
+
+.row-action-btn.row-action-start:hover {
+    color: var(--color-success);
+    background: rgba(46,204,113,0.12);
+    opacity: 1;
+}
+
+.row-action-btn.row-action-stop:hover {
+    color: var(--color-warn);
+    background: rgba(243,156,18,0.12);
+}
+
+/* ─── Disabled Action Row ─── */
+.data-table tr.row-disabled td {
+    opacity: 0.4;
+}
+
+.data-table tr.row-disabled td.row-actions-cell {
+    opacity: 1;
+}
+
+.data-table tr.row-disabled td.row-actions-cell .row-action-btn:not(.row-action-start) {
+    opacity: 0.3;
 }
 
 .table-empty {

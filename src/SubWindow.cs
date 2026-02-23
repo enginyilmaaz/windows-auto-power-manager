@@ -337,6 +337,9 @@ namespace WindowsAutoPowerManager
                 case "deleteAction":
                     HandleDeleteAction(data);
                     break;
+                case "toggleAction":
+                    HandleToggleAction(data);
+                    break;
                 case "clearAllActions":
                     HandleClearAllActions();
                     break;
@@ -484,6 +487,7 @@ namespace WindowsAutoPowerManager
                 return;
             }
 
+            updatedAction.IsEnabled = MainForm.ActionList[index].IsEnabled;
             MainForm.ActionList[index] = updatedAction;
             WriteActionList();
 
@@ -583,6 +587,26 @@ namespace WindowsAutoPowerManager
 
             action = parsedAction;
             return true;
+        }
+
+        private void HandleToggleAction(JsonElement data)
+        {
+            int index = data.GetProperty("index").GetInt32();
+            if (index < 0 || index >= MainForm.ActionList.Count) return;
+
+            MainForm.ActionList[index].IsEnabled = !MainForm.ActionList[index].IsEnabled;
+
+            var mainWindow = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
+            if (mainWindow != null)
+            {
+                mainWindow.Invoke((Action)(() => mainWindow.RefreshUIAfterToggle()));
+            }
+            else
+            {
+                WriteActionList();
+            }
+
+            PostMessage("refreshActions", GetTranslatedActions());
         }
 
         private void HandleDeleteAction(JsonElement data)
@@ -871,12 +895,12 @@ namespace WindowsAutoPowerManager
             return SettingsStorage.LoadOrDefault();
         }
 
-        private List<Dictionary<string, string>> GetTranslatedActions()
+        private List<Dictionary<string, object>> GetTranslatedActions()
         {
-            var list = new List<Dictionary<string, string>>();
+            var list = new List<Dictionary<string, object>>();
             foreach (var act in MainForm.ActionList)
             {
-                var d = new Dictionary<string, string>
+                var d = new Dictionary<string, object>
                 {
                     ["triggerType"] = TranslateTrigger(act.TriggerType),
                     ["triggerTypeRaw"] = NormalizeTriggerTypeRaw(act.TriggerType),
@@ -885,7 +909,8 @@ namespace WindowsAutoPowerManager
                     ["value"] = act.Value ?? "",
                     ["valueUnit"] = TranslateUnit(act.ValueUnit),
                     ["valueUnitRaw"] = act.ValueUnit ?? "",
-                    ["createdDate"] = act.CreatedDate ?? ""
+                    ["createdDate"] = act.CreatedDate ?? "",
+                    ["isEnabled"] = act.IsEnabled
                 };
                 list.Add(d);
             }

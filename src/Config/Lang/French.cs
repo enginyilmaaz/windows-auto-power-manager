@@ -200,6 +200,10 @@ namespace WindowsAutoPowerManager.Lang
                 TooltipBluetoothThreshold = "Temps d'attente après la perte de l'appareil avant de déclencher l'action.\nRecommandé : 5-15 secondes.\nVoir la page Aide pour plus d'infos.",
                 TooltipBluetoothRssi = "Force minimale du signal pour considérer l'appareil comme connecté.\n0 = désactive la vérification.\nRecommandé : -70 à -50.\nVoir la page Aide pour plus d'infos.",
 
+                // Action toggle
+                ActionStart = "Démarrer l'action",
+                ActionStop = "Suspendre temporairement",
+
             };
             return lang;
         }
