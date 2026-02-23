@@ -1343,6 +1343,21 @@ namespace WindowsAutoPowerManager
                 BluetoothScanner.StopMonitoring();
                 _bluetoothReachabilityByActionKey.Clear();
             }
+
+            // Register all BT trigger addresses so the scanner actively
+            // tracks them from the start (assumed present until proven absent).
+            if (BluetoothScanner.IsMonitoring)
+            {
+                foreach (ActionModel action in ActionList)
+                {
+                    if (action.TriggerType == Config.TriggerTypes.BluetoothNotReachable &&
+                        !string.IsNullOrWhiteSpace(action.Value))
+                    {
+                        ulong addr = BluetoothScanner.MacStringToUlong(action.Value);
+                        BluetoothScanner.RegisterMonitoredDevice(addr);
+                    }
+                }
+            }
         }
 
         // =============== Action List Persistence ===============

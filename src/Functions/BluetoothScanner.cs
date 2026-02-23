@@ -403,6 +403,19 @@ namespace WindowsAutoPowerManager.Functions
 
         public static bool IsMonitoring => _isMonitoring;
 
+        /// <summary>
+        /// Registers a device address for active monitoring. The device is
+        /// assumed present until proven otherwise (miss tolerance + active probe).
+        /// Call this for every Bluetooth trigger action address after StartMonitoring.
+        /// </summary>
+        public static void RegisterMonitoredDevice(ulong bluetoothAddress)
+        {
+            if (bluetoothAddress == 0 || !_isMonitoring) return;
+            _classicMonitorPresent[bluetoothAddress] = 1;
+            _classicMonitorConsecutiveMisses.TryRemove(bluetoothAddress, out _);
+            _monitorLastSeen[bluetoothAddress] = DateTime.Now;
+        }
+
         public static bool IsDeviceReachable(string macAddress, int thresholdSeconds)
         {
             ulong address = MacStringToUlong(macAddress);
