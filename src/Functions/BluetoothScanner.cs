@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Windows.Devices.Bluetooth.Advertisement;
 
 namespace WindowsAutoPowerManager.Functions
 {
@@ -80,12 +81,15 @@ namespace WindowsAutoPowerManager.Functions
 
         private static readonly object _discoveryLock = new();
         private static readonly object _monitorLock = new();
+        private static readonly object _bleLock = new();
 
         private static CancellationTokenSource _discoveryCts;
         private static Timer _monitorTimer;
+        private static BluetoothLEAdvertisementWatcher _bleWatcher;
 
         private static bool _isDiscovering;
         private static bool _isMonitoring;
+        private static bool _isBleWatcherRunning;
         private static int _discoveryVersion;
 
         public static event Action<BleDeviceInfo> DeviceDiscovered;
@@ -94,6 +98,7 @@ namespace WindowsAutoPowerManager.Functions
         private const int MonitorInquiryTimeoutMultiplier = 3;   // ~4 seconds per scan
         private const int MonitorIntervalMs = 8000;
         private const int MonitorMissTolerance = 3;
+        private const int BleFreshSeenToleranceSeconds = 12;
 
         // ---------- Discovery Scan (UI device list) ----------
 
@@ -110,6 +115,7 @@ namespace WindowsAutoPowerManager.Functions
                 _discoveryCts = new CancellationTokenSource();
                 var token = _discoveryCts.Token;
 
+                EnsureBleWatcherRunning();
                 Task.Run(() => DiscoveryLoop(token), token);
             }
         }
@@ -124,6 +130,7 @@ namespace WindowsAutoPowerManager.Functions
                 _discoveryCts?.Dispose();
                 _discoveryCts = null;
                 _isDiscovering = false;
+                StopBleWatcherIfUnused();
                 Interlocked.Increment(ref _discoveryVersion);
             }
         }
@@ -171,11 +178,19 @@ namespace WindowsAutoPowerManager.Functions
                     {
                         if (_discoveredDevices.TryGetValue(dev.BluetoothAddress, out var existing))
                         {
-                            if (!string.Equals(existing.LocalName, dev.LocalName, StringComparison.Ordinal))
+                            bool classicNameIsFallbackMac =
+                                string.Equals(dev.LocalName, dev.MacAddress, StringComparison.OrdinalIgnoreCase);
+
+                            if (!classicNameIsFallbackMac &&
+                                !string.Equals(existing.LocalName, dev.LocalName, StringComparison.Ordinal))
                             {
                                 changed = true;
                             }
-                            existing.LocalName = dev.LocalName;
+
+                            if (!classicNameIsFallbackMac || string.IsNullOrWhiteSpace(existing.LocalName))
+                            {
+                                existing.LocalName = dev.LocalName;
+                            }
                             existing.LastSeen = dev.LastSeen;
                         }
                         else
@@ -215,6 +230,7 @@ namespace WindowsAutoPowerManager.Functions
                 if (_isMonitoring) return;
                 _isMonitoring = true;
 
+                EnsureBleWatcherRunning();
                 _monitorTimer = new Timer(_ => MonitorTick(), null,
                     TimeSpan.Zero, TimeSpan.FromMilliseconds(MonitorIntervalMs));
             }
@@ -234,6 +250,7 @@ namespace WindowsAutoPowerManager.Functions
                 _monitorPresent.Clear();
                 _monitorConsecutiveMisses.Clear();
                 _isMonitoring = false;
+                StopBleWatcherIfUnused();
             }
         }
 
@@ -360,6 +377,15 @@ namespace WindowsAutoPowerManager.Functions
                     _monitorLastSeen[address] = now;
                 }
 
+                foreach (ulong address in _monitorPresent.Keys)
+                {
+                    if (_monitorLastSeen.TryGetValue(address, out DateTime lastSeen) &&
+                        (now - lastSeen).TotalSeconds <= BleFreshSeenToleranceSeconds)
+                    {
+                        foundAddresses.Add(address);
+                    }
+                }
+
                 // For registered devices NOT found in this scan, increment miss count.
                 foreach (ulong address in _monitorPresent.Keys)
                 {
@@ -456,6 +482,138 @@ namespace WindowsAutoPowerManager.Functions
             }
 
             return results;
+        }
+
+        private static void EnsureBleWatcherRunning()
+        {
+            lock (_bleLock)
+            {
+                if (_isBleWatcherRunning)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _bleWatcher ??= new BluetoothLEAdvertisementWatcher
+                    {
+                        ScanningMode = BluetoothLEScanningMode.Active
+                    };
+
+                    _bleWatcher.Received -= BleWatcherOnReceived;
+                    _bleWatcher.Received += BleWatcherOnReceived;
+                    _bleWatcher.Start();
+                    _isBleWatcherRunning = true;
+                }
+                catch
+                {
+                    _isBleWatcherRunning = false;
+                }
+            }
+        }
+
+        private static void StopBleWatcherIfUnused()
+        {
+            lock (_bleLock)
+            {
+                if (_isDiscovering || _isMonitoring)
+                {
+                    return;
+                }
+
+                if (_bleWatcher == null)
+                {
+                    _isBleWatcherRunning = false;
+                    return;
+                }
+
+                try
+                {
+                    _bleWatcher.Received -= BleWatcherOnReceived;
+                    if (_bleWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Started ||
+                        _bleWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Created ||
+                        _bleWatcher.Status == BluetoothLEAdvertisementWatcherStatus.Stopping)
+                    {
+                        _bleWatcher.Stop();
+                    }
+                }
+                catch
+                {
+                    // Ignore shutdown errors.
+                }
+
+                _isBleWatcherRunning = false;
+            }
+        }
+
+        private static void BleWatcherOnReceived(
+            BluetoothLEAdvertisementWatcher sender,
+            BluetoothLEAdvertisementReceivedEventArgs args)
+        {
+            try
+            {
+                if (args == null || args.BluetoothAddress == 0)
+                {
+                    return;
+                }
+
+                ulong address = args.BluetoothAddress;
+                string localName = args.Advertisement?.LocalName;
+                short rssi = (short)args.RawSignalStrengthInDBm;
+                DateTime now = DateTime.Now;
+
+                string fallbackMac = FormatMacAddress(address);
+                if (string.IsNullOrWhiteSpace(localName))
+                {
+                    localName = fallbackMac;
+                }
+
+                bool changed = false;
+                if (_discoveredDevices.TryGetValue(address, out BleDeviceInfo existing) &&
+                    existing != null)
+                {
+                    if (!string.Equals(existing.LocalName, localName, StringComparison.Ordinal) ||
+                        existing.RssiDbm != rssi)
+                    {
+                        changed = true;
+                    }
+
+                    existing.LocalName = localName;
+                    existing.RssiDbm = rssi;
+                    existing.LastSeen = now;
+                }
+                else
+                {
+                    var device = new BleDeviceInfo
+                    {
+                        BluetoothAddress = address,
+                        MacAddress = fallbackMac,
+                        LocalName = localName,
+                        RssiDbm = rssi,
+                        LastSeen = now
+                    };
+
+                    _discoveredDevices[address] = device;
+                    changed = true;
+                    existing = device;
+                }
+
+                _monitorPresent[address] = 1;
+                _monitorConsecutiveMisses.TryRemove(address, out _);
+                _monitorLastSeen[address] = now;
+                _monitorLastRssi[address] = rssi;
+
+                if (changed)
+                {
+                    Interlocked.Increment(ref _discoveryVersion);
+                }
+
+                DeviceDiscovered?.Invoke(existing);
+            }
+            catch
+            {
+                // Ignore BLE event processing failures.
+            }
         }
 
         // ---------- Helpers ----------
