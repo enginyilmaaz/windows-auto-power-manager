@@ -3,8 +3,10 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using InTheHand.Net.Sockets;
 using Windows.Devices.Bluetooth.Advertisement;
 
 namespace WindowsAutoPowerManager.Functions
@@ -163,13 +165,16 @@ namespace WindowsAutoPowerManager.Functions
             {
                 try
                 {
-                    var devices = PerformInquiryScan(
+                    var devices = Perform32FeetClassicScan();
+
+                    var inquiredDevices = PerformInquiryScan(
                         issueInquiry: true,
                         returnAuthenticated: true,
                         returnRemembered: false,
                         returnUnknown: true,
                         returnConnected: true,
                         timeoutMultiplier: DiscoveryInquiryTimeoutMultiplier);
+                    devices.AddRange(inquiredDevices);
 
                     // Also include paired/remembered classic devices so phones
                     // that are not currently discoverable still show in picker.
@@ -367,13 +372,16 @@ namespace WindowsAutoPowerManager.Functions
 
             try
             {
-                var foundDevices = PerformInquiryScan(
+                var foundDevices = Perform32FeetClassicScan();
+
+                var inquiredDevices = PerformInquiryScan(
                     issueInquiry: true,
                     returnAuthenticated: true,
                     returnRemembered: false,
                     returnUnknown: true,
                     returnConnected: true,
                     timeoutMultiplier: MonitorInquiryTimeoutMultiplier);
+                foundDevices.AddRange(inquiredDevices);
 
                 if (!_isMonitoring) return;
 
@@ -494,6 +502,47 @@ namespace WindowsAutoPowerManager.Functions
             finally
             {
                 BluetoothFindDeviceClose(hFind);
+            }
+
+            return results;
+        }
+
+        private static List<BleDeviceInfo> Perform32FeetClassicScan()
+        {
+            var results = new List<BleDeviceInfo>();
+
+            try
+            {
+                using var client = new BluetoothClient();
+                var devices = client.DiscoverDevices(255);
+                DateTime now = DateTime.Now;
+
+                foreach (var device in devices)
+                {
+                    if (device == null) continue;
+
+                    ulong address = ParseBluetoothAddressFromText(device.DeviceAddress?.ToString());
+                    if (address == 0) continue;
+
+                    string name = device.DeviceName;
+                    if (string.IsNullOrWhiteSpace(name))
+                    {
+                        name = FormatMacAddress(address);
+                    }
+
+                    results.Add(new BleDeviceInfo
+                    {
+                        BluetoothAddress = address,
+                        MacAddress = FormatMacAddress(address),
+                        LocalName = name,
+                        RssiDbm = 0,
+                        LastSeen = now
+                    });
+                }
+            }
+            catch
+            {
+                // 32feet discovery is optional; keep other providers active.
             }
 
             return results;
@@ -646,6 +695,43 @@ namespace WindowsAutoPowerManager.Functions
             try
             {
                 string hex = mac.Replace(":", "").Replace("-", "");
+                return Convert.ToUInt64(hex, 16);
+            }
+            catch
+            {
+                return 0;
+            }
+        }
+
+        private static ulong ParseBluetoothAddressFromText(string input)
+        {
+            if (string.IsNullOrWhiteSpace(input))
+            {
+                return 0;
+            }
+
+            var sb = new StringBuilder(input.Length);
+            foreach (char c in input)
+            {
+                if (Uri.IsHexDigit(c))
+                {
+                    sb.Append(c);
+                }
+            }
+
+            string hex = sb.ToString();
+            if (hex.Length == 0)
+            {
+                return 0;
+            }
+
+            if (hex.Length > 12)
+            {
+                hex = hex.Substring(hex.Length - 12);
+            }
+
+            try
+            {
                 return Convert.ToUInt64(hex, 16);
             }
             catch

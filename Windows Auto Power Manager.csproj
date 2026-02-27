@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.2792.45" />
+    <PackageReference Include="InTheHand.Net.Bluetooth" Version="4.2.2" />
   </ItemGroup>
 
   <ItemGroup>
