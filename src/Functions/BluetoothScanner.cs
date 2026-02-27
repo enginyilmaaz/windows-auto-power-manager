@@ -171,6 +171,21 @@ namespace WindowsAutoPowerManager.Functions
                         returnConnected: true,
                         timeoutMultiplier: DiscoveryInquiryTimeoutMultiplier);
 
+                    // Also include paired/remembered classic devices so phones
+                    // that are not currently discoverable still show in picker.
+                    var rememberedDevices = PerformInquiryScan(
+                        issueInquiry: false,
+                        returnAuthenticated: true,
+                        returnRemembered: true,
+                        returnUnknown: false,
+                        returnConnected: true,
+                        timeoutMultiplier: 1);
+
+                    if (rememberedDevices.Count > 0)
+                    {
+                        devices.AddRange(rememberedDevices);
+                    }
+
                     if (token.IsCancellationRequested) break;
 
                     bool changed = false;

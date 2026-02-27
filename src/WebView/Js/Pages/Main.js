@@ -421,6 +421,7 @@ window.MainPage = {
                 time.style.display = 'none';
                 btPanel.style.display = '';
                 lbl.textContent = L('BluetoothDeviceLabel') || L('MainLabelValue');
+                startBtScan();
             }
         }
 
