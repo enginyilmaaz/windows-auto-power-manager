@@ -13,7 +13,7 @@ namespace WindowsAutoPowerManager.Functions
 
         private static string StartupCommand
         {
-            get { return "\"" + Application.ExecutablePath + "\""; }
+            get { return "\"" + Application.ExecutablePath + "\" -runInTaskBar"; }
         }
 
         public static void AddStartup(string appTitle)
@@ -122,7 +122,7 @@ namespace WindowsAutoPowerManager.Functions
                 shortcutType.InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut,
                     new object[] { Application.ExecutablePath });
                 shortcutType.InvokeMember("Arguments", BindingFlags.SetProperty, null, shortcut,
-                    new object[] { string.Empty });
+                    new object[] { "-runInTaskBar" });
                 shortcutType.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, shortcut,
                     new object[] { AppContext.BaseDirectory });
                 shortcutType.InvokeMember("Description", BindingFlags.SetProperty, null, shortcut,
