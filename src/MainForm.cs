@@ -23,6 +23,7 @@ namespace WindowsAutoPowerManager
         public static bool IsApplicationExiting;
         public static Timer Timer = new Timer();
         public static int RunInTaskbarCounter;
+        private bool _startMinimizedToTray;
 
         private bool _webViewReady;
         private bool _bootDataReady;
@@ -36,14 +37,11 @@ namespace WindowsAutoPowerManager
         private Label _loadingLabel;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "help", "about" };
         private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
-        private readonly Dictionary<string, bool> _bluetoothReachabilityByActionKey =
-            new Dictionary<string, bool>();
         private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
         private readonly Dictionary<string, ActionRuntimeState> _actionRuntimeStates =
             new Dictionary<string, ActionRuntimeState>();
-        private int _lastBluetoothDiscoveryVersion = -1;
 
         [Flags]
         private enum ActionExecutionResult
@@ -63,13 +61,22 @@ namespace WindowsAutoPowerManager
             public bool HasFromNowTarget;
             public TimeSpan CertainTimeOfDay;
             public bool HasCertainTime;
-            public ulong BluetoothAddress;
         }
 
         public MainForm()
         {
             InitializeComponent();
             ApplyExecutableIcon();
+
+            string[] args = Environment.GetCommandLineArgs();
+            foreach (string arg in args)
+            {
+                if (arg == "-runInTaskBar")
+                {
+                    _startMinimizedToTray = true;
+                    break;
+                }
+            }
 
             bool isDark = ReadCachedThemeIsDark();
             CreateWebViewControl(isDark);
@@ -89,18 +96,23 @@ namespace WindowsAutoPowerManager
             NotifyIconMain.Icon = appIcon;
         }
 
+        protected override void SetVisibleCore(bool value)
+        {
+            if (!IsHandleCreated && _startMinimizedToTray)
+            {
+                CreateHandle();
+                value = false;
+            }
+
+            base.SetVisibleCore(value);
+        }
+
         protected override void OnLoad(EventArgs e)
         {
-            string[] args = Environment.GetCommandLineArgs();
-
-            foreach (string arg in args)
+            if (_startMinimizedToTray && RunInTaskbarCounter <= 0)
             {
-                if (arg == "-runInTaskBar" && RunInTaskbarCounter <= 0)
-                {
-                    ++RunInTaskbarCounter;
-                    Hide();
-                    ShowInTaskbar = false;
-                }
+                ++RunInTaskbarCounter;
+                ShowInTaskbar = false;
             }
 
             base.OnLoad(e);
@@ -179,7 +191,6 @@ namespace WindowsAutoPowerManager
                 RebuildActionRuntimeStates();
 
                 DeleteExpriedAction();
-                EnsureBluetoothMonitoring();
 
                 // Setup timer
                 Timer.Interval = 1000;
@@ -371,8 +382,6 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
-                bluetoothThresholdSeconds = resolved.BluetoothThresholdSeconds > 0 ? resolved.BluetoothThresholdSeconds : 5,
-                bluetoothRssiThreshold = resolved.BluetoothRssiThreshold <= 0 ? resolved.BluetoothRssiThreshold : 0,
                 appVersion = BuildInfo.Version,
                 buildId = BuildInfo.CommitId
             };
@@ -416,7 +425,7 @@ namespace WindowsAutoPowerManager
             if (raw == Config.TriggerTypes.SystemIdle) return Language.MainCboxTriggerTypeItemSystemIdle;
             if (raw == Config.TriggerTypes.CertainTime) return Language.MainCboxTriggerTypeItemCertainTime;
             if (raw == Config.TriggerTypes.FromNow) return Language.MainCboxTriggerTypeItemFromNow;
-            if (raw == Config.TriggerTypes.BluetoothNotReachable) return Language.MainCboxTriggerTypeItemBluetoothNotReachable;
+
             return raw;
         }
 
@@ -427,7 +436,7 @@ namespace WindowsAutoPowerManager
             if (normalized == "FromNow") return "FromNow";
             if (normalized == "SystemIdle") return "SystemIdle";
             if (normalized == "CertainTime") return "CertainTime";
-            if (normalized == "BluetoothNotReachable") return "BluetoothNotReachable";
+
             return normalized;
         }
 
@@ -596,12 +605,6 @@ namespace WindowsAutoPowerManager
                 case "resumeActions":
                     HandleResumeActions();
                     break;
-                case "startBluetoothScan":
-                    HandleStartBluetoothScan();
-                    break;
-                case "stopBluetoothScan":
-                    HandleStopBluetoothScan();
-                    break;
                 case "exportSettingsConfig":
                     HandleExportSettingsConfig();
                     break;
@@ -612,7 +615,6 @@ namespace WindowsAutoPowerManager
                     IsApplicationExiting = true;
                     StopSubWindowPrewarm();
                     CloseAllSubWindows();
-                    BluetoothScanner.StopMonitoring();
                     Logger.DoLog(Config.ActionTypes.AppTerminated);
                     Application.ExitThread();
                     break;
@@ -828,24 +830,6 @@ namespace WindowsAutoPowerManager
                         ? timeStr + ":00"
                         : DateTime.Now.AddMinutes(1).ToString("HH:mm:00");
                 }
-                else if (triggerType == "BluetoothNotReachable")
-                {
-                    parsedAction.TriggerType = Config.TriggerTypes.BluetoothNotReachable;
-
-                    string btMac = data.GetProperty("bluetoothMac").GetString();
-                    string btName = data.GetProperty("bluetoothName").GetString();
-
-                    if (string.IsNullOrWhiteSpace(btMac))
-                    {
-                        return false;
-                    }
-
-                    parsedAction.Value = btMac;
-                    parsedAction.ValueUnit = btName ?? "";
-
-                    // Prime monitor state when the selected device was just discovered in UI scan.
-                    BluetoothScanner.SeedMonitoredDeviceFromDiscovery(btMac);
-                }
                 else
                 {
                     return false;
@@ -894,13 +878,6 @@ namespace WindowsAutoPowerManager
 
         private void HandleSaveSettings(JsonElement data)
         {
-            int bluetoothRssiThreshold = 0;
-            if (data.TryGetProperty("bluetoothRssiThreshold", out JsonElement rssiElement) &&
-                rssiElement.ValueKind == JsonValueKind.Number)
-            {
-                bluetoothRssiThreshold = rssiElement.GetInt32();
-            }
-
             var newSettings = new Settings
             {
                 LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
@@ -909,9 +886,7 @@ namespace WindowsAutoPowerManager
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),
-                Theme = data.GetProperty("theme").GetString(),
-                BluetoothThresholdSeconds = data.GetProperty("bluetoothThresholdSeconds").GetInt32(),
-                BluetoothRssiThreshold = bluetoothRssiThreshold
+                Theme = data.GetProperty("theme").GetString()
             };
 
             string currentLang = _cachedSettings?.Language ?? "auto";
@@ -1288,86 +1263,6 @@ namespace WindowsAutoPowerManager
             PostMessage("pauseStatus", status);
         }
 
-        // =============== Bluetooth Scanning ===============
-
-        private Timer _bluetoothScanTimer;
-
-        private void HandleStartBluetoothScan()
-        {
-            BluetoothScanner.StartDiscoveryScan();
-            if (_bluetoothScanTimer != null)
-            {
-                return;
-            }
-
-            _lastBluetoothDiscoveryVersion = -1;
-            _bluetoothScanTimer = new Timer { Interval = 1000 };
-            _bluetoothScanTimer.Tick += BluetoothScanTimerTick;
-            _bluetoothScanTimer.Start();
-        }
-
-        private void BluetoothScanTimerTick(object sender, EventArgs e)
-        {
-            if (!BluetoothScanner.TryGetDiscoveredDevicesIfChanged(
-                    ref _lastBluetoothDiscoveryVersion,
-                    out List<BleDeviceInfo> devices))
-            {
-                return;
-            }
-
-            var list = new List<object>(devices.Count);
-            foreach (BleDeviceInfo device in devices)
-            {
-                list.Add(new
-                {
-                    mac = device.MacAddress,
-                    name = device.LocalName ?? string.Empty,
-                    rssi = device.RssiDbm
-                });
-            }
-
-            PostMessage("bluetoothScanResult", list);
-        }
-
-        private void HandleStopBluetoothScan()
-        {
-            _bluetoothScanTimer?.Stop();
-            _bluetoothScanTimer?.Dispose();
-            _bluetoothScanTimer = null;
-            _lastBluetoothDiscoveryVersion = -1;
-            BluetoothScanner.StopDiscoveryScan();
-        }
-
-        private void EnsureBluetoothMonitoring()
-        {
-            bool hasBluetoothTrigger = ActionList.Any(a =>
-                a.TriggerType == Config.TriggerTypes.BluetoothNotReachable);
-
-            if (hasBluetoothTrigger && !BluetoothScanner.IsMonitoring)
-            {
-                BluetoothScanner.StartMonitoring();
-            }
-            else if (!hasBluetoothTrigger && BluetoothScanner.IsMonitoring)
-            {
-                BluetoothScanner.StopMonitoring();
-                _bluetoothReachabilityByActionKey.Clear();
-            }
-
-            // Register all BT trigger addresses so the scanner actively
-            // tracks them from the start (assumed present until proven absent).
-            if (BluetoothScanner.IsMonitoring)
-            {
-                foreach (ActionModel action in ActionList)
-                {
-                    if (action.TriggerType == Config.TriggerTypes.BluetoothNotReachable &&
-                        !string.IsNullOrWhiteSpace(action.Value))
-                    {
-                        ulong addr = BluetoothScanner.MacStringToUlong(action.Value);
-                        BluetoothScanner.RegisterMonitoredDevice(addr);
-                    }
-                }
-            }
-        }
 
         // =============== Action List Persistence ===============
 
@@ -1379,7 +1274,6 @@ namespace WindowsAutoPowerManager
             JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true, ActionList);
             RebuildActionRuntimeStates();
             CleanupActionExecutionState();
-            EnsureBluetoothMonitoring();
             RefreshActionsInUI();
 #if DEBUG
             DebugPerformanceTracker.Record("MainForm.WriteJsonToActionList", perfStart);
@@ -1390,13 +1284,6 @@ namespace WindowsAutoPowerManager
         {
             var validKeys = new HashSet<string>(ActionList.Select(BuildActionExecutionKey));
             _executedIdleActionKeys.RemoveWhere(key => !validKeys.Contains(key));
-            foreach (string key in _bluetoothReachabilityByActionKey.Keys.ToList())
-            {
-                if (!validKeys.Contains(key))
-                {
-                    _bluetoothReachabilityByActionKey.Remove(key);
-                }
-            }
 
             foreach (string key in _certainTimeLastExecutionDates.Keys.ToList())
             {
@@ -1450,13 +1337,6 @@ namespace WindowsAutoPowerManager
             {
                 state.CertainTimeOfDay = parsedTime.TimeOfDay;
                 state.HasCertainTime = true;
-            }
-
-            if (action != null &&
-                action.TriggerType == Config.TriggerTypes.BluetoothNotReachable &&
-                !string.IsNullOrWhiteSpace(action.Value))
-            {
-                state.BluetoothAddress = BluetoothScanner.MacStringToUlong(action.Value);
             }
 
             return state;
@@ -1600,36 +1480,6 @@ namespace WindowsAutoPowerManager
                 result |= ActionExecutionResult.Executed |
                           ActionExecutionResult.RemoveAction |
                           ActionExecutionResult.NeedsPersist;
-            }
-
-            if (action.TriggerType == Config.TriggerTypes.BluetoothNotReachable)
-            {
-                if (state.BluetoothAddress == 0)
-                {
-                    return result;
-                }
-
-                int threshold = (_cachedSettings?.BluetoothThresholdSeconds > 0) ? _cachedSettings.BluetoothThresholdSeconds : 5;
-                int rssiMin = (_cachedSettings?.BluetoothRssiThreshold < 0) ? _cachedSettings.BluetoothRssiThreshold : 0;
-                bool reachable = BluetoothScanner.IsDeviceReachable(state.BluetoothAddress, threshold, rssiMin, now);
-                bool hasEverBeenSeen = BluetoothScanner.HasDeviceEverBeenSeen(state.BluetoothAddress);
-                bool wasReachable = _bluetoothReachabilityByActionKey.TryGetValue(actionKey, out bool previousReachable)
-                    && previousReachable;
-
-                if (reachable)
-                {
-                    _bluetoothReachabilityByActionKey[actionKey] = true;
-                }
-                else if (hasEverBeenSeen && wasReachable)
-                {
-                    _bluetoothReachabilityByActionKey[actionKey] = false;
-                    Actions.DoActionByTypes(action);
-                    result |= ActionExecutionResult.Executed;
-                }
-                else if (!_bluetoothReachabilityByActionKey.ContainsKey(actionKey))
-                {
-                    _bluetoothReachabilityByActionKey[actionKey] = false;
-                }
             }
 
             return result;
@@ -1825,6 +1675,7 @@ namespace WindowsAutoPowerManager
 
         public void ShowMain()
         {
+            _startMinimizedToTray = false;
             ShowInTaskbar = true;
             Show();
 
@@ -1862,7 +1713,6 @@ namespace WindowsAutoPowerManager
 
         private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            BluetoothScanner.StopMonitoring();
             Logger.DoLog(Config.ActionTypes.AppTerminated);
         }
 
@@ -1871,7 +1721,6 @@ namespace WindowsAutoPowerManager
             IsApplicationExiting = true;
             StopSubWindowPrewarm();
             CloseAllSubWindows();
-            BluetoothScanner.StopMonitoring();
             Logger.DoLog(Config.ActionTypes.AppTerminated);
             Application.ExitThread();
         }
