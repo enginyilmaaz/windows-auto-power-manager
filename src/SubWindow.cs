@@ -254,8 +254,6 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
-                bluetoothThresholdSeconds = resolved.BluetoothThresholdSeconds > 0 ? resolved.BluetoothThresholdSeconds : 5,
-                bluetoothRssiThreshold = resolved.BluetoothRssiThreshold <= 0 ? resolved.BluetoothRssiThreshold : 0,
                 appVersion = BuildInfo.Version,
                 buildId = BuildInfo.CommitId
             };
@@ -657,13 +655,6 @@ namespace WindowsAutoPowerManager
 
         private void HandleSaveSettings(JsonElement data)
         {
-            int bluetoothRssiThreshold = 0;
-            if (data.TryGetProperty("bluetoothRssiThreshold", out JsonElement rssiElement) &&
-                rssiElement.ValueKind == JsonValueKind.Number)
-            {
-                bluetoothRssiThreshold = rssiElement.GetInt32();
-            }
-
             var newSettings = new Settings
             {
                 LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
@@ -672,9 +663,7 @@ namespace WindowsAutoPowerManager
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),
-                Theme = data.GetProperty("theme").GetString(),
-                BluetoothThresholdSeconds = data.GetProperty("bluetoothThresholdSeconds").GetInt32(),
-                BluetoothRssiThreshold = bluetoothRssiThreshold
+                Theme = data.GetProperty("theme").GetString()
             };
 
             var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();

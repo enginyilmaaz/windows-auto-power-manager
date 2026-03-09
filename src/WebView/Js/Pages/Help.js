@@ -28,8 +28,8 @@ window.HelpPage = {
                 ch1Intro: 'Windows Auto Power Manager, bilgisayarınızı belirli koşullarda otomatik olarak kapatmanızı, kilitlemenizi, uyku moduna almanızı ve daha fazlasını yapmanızı sağlayan bir araçtır. Aşağıdaki adımları takip ederek hızlıca başlayabilirsiniz.',
                 ch1Step1: 'Araç çubuğundaki <b>+</b> butonuna tıklayın veya hamburger menüden <b>Yeni Görev</b> seçeneğini kullanın. Bu işlem yeni görev oluşturma penceresini açacaktır.',
                 ch1Step2: '<b>Görev Türü</b> açılır listesinden yapmak istediğiniz işlemi seçin. Örneğin: Bilgisayarı kilitle, Bilgisayarı kapat, Bilgisayarı uyut, Ekranı kapat, Yeniden başlat veya Oturumu kapat.',
-                ch1Step3: '<b>Tetikleyici</b> açılır listesinden görevin ne zaman çalışacağını belirleyin. Dört farklı tetikleyici mevcuttur: Geriye Sayım, Boşta Kalınan Süre, Saate Göre Her Gün ve Bluetooth Kilidi.',
-                ch1Step4: 'Seçtiğiniz tetikleyiciye göre gerekli değerleri girin. Geriye Sayım ve Boşta Kalınan Süre için süre ve birim (saniye/dakika/saat), Saate Göre Her Gün için saat, Bluetooth Kilidi için cihaz seçimi yapın.',
+                ch1Step3: '<b>Tetikleyici</b> açılır listesinden görevin ne zaman çalışacağını belirleyin. Üç farklı tetikleyici mevcuttur: Geriye Sayım, Boşta Kalınan Süre ve Saate Göre Her Gün.',
+                ch1Step4: 'Seçtiğiniz tetikleyiciye göre gerekli değerleri girin. Geriye Sayım ve Boşta Kalınan Süre için süre ve birim (saniye/dakika/saat), Saate Göre Her Gün için saat girin.',
                 ch1Step5: '<b>Görev Listesine Ekle</b> butonuna tıklayarak görevi kaydedin. Görev ana ekrandaki tabloda görünecektir.',
                 ch1Tip: 'Görev listesindeki bir görevi düzenlemek için ilgili satıra tıklayıp sağ tarafta beliren <b>kalem</b> ikonunu kullanabilirsiniz. Silmek için ise <b>çöp kutusu</b> ikonuna tıklayın.',
                 ch1Tip2: 'Aynı anda en fazla <b>5 görev</b> oluşturabilirsiniz. Daha fazla görev eklemek için mevcut görevlerden birini silmeniz gerekir.',
@@ -68,34 +68,6 @@ window.HelpPage = {
                 ch3Sub3Desc: 'Her gün belirlenen saatte görev bir kez çalışır. Saat, 24 saat formatında girilir (ör. 23:00). Aynı gün içinde aynı görev tekrar çalışmaz; ertesi gün aynı saatte tekrar tetiklenir.',
                 ch3Sub3Detail: '<b>Nasıl çalışır:</b> Uygulama açık olduğu sürece her gün belirlenen saati kontrol eder. Saat geldiğinde görev bir kez çalışır ve o gün için tamamlanmış olarak işaretlenir. Ertesi gün aynı saatte tekrar aktif olur. Görev listeden otomatik silinmez, her gün çalışmaya devam eder.',
                 ch3Sub3Example: '<b>Örnek kullanım:</b> Her gece 00:30\'da bilgisayarın uyku moduna girmesini istiyorsanız, Görev Türü: "Bilgisayarı uyut", Tetikleyici: "Saate göre hergün", Saat: 00:30 olarak ayarlayın.',
-                ch3Sub4: 'Bluetooth Kilidi',
-                ch3Sub4Desc: 'Seçilen Bluetooth cihazı (telefon, akıllı saat, kulaklık vb.) algılandıktan sonra bağlantısı kesildiğinde görev çalışır. Cihaz tekrar bağlanıp tekrar koparsa görev yeniden tetiklenir. Bu tetikleyici özellikle bilgisayardan uzaklaştığınızda otomatik kilitleme için idealdir.',
-                ch3Sub4Detail: '<b>Nasıl çalışır:</b> Uygulama, seçtiğiniz cihazın Bluetooth sinyalini sürekli izler. Cihaz ilk algılandığında "bağlı" olarak işaretlenir. Eğer cihaz belirlenen eşik süresi boyunca algılanmazsa "koptu" kabul edilir ve görev tetiklenir. Cihaz daha sonra tekrar algılanırsa döngü yeniden başlar.',
-
-                // Ch4 - Bluetooth Kilidi Kılavuzu
-                ch4Title: 'Bluetooth Kilidi Kılavuzu',
-                ch4Icon: 'bluetooth',
-                ch4Intro: 'Bluetooth Kilidi, telefonunuz veya başka bir Bluetooth cihazınız bilgisayardan uzaklaştığında otomatik olarak belirlenen görevi (genellikle kilitleme) çalıştırır. Bu özellik güvenlik açısından çok kullanışlıdır.',
-                ch4SetupTitle: 'Kurulum Adımları',
-                ch4Step1: 'Öncelikle cihazınızın (telefon, akıllı saat vb.) Bluetooth\'unun açık olduğundan ve bilgisayarınızla eşleşmiş olduğundan emin olun. Windows Ayarlar > Bluetooth bölümünden eşleştirme yapabilirsiniz.',
-                ch4Step2: 'Uygulamada yeni görev oluşturun. Görev Türü olarak <b>Bilgisayarı kilitle</b> (veya istediğiniz başka bir görev) seçin.',
-                ch4Step3: 'Tetikleyici olarak <b>Bluetooth Kilidi</b> seçin. Cihaz seçim alanı görünecektir.',
-                ch4Step4: 'Cihaz listesine tıklayın. Uygulama otomatik olarak Bluetooth taraması başlatır. Yakındaki tüm Bluetooth cihazları (BLE ve Classic) taranır ve listede görüntülenir.',
-                ch4Step5: 'Listeden cihazınızı seçin. Cihazınızın adını ve MAC adresini göreceksiniz. Doğru cihazı seçtiğinizden emin olun.',
-                ch4Step6: '<b>Görev Listesine Ekle</b> butonuna tıklayarak görevi kaydedin. Uygulama hemen cihazınızı izlemeye başlar.',
-                ch4Warn: '<b>Önemli:</b> İlk tetikleme için cihazınızın en az bir kez algılanması gerekir. Eğer cihaz hiç algılanmazsa görev tetiklenmez. Cihazınızın Bluetooth\'unun açık ve eşleşmiş olduğundan emin olun.',
-                ch4SettingsTitle: 'Bluetooth Ayarları',
-                ch4ThresholdTitle: 'Bluetooth Eşik Süresi (sn)',
-                ch4ThresholdDesc: 'Ayarlar ekranındaki bu değer, cihazın "koptu" sayılması için beklenen süredir. Cihaz bu süre boyunca algılanmazsa görev tetiklenir.',
-                ch4ThresholdRec: '<b>Önerilen değer: 5-15 saniye.</b> Düşük değerler (ör. 3 sn) anlık sinyal kayıplarında yanlış tetiklenmelere neden olabilir. Yüksek değerler (ör. 30 sn) ise cihaz uzaklaştığında geç tepki verilmesine yol açar. Çoğu kullanıcı için 10 saniye ideal bir dengedir.',
-                ch4RssiTitle: 'Bluetooth Sinyal Eşiği (dBm)',
-                ch4RssiDesc: 'Bu değer, cihazın "bağlı" sayılması için gereken minimum sinyal gücüdür. Sinyal bu değerin altına düşerse cihaz uzaklaşmış kabul edilir.',
-                ch4RssiRec: '<b>Önerilen değer: -70 ile -50 arası.</b> 0 değeri bu kontrolü tamamen devre dışı bırakır (yalnızca cihazın algılanıp algılanmadığına bakılır). -50 dBm yakın mesafe, -70 dBm ise orta mesafe anlamına gelir. Odanızın büyüklüğüne göre ayarlayabilirsiniz.',
-                ch4TroubleshootTitle: 'Sorun Giderme',
-                ch4Trouble1: '<b>Cihaz listede görünmüyor:</b> Cihazınızın Bluetooth\'unun açık olduğundan emin olun. Cihazı Windows Bluetooth ayarlarından eşleştirmeyi deneyin. Tarama birkaç saniye sürebilir, bekleyin.',
-                ch4Trouble2: '<b>Yanlış tetikleniyor (cihaz yakınken):</b> Bluetooth eşik süresini artırın (ör. 15-20 sn). Sinyal eşiğini devre dışı bırakın (0 yapın) veya daha düşük bir değer deneyin (ör. -80 dBm).',
-                ch4Trouble3: '<b>Cihaz uzaklaştığında tetiklenmiyor:</b> Eşik süresinin çok yüksek olmadığından emin olun. Cihazınızın ilk olarak algılandığını (görev oluştururken listede göründüğünü) doğrulayın.',
-
                 // Ch5 - Ayarlar
                 ch5Title: 'Ayarlar',
                 ch5Icon: 'settings',
@@ -107,7 +79,7 @@ window.HelpPage = {
                 ch5LogsTitle: 'Kayıt Tut',
                 ch5Logs: 'Aktif olduğunda, uygulama tarafından gerçekleştirilen tüm işlemler (kilitleme, kapatma, uyutma vb.) tarih ve saat bilgisiyle birlikte kaydedilir. Bu kayıtları Kayıtlar (İşlem Geçmişi) penceresinden görüntüleyebilir, filtreleyebilir ve silebilirsiniz.',
                 ch5StartupTitle: 'Sistem Başlangıcında Çalışsın',
-                ch5Startup: 'Aktif olduğunda, Windows açıldığında uygulama otomatik olarak başlar. Uygulama başlangıçta sistem tepsisinde (görev çubuğunun sağ alt köşesi) arka planda çalışır. Bluetooth Kilidi gibi sürekli izleme gerektiren görevler için bu ayarın açık olması önerilir.',
+                ch5Startup: 'Aktif olduğunda, Windows açıldığında uygulama otomatik olarak başlar. Uygulama başlangıçta sistem tepsisinde (görev çubuğunun sağ alt köşesi) arka planda çalışır. Sürekli izleme gerektiren görevler için bu ayarın açık olması önerilir.',
                 ch5TaskbarTitle: 'Kapatılsa da Arkaplanda Çalışsın',
                 ch5Taskbar: 'Aktif olduğunda, uygulama penceresi kapatıldığında (X butonuna basıldığında) uygulama kapanmaz, sistem tepsisinde çalışmaya devam eder. Görevlerinizin kesintisiz çalışması için bu ayarı açık tutmanız önerilir. Uygulamayı tamamen kapatmak için menüden "Programdan çık" seçeneğini kullanın.',
                 ch5CountdownTitle: 'İşlem Yapılmadan Uyarı Göster',
@@ -151,7 +123,6 @@ window.HelpPage = {
                 ch8Tip2: '<b>Saate göre her gün</b> tetikleyicisi her gün yalnızca bir kez çalışır. Aynı gün içinde uygulamayı yeniden başlatsanız bile tekrar tetiklenmez.',
                 ch8Tip3: '<b>Duraklat/Devam Et</b> özelliği ile tüm görevleri geçici olarak durdurabilirsiniz. Duraklatma süresi dolduğunda görevler otomatik olarak devam eder.',
                 ch8Tip4: '<b>Boşta kalma</b> tetikleyicisinde, geri sayım uyarısı sırasında fareyi hareket ettirmek veya bir tuşa basmak işlemi otomatik olarak iptal eder. Bu sayede yanlışlıkla tetiklenen işlemleri engelleyebilirsiniz.',
-                ch8Tip5: 'Bluetooth Kilidi kullanırken cihazınızın Bluetooth\'unun <b>sürekli açık</b> olduğundan emin olun. Bazı telefonlar enerji tasarrufu modunda Bluetooth\'u kapatabilir.',
                 ch8Tip6: 'Uygulama penceresi kapatıldığında görevlerin çalışmaya devam etmesi için Ayarlar\'daki <b>"Kapatılsa da arkaplanda çalışsın"</b> seçeneğini aktif edin.',
                 ch8Tip7: 'Ayarlarınızı düzenli olarak <b>dışa aktararak</b> yedeklemeniz önerilir. Böylece olası bir sorun durumunda hızlıca geri yükleyebilirsiniz.',
                 ch8Faq1Q: '<b>Soru:</b> Uygulama kapatıldığında görevler çalışır mı?',
@@ -178,8 +149,8 @@ window.HelpPage = {
             ch1Intro: 'Windows Auto Power Manager lets you automatically shut down, lock, sleep, and perform other power actions on your computer based on specific conditions. Follow the steps below to get started quickly.',
             ch1Step1: 'Click the <b>+</b> button on the toolbar or select <b>New Action</b> from the hamburger menu. This opens the new action creation window.',
             ch1Step2: 'From the <b>Action Type</b> dropdown, select the action you want to perform. For example: Lock computer, Shutdown computer, Sleep computer, Turn off monitor, Restart computer, or Log off Windows.',
-            ch1Step3: 'From the <b>Trigger</b> dropdown, select when the action should run. Four trigger types are available: Countdown, System Idle, Every Day by Time, and Bluetooth Lock.',
-            ch1Step4: 'Enter the required values based on the selected trigger. For Countdown and System Idle: duration and unit (seconds/minutes/hours). For Every Day by Time: the time. For Bluetooth Lock: select a device.',
+            ch1Step3: 'From the <b>Trigger</b> dropdown, select when the action should run. Three trigger types are available: Countdown, System Idle, and Every Day by Time.',
+            ch1Step4: 'Enter the required values based on the selected trigger. For Countdown and System Idle: duration and unit (seconds/minutes/hours). For Every Day by Time: the time.',
             ch1Step5: 'Click <b>Add to Action List</b> to save the action. The action will appear in the table on the main screen.',
             ch1Tip: 'To edit an existing action, click the row and use the <b>pencil</b> icon that appears on the right side. To delete, click the <b>trash</b> icon.',
             ch1Tip2: 'You can create up to <b>5 actions</b> at the same time. To add more, delete an existing action first.',
@@ -218,34 +189,6 @@ window.HelpPage = {
             ch3Sub3Desc: 'Runs the action once per day at the selected time. The time is entered in 24-hour format (e.g. 23:00). The action will not run again on the same day; it triggers again at the same time the next day.',
             ch3Sub3Detail: '<b>How it works:</b> As long as the application is running, it checks for the specified time every day. When the time arrives, the action runs once and is marked as completed for that day. It becomes active again at the same time the next day. The action is not automatically removed from the list and continues to run daily.',
             ch3Sub3Example: '<b>Example:</b> If you want the computer to sleep every night at 00:30, set Action Type: "Sleep computer", Trigger: "Every day by hour", Time: 00:30.',
-            ch3Sub4: 'Bluetooth Lock',
-            ch3Sub4Desc: 'When the selected Bluetooth device (phone, smartwatch, headphones, etc.) is detected and then loses connection, the action runs. If the device reconnects and disconnects again, the action triggers again. This trigger is especially ideal for automatically locking when you walk away from your computer.',
-            ch3Sub4Detail: '<b>How it works:</b> The application continuously monitors the Bluetooth signal of your selected device. When the device is first detected, it is marked as "connected". If the device is not detected for the configured threshold duration, it is considered "disconnected" and the action triggers. If the device is detected again later, the cycle restarts.',
-
-            // Ch4 - Bluetooth Lock Guide
-            ch4Title: 'Bluetooth Lock Guide',
-            ch4Icon: 'bluetooth',
-            ch4Intro: 'Bluetooth Lock automatically runs the configured action (usually lock) when your phone or another Bluetooth device moves away from your computer. This feature is very useful for security.',
-            ch4SetupTitle: 'Setup Steps',
-            ch4Step1: 'First, make sure your device\'s (phone, smartwatch, etc.) Bluetooth is turned on and paired with your computer. You can pair devices from Windows Settings > Bluetooth.',
-            ch4Step2: 'Create a new action in the application. Select <b>Lock computer</b> (or any other action you prefer) as the Action Type.',
-            ch4Step3: 'Select <b>Bluetooth Lock</b> as the Trigger. The device selection area will appear.',
-            ch4Step4: 'Click on the device list. The application automatically starts a Bluetooth scan. All nearby Bluetooth devices (both BLE and Classic) are scanned and displayed in the list.',
-            ch4Step5: 'Select your device from the list. You will see your device\'s name and MAC address. Make sure you select the correct device.',
-            ch4Step6: 'Click <b>Add to Action List</b> to save the action. The application immediately starts monitoring your device.',
-            ch4Warn: '<b>Important:</b> The device must be detected at least once for the first trigger. If the device is never detected, the action will not trigger. Make sure your device\'s Bluetooth is on and paired.',
-            ch4SettingsTitle: 'Bluetooth Settings',
-            ch4ThresholdTitle: 'Bluetooth Threshold (sec)',
-            ch4ThresholdDesc: 'This value in Settings controls how long to wait before considering the device "disconnected". If the device is not detected for this duration, the action triggers.',
-            ch4ThresholdRec: '<b>Recommended: 5-15 seconds.</b> Low values (e.g. 3 sec) may cause false triggers during momentary signal drops. High values (e.g. 30 sec) will delay the response when the device actually moves away. For most users, 10 seconds is an ideal balance.',
-            ch4RssiTitle: 'Bluetooth Signal Threshold (dBm)',
-            ch4RssiDesc: 'This value is the minimum signal strength required to consider the device as "connected". If the signal drops below this value, the device is considered to have moved away.',
-            ch4RssiRec: '<b>Recommended: -70 to -50.</b> A value of 0 completely disables this check (only presence/absence is considered). -50 dBm means close range, -70 dBm means medium range. Adjust based on your room size.',
-            ch4TroubleshootTitle: 'Troubleshooting',
-            ch4Trouble1: '<b>Device not showing in the list:</b> Make sure your device\'s Bluetooth is turned on. Try pairing the device from Windows Bluetooth settings. The scan may take a few seconds; please wait.',
-            ch4Trouble2: '<b>False triggers (device is nearby):</b> Increase the Bluetooth threshold (e.g. 15-20 sec). Disable the signal threshold (set to 0) or try a lower value (e.g. -80 dBm).',
-            ch4Trouble3: '<b>Not triggering when device moves away:</b> Make sure the threshold is not too high. Verify that your device was initially detected (appeared in the list when creating the action).',
-
             // Ch5 - Settings
             ch5Title: 'Settings',
             ch5Icon: 'settings',
@@ -257,7 +200,7 @@ window.HelpPage = {
             ch5LogsTitle: 'Record Logs',
             ch5Logs: 'When enabled, all actions performed by the application (locking, shutting down, sleeping, etc.) are recorded with date and time information. You can view, filter, and delete these records from the Logs (Log Viewer) window.',
             ch5StartupTitle: 'Start with Windows',
-            ch5Startup: 'When enabled, the application starts automatically when Windows boots. The application runs in the background in the system tray (lower-right corner of the taskbar). It is recommended to enable this for actions that require continuous monitoring, such as Bluetooth Lock.',
+            ch5Startup: 'When enabled, the application starts automatically when Windows boots. The application runs in the background in the system tray (lower-right corner of the taskbar). It is recommended to enable this for actions that require continuous monitoring.',
             ch5TaskbarTitle: 'Run in Background When Closed',
             ch5Taskbar: 'When enabled, closing the application window (clicking the X button) does not close the application; it continues running in the system tray. It is recommended to keep this enabled for uninterrupted task execution. To completely close the application, use "Exit The Program" from the menu.',
             ch5CountdownTitle: 'Show Alert Before Action',
@@ -301,7 +244,6 @@ window.HelpPage = {
             ch8Tip2: '<b>Every day by time</b> trigger runs only once per day. Even if you restart the application on the same day, it will not trigger again.',
             ch8Tip3: 'Use the <b>Pause/Resume</b> feature to temporarily stop all actions. When the pause duration expires, actions automatically resume.',
             ch8Tip4: 'For the <b>System Idle</b> trigger, moving the mouse or pressing a key during the countdown warning automatically cancels the action. This helps prevent accidentally triggered actions.',
-            ch8Tip5: 'When using Bluetooth Lock, make sure your device\'s Bluetooth stays <b>on at all times</b>. Some phones may turn off Bluetooth in power saving mode.',
             ch8Tip6: 'To keep actions running when the application window is closed, enable the <b>"Run in background when closed"</b> option in Settings.',
             ch8Tip7: 'It is recommended to regularly <b>export your settings</b> as a backup. This way you can quickly restore them in case of any issues.',
             ch8Faq1Q: '<b>Question:</b> Do actions run when the application is closed?',
@@ -356,24 +298,11 @@ window.HelpPage = {
         var ch3 = s._desc(t.ch3Intro) +
             s._sub(t.ch3Sub1) + s._desc(t.ch3Sub1Desc) + s._desc(t.ch3Sub1Detail) + s._success(t.ch3Sub1Example) +
             s._sub(t.ch3Sub2) + s._desc(t.ch3Sub2Desc) + s._desc(t.ch3Sub2Detail) + s._success(t.ch3Sub2Example) + s._warn(t.ch3Sub2Warn) +
-            s._sub(t.ch3Sub3) + s._desc(t.ch3Sub3Desc) + s._desc(t.ch3Sub3Detail) + s._success(t.ch3Sub3Example) +
-            s._sub(t.ch3Sub4) + s._desc(t.ch3Sub4Desc) + s._desc(t.ch3Sub4Detail);
-        chapters.push(s._buildChapter(3, t.ch3Icon, t.ch3Title, ch3, t.ch3Intro + ' ' + t.ch3Sub1Desc + ' ' + t.ch3Sub1Detail + ' ' + t.ch3Sub2Desc + ' ' + t.ch3Sub2Detail + ' ' + t.ch3Sub3Desc + ' ' + t.ch3Sub3Detail + ' ' + t.ch3Sub4Desc + ' ' + t.ch3Sub4Detail));
+            s._sub(t.ch3Sub3) + s._desc(t.ch3Sub3Desc) + s._desc(t.ch3Sub3Detail) + s._success(t.ch3Sub3Example);
+        chapters.push(s._buildChapter(3, t.ch3Icon, t.ch3Title, ch3, t.ch3Intro + ' ' + t.ch3Sub1Desc + ' ' + t.ch3Sub1Detail + ' ' + t.ch3Sub2Desc + ' ' + t.ch3Sub2Detail + ' ' + t.ch3Sub3Desc + ' ' + t.ch3Sub3Detail));
 
         // Ch4
-        var ch4 = s._desc(t.ch4Intro) +
-            s._sub(t.ch4SetupTitle) +
-            s._step(1, t.ch4Step1) + s._step(2, t.ch4Step2) + s._step(3, t.ch4Step3) + s._step(4, t.ch4Step4) + s._step(5, t.ch4Step5) + s._step(6, t.ch4Step6) +
-            s._warn(t.ch4Warn) +
-            s._sub(t.ch4SettingsTitle) +
-            s._sub(t.ch4ThresholdTitle) + s._desc(t.ch4ThresholdDesc) + s._tip(t.ch4ThresholdRec) +
-            s._sub(t.ch4RssiTitle) + s._desc(t.ch4RssiDesc) + s._tip(t.ch4RssiRec) +
-            s._sub(t.ch4TroubleshootTitle) +
-            s._desc(t.ch4Trouble1) + s._desc(t.ch4Trouble2) + s._desc(t.ch4Trouble3);
-        chapters.push(s._buildChapter(4, t.ch4Icon, t.ch4Title, ch4, t.ch4Intro + ' ' + t.ch4Step1 + ' ' + t.ch4Step2 + ' ' + t.ch4Warn + ' ' + t.ch4ThresholdDesc + ' ' + t.ch4RssiDesc + ' ' + t.ch4Trouble1 + ' ' + t.ch4Trouble2 + ' ' + t.ch4Trouble3));
-
-        // Ch5
-        var ch5 = s._desc(t.ch5Intro) +
+        var ch4 = s._desc(t.ch5Intro) +
             s._sub(t.ch5ThemeTitle) + s._desc(t.ch5Theme) +
             s._sub(t.ch5LangTitle) + s._desc(t.ch5Lang) +
             s._sub(t.ch5LogsTitle) + s._desc(t.ch5Logs) +
@@ -382,30 +311,30 @@ window.HelpPage = {
             s._sub(t.ch5CountdownTitle) + s._desc(t.ch5Countdown) +
             s._sub(t.ch5CountdownSecTitle) + s._desc(t.ch5CountdownSec) +
             s._sub(t.ch5ImportTitle) + s._desc(t.ch5Import);
-        chapters.push(s._buildChapter(5, t.ch5Icon, t.ch5Title, ch5, t.ch5Intro + ' ' + t.ch5Theme + ' ' + t.ch5Lang + ' ' + t.ch5Logs + ' ' + t.ch5Startup + ' ' + t.ch5Taskbar + ' ' + t.ch5Countdown + ' ' + t.ch5CountdownSec + ' ' + t.ch5Import));
+        chapters.push(s._buildChapter(4, t.ch5Icon, t.ch5Title, ch4, t.ch5Intro + ' ' + t.ch5Theme + ' ' + t.ch5Lang + ' ' + t.ch5Logs + ' ' + t.ch5Startup + ' ' + t.ch5Taskbar + ' ' + t.ch5Countdown + ' ' + t.ch5CountdownSec + ' ' + t.ch5Import));
 
-        // Ch6
-        var ch6 = s._desc(t.ch6Intro) +
+        // Ch5
+        var ch5 = s._desc(t.ch6Intro) +
             s._sub(t.ch6Sub1) + s._desc(t.ch6Toolbar1) + s._desc(t.ch6Toolbar2) + s._desc(t.ch6Toolbar3) + s._desc(t.ch6Toolbar4) +
             s._sub(t.ch6Sub2) + s._desc(t.ch6Menu1) +
             s._sub(t.ch6Sub3) + s._desc(t.ch6Menu2) +
             s._sub(t.ch6Sub4) + s._desc(t.ch6Menu3) +
             s._sub(t.ch6Sub5) + s._desc(t.ch6Menu4);
-        chapters.push(s._buildChapter(6, t.ch6Icon, t.ch6Title, ch6, t.ch6Intro + ' ' + t.ch6Toolbar1 + ' ' + t.ch6Toolbar2 + ' ' + t.ch6Menu1 + ' ' + t.ch6Menu2 + ' ' + t.ch6Menu3 + ' ' + t.ch6Menu4));
+        chapters.push(s._buildChapter(5, t.ch6Icon, t.ch6Title, ch5, t.ch6Intro + ' ' + t.ch6Toolbar1 + ' ' + t.ch6Toolbar2 + ' ' + t.ch6Menu1 + ' ' + t.ch6Menu2 + ' ' + t.ch6Menu3 + ' ' + t.ch6Menu4));
 
-        // Ch7
-        var ch7 = s._desc(t.ch7Intro) + s._desc(t.ch7Desc1) +
+        // Ch6
+        var ch6 = s._desc(t.ch7Intro) + s._desc(t.ch7Desc1) +
             s._sub(t.ch7FilterTitle) + s._desc(t.ch7Desc2) +
             s._warn(t.ch7Desc3);
-        chapters.push(s._buildChapter(7, t.ch7Icon, t.ch7Title, ch7, t.ch7Intro + ' ' + t.ch7Desc1 + ' ' + t.ch7Desc2 + ' ' + t.ch7Desc3));
+        chapters.push(s._buildChapter(6, t.ch7Icon, t.ch7Title, ch6, t.ch7Intro + ' ' + t.ch7Desc1 + ' ' + t.ch7Desc2 + ' ' + t.ch7Desc3));
 
-        // Ch8
-        var ch8 = s._tip(t.ch8Tip1) + s._tip(t.ch8Tip2) + s._tip(t.ch8Tip3) + s._tip(t.ch8Tip4) + s._tip(t.ch8Tip5) + s._tip(t.ch8Tip6) + s._tip(t.ch8Tip7) +
+        // Ch7
+        var ch7 = s._tip(t.ch8Tip1) + s._tip(t.ch8Tip2) + s._tip(t.ch8Tip3) + s._tip(t.ch8Tip4) + s._tip(t.ch8Tip6) + s._tip(t.ch8Tip7) +
             s._sub('FAQ') +
             s._desc(t.ch8Faq1Q) + s._desc(t.ch8Faq1A) +
             s._desc(t.ch8Faq2Q) + s._desc(t.ch8Faq2A) +
             s._desc(t.ch8Faq3Q) + s._desc(t.ch8Faq3A);
-        chapters.push(s._buildChapter(8, t.ch8Icon, t.ch8Title, ch8, t.ch8Tip1 + ' ' + t.ch8Tip2 + ' ' + t.ch8Tip3 + ' ' + t.ch8Tip4 + ' ' + t.ch8Tip5 + ' ' + t.ch8Faq1Q + ' ' + t.ch8Faq1A + ' ' + t.ch8Faq2Q + ' ' + t.ch8Faq2A + ' ' + t.ch8Faq3Q + ' ' + t.ch8Faq3A));
+        chapters.push(s._buildChapter(7, t.ch8Icon, t.ch8Title, ch7, t.ch8Tip1 + ' ' + t.ch8Tip2 + ' ' + t.ch8Tip3 + ' ' + t.ch8Tip4 + ' ' + t.ch8Faq1Q + ' ' + t.ch8Faq1A + ' ' + t.ch8Faq2Q + ' ' + t.ch8Faq2A + ' ' + t.ch8Faq3Q + ' ' + t.ch8Faq3A));
 
         return chapters;
     },

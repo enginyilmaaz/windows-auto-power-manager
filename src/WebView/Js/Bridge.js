@@ -127,9 +127,6 @@ if (window.chrome && window.chrome.webview) {
             case 'updateActionResult':
                 Bridge._emit('updateActionResult', msg.data);
                 break;
-            case 'bluetoothScanResult':
-                Bridge._emit('bluetoothScanResult', msg.data);
-                break;
         }
     });
 }

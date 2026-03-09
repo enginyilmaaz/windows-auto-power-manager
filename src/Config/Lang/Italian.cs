@@ -183,22 +183,8 @@ namespace WindowsAutoPowerManager.Lang
                 ModalTitleEditAction = "Modifica Azione",
                 MainButtonEditAction = "Aggiorna Azione",
 
-                // Bluetooth
-                MainCboxTriggerTypeItemBluetoothNotReachable = "Blocco Bluetooth",
-                BluetoothScanButton = "Cerca dispositivi",
-                BluetoothScanning = "Ricerca...",
-                BluetoothNoDeviceFound = "Nessun dispositivo trovato",
-                BluetoothSelectDevice = "Seleziona un dispositivo",
-                BluetoothNotAvailable = "Bluetooth non disponibile",
-                BluetoothSearchingDevices = "Ricerca dispositivi Bluetooth",
-                BluetoothDeviceLabel = "Dispositivo",
-                SettingsFormLabelBluetoothThreshold = "Soglia Bluetooth (sec)",
-                SettingsFormLabelBluetoothRssiThreshold = "Soglia segnale Bluetooth (dBm)",
-
                 // Settings tooltips
                 TooltipCountdownSeconds = "Per quanto tempo viene mostrato l'avviso prima dell'azione.\nConsigliato: 5-10 secondi.\nVedi la pagina Aiuto per maggiori info.",
-                TooltipBluetoothThreshold = "Tempo di attesa dopo la perdita del dispositivo prima di eseguire l'azione.\nConsigliato: 5-15 secondi.\nVedi la pagina Aiuto per maggiori info.",
-                TooltipBluetoothRssi = "Forza minima del segnale per considerare il dispositivo connesso.\n0 = disabilita il controllo.\nConsigliato: da -70 a -50.\nVedi la pagina Aiuto per maggiori info.",
 
                 // Action toggle
                 ActionStart = "Avvia azione",

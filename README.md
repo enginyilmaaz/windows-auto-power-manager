@@ -24,7 +24,6 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 - **System Idle** - Triggers after the system has been idle for a specified duration
 - **Countdown (From Now)** - Triggers after a specified amount of time from creation
 - **Every Day by Hour (Certain Time)** - Triggers daily at a specific time
-- **Bluetooth Lock** - Triggers when a selected Bluetooth device disconnects after previously being reachable
 
 ### General
 - Up to 5 concurrent actions
@@ -41,19 +40,6 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/Win
 - Multi-language support: English, Turkish, German, French, Russian, Italian
 - Automatic language detection based on system locale
 - Single instance enforcement
-
-## Bluetooth Lock Behavior
-
-The Bluetooth trigger is designed to prevent false one-time locks and now behaves as a disconnect-transition trigger:
-
-1. The selected Bluetooth device must be detected at least once.
-2. While the device is reachable, trigger state is considered "connected".
-3. When the device changes from reachable to not reachable (based on threshold), the action executes.
-4. If the device reconnects and disconnects again, the action executes again.
-
-Notes:
-- The threshold is controlled from Settings as **Bluetooth threshold (sec)**.
-- This allows repeated lock actions on each real disconnect event instead of only the first disconnect.
 
 ## Usage Quick Guide
 
@@ -103,7 +89,6 @@ WindowsAutoPowerManager/
 │   │       └── Italian.cs
 │   ├── Functions/
 │   │   ├── Actions.cs                # System action execution (Win32 API calls)
-│   │   ├── BluetoothScanner.cs       # BLE device scanning and monitoring (WinRT)
 │   │   ├── SystemIdleDetector.cs     # User idle time detection (Win32 API)
 │   │   ├── DetectScreen.cs           # Session lock/unlock detection
 │   │   ├── NotifySystem.cs           # Countdown notification logic

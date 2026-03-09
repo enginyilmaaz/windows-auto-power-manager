@@ -475,8 +475,6 @@ const App = {
 
     closeModal() {
         this._confirmModalCallback = null;
-        Bridge.send('stopBluetoothScan', {});
-        Bridge.off('bluetoothScanResult');
         document.getElementById('modal-overlay').classList.add('hidden');
     },
 

@@ -81,22 +81,6 @@ window.SettingsPage = {
                 '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
             '</div>' +
 
-            '<div class="settings-row">' +
-                '<div class="settings-label-group">' +
-                    '<span class="settings-label">' + (L('SettingsFormLabelBluetoothThreshold') || 'Bluetooth threshold (sec)') + '</span>' +
-                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipBluetoothThreshold') || 'Wait time after device is lost before triggering the action.\nRecommended: 5-15 seconds.').replace(/"/g, '&quot;')) + '">info</span>' +
-                '</div>' +
-                '<input type="number" id="set-bt-threshold" class="form-input" style="max-width:80px;text-align:center" min="1" max="60" value="' + (s.bluetoothThresholdSeconds || 5) + '">' +
-            '</div>' +
-
-            '<div class="settings-row">' +
-                '<div class="settings-label-group">' +
-                    '<span class="settings-label">' + (L('SettingsFormLabelBluetoothRssiThreshold') || 'Bluetooth signal threshold (dBm)') + '</span>' +
-                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipBluetoothRssi') || 'Minimum signal strength to consider the device connected.\n0 = disables the check.\nRecommended: -70 to -50.').replace(/"/g, '&quot;')) + '">info</span>' +
-                '</div>' +
-                '<input type="number" id="set-bt-rssi" class="form-input" style="max-width:80px;text-align:center" min="-100" max="0" value="' + (s.bluetoothRssiThreshold || 0) + '">' +
-            '</div>' +
-
             '<div class="settings-actions">' +
                 '<button class="btn btn-secondary" id="set-import-conf">' + (L('SettingsFormButtonImportConfig') || 'Import (.conf)') + '</button>' +
                 '<button class="btn btn-secondary" id="set-export-conf">' + (L('SettingsFormButtonExportConfig') || 'Export (.conf)') + '</button>' +
@@ -132,10 +116,6 @@ window.SettingsPage = {
             if (el) el.checked = !!s.isCountdownNotifierEnabled;
             el = document.getElementById('set-seconds');
             if (el) el.value = s.countdownNotifierSeconds || 5;
-            el = document.getElementById('set-bt-threshold');
-            if (el) el.value = s.bluetoothThresholdSeconds || 5;
-            el = document.getElementById('set-bt-rssi');
-            if (el) el.value = s.bluetoothRssiThreshold || 0;
         });
         self._registerCleanup(offSettingsLoaded);
 
@@ -174,8 +154,6 @@ window.SettingsPage = {
                 runInTaskbarWhenClosed: document.getElementById('set-taskbar').checked,
                 isCountdownNotifierEnabled: document.getElementById('set-countdown').checked,
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
-                bluetoothThresholdSeconds: parseInt(document.getElementById('set-bt-threshold').value) || 5,
-                bluetoothRssiThreshold: parseInt(document.getElementById('set-bt-rssi').value) || 0,
                 language: document.getElementById('set-lang').value,
                 theme: document.getElementById('set-theme').value
             });

@@ -183,22 +183,8 @@ namespace WindowsAutoPowerManager.Lang
                 ModalTitleEditAction = "Редактировать действие",
                 MainButtonEditAction = "Обновить действие",
 
-                // Bluetooth
-                MainCboxTriggerTypeItemBluetoothNotReachable = "Bluetooth-блокировка",
-                BluetoothScanButton = "Поиск устройств",
-                BluetoothScanning = "Поиск...",
-                BluetoothNoDeviceFound = "Устройства не найдены",
-                BluetoothSelectDevice = "Выберите устройство",
-                BluetoothNotAvailable = "Bluetooth недоступен",
-                BluetoothSearchingDevices = "Поиск Bluetooth-устройств",
-                BluetoothDeviceLabel = "Устройство",
-                SettingsFormLabelBluetoothThreshold = "Порог Bluetooth (сек)",
-                SettingsFormLabelBluetoothRssiThreshold = "Порог сигнала Bluetooth (дБм)",
-
                 // Settings tooltips
                 TooltipCountdownSeconds = "Сколько времени показывается предупреждение перед действием.\nРекомендуется: 5-10 секунд.\nПодробнее на странице Справка.",
-                TooltipBluetoothThreshold = "Время ожидания после потери устройства перед выполнением действия.\nРекомендуется: 5-15 секунд.\nПодробнее на странице Справка.",
-                TooltipBluetoothRssi = "Минимальная сила сигнала для определения устройства как подключённого.\n0 = отключает проверку.\nРекомендуется: от -70 до -50.\nПодробнее на странице Справка.",
 
                 // Action toggle
                 ActionStart = "Запустить задачу",
