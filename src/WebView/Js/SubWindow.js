@@ -77,7 +77,7 @@
 
     function getLoadingText() {
         var L = Bridge.lang.bind(Bridge);
-        return L('CommonLoading') || 'Yükleniyor...';
+        return L('CommonLoading') || 'Loading...';
     }
 
     function applyLanguage() {

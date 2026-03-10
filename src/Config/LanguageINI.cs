@@ -199,5 +199,122 @@
         public string ActionStart { get; set; }
         public string ActionStop { get; set; }
 
+        // Countdown
+        public string CountdownPreparingText { get; set; }
+        public string CountdownInfoText { get; set; }
+
+        // Help page UI
+        public string HelpSearchPlaceholder { get; set; }
+        public string HelpTocTitle { get; set; }
+        public string HelpNoResult { get; set; }
+        public string HelpPrevPage { get; set; }
+        public string HelpNextPage { get; set; }
+        public string HelpSearchResultsTitle { get; set; }
+        public string HelpSearchResultCount { get; set; }
+
+        // Help Ch1 - Quick Start
+        public string HelpCh1Title { get; set; }
+        public string HelpCh1Intro { get; set; }
+        public string HelpCh1Step1 { get; set; }
+        public string HelpCh1Step2 { get; set; }
+        public string HelpCh1Step3 { get; set; }
+        public string HelpCh1Step4 { get; set; }
+        public string HelpCh1Step5 { get; set; }
+        public string HelpCh1Tip { get; set; }
+        public string HelpCh1Tip2 { get; set; }
+
+        // Help Ch2 - Action Types
+        public string HelpCh2Title { get; set; }
+        public string HelpCh2Intro { get; set; }
+        public string HelpCh2ShutdownTitle { get; set; }
+        public string HelpCh2Shutdown { get; set; }
+        public string HelpCh2RestartTitle { get; set; }
+        public string HelpCh2Restart { get; set; }
+        public string HelpCh2SleepTitle { get; set; }
+        public string HelpCh2Sleep { get; set; }
+        public string HelpCh2LockTitle { get; set; }
+        public string HelpCh2Lock { get; set; }
+        public string HelpCh2MonitorTitle { get; set; }
+        public string HelpCh2Monitor { get; set; }
+        public string HelpCh2LogoffTitle { get; set; }
+        public string HelpCh2Logoff { get; set; }
+
+        // Help Ch3 - Triggers
+        public string HelpCh3Title { get; set; }
+        public string HelpCh3Intro { get; set; }
+        public string HelpCh3Sub1 { get; set; }
+        public string HelpCh3Sub1Desc { get; set; }
+        public string HelpCh3Sub1Detail { get; set; }
+        public string HelpCh3Sub1Example { get; set; }
+        public string HelpCh3Sub2 { get; set; }
+        public string HelpCh3Sub2Desc { get; set; }
+        public string HelpCh3Sub2Detail { get; set; }
+        public string HelpCh3Sub2Example { get; set; }
+        public string HelpCh3Sub2Warn { get; set; }
+        public string HelpCh3Sub3 { get; set; }
+        public string HelpCh3Sub3Desc { get; set; }
+        public string HelpCh3Sub3Detail { get; set; }
+        public string HelpCh3Sub3Example { get; set; }
+
+        // Help Ch5 - Settings
+        public string HelpCh5Title { get; set; }
+        public string HelpCh5Intro { get; set; }
+        public string HelpCh5ThemeTitle { get; set; }
+        public string HelpCh5Theme { get; set; }
+        public string HelpCh5LangTitle { get; set; }
+        public string HelpCh5Lang { get; set; }
+        public string HelpCh5LogsTitle { get; set; }
+        public string HelpCh5Logs { get; set; }
+        public string HelpCh5StartupTitle { get; set; }
+        public string HelpCh5Startup { get; set; }
+        public string HelpCh5TaskbarTitle { get; set; }
+        public string HelpCh5Taskbar { get; set; }
+        public string HelpCh5CountdownTitle { get; set; }
+        public string HelpCh5Countdown { get; set; }
+        public string HelpCh5CountdownSecTitle { get; set; }
+        public string HelpCh5CountdownSec { get; set; }
+        public string HelpCh5ImportTitle { get; set; }
+        public string HelpCh5Import { get; set; }
+
+        // Help Ch6 - Menus and Toolbar
+        public string HelpCh6Title { get; set; }
+        public string HelpCh6Intro { get; set; }
+        public string HelpCh6Sub1 { get; set; }
+        public string HelpCh6Toolbar1 { get; set; }
+        public string HelpCh6Toolbar2 { get; set; }
+        public string HelpCh6Toolbar3 { get; set; }
+        public string HelpCh6Toolbar4 { get; set; }
+        public string HelpCh6Sub2 { get; set; }
+        public string HelpCh6Menu1 { get; set; }
+        public string HelpCh6Sub3 { get; set; }
+        public string HelpCh6Menu2 { get; set; }
+        public string HelpCh6Sub4 { get; set; }
+        public string HelpCh6Menu3 { get; set; }
+        public string HelpCh6Sub5 { get; set; }
+        public string HelpCh6Menu4 { get; set; }
+
+        // Help Ch7 - Logs
+        public string HelpCh7Title { get; set; }
+        public string HelpCh7Intro { get; set; }
+        public string HelpCh7Desc1 { get; set; }
+        public string HelpCh7FilterTitle { get; set; }
+        public string HelpCh7Desc2 { get; set; }
+        public string HelpCh7Desc3 { get; set; }
+
+        // Help Ch8 - Tips & FAQ
+        public string HelpCh8Title { get; set; }
+        public string HelpCh8Tip1 { get; set; }
+        public string HelpCh8Tip2 { get; set; }
+        public string HelpCh8Tip3 { get; set; }
+        public string HelpCh8Tip4 { get; set; }
+        public string HelpCh8Tip6 { get; set; }
+        public string HelpCh8Tip7 { get; set; }
+        public string HelpCh8Faq1Q { get; set; }
+        public string HelpCh8Faq1A { get; set; }
+        public string HelpCh8Faq2Q { get; set; }
+        public string HelpCh8Faq2A { get; set; }
+        public string HelpCh8Faq3Q { get; set; }
+        public string HelpCh8Faq3A { get; set; }
+
     }
 }

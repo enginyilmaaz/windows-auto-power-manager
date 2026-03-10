@@ -261,7 +261,7 @@ const App = {
 
     _getLoadingText() {
         var L = Bridge.lang.bind(Bridge);
-        return L('CommonLoading') || 'Yükleniyor...';
+        return L('CommonLoading') || 'Loading...';
     },
 
     _showPageLoading() {

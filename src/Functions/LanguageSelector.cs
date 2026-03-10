@@ -11,7 +11,7 @@ namespace WindowsAutoPowerManager.Functions
     internal class LanguageSelector
 
     {
-        private static readonly string[] SupportedLanguageOrder = { "en", "tr", "it", "de", "fr", "ru" };
+        private static readonly string[] SupportedLanguageOrder = { "en", "tr", "it", "de", "fr", "ru", "es", "ja", "ko", "zh", "hi", "pt", "ar", "id" };
         private static readonly HashSet<string> SupportedLanguages = new HashSet<string>(SupportedLanguageOrder, StringComparer.Ordinal);
         private static readonly Dictionary<string, Lazy<Language>> LanguageCache = new Dictionary<string, Lazy<Language>>(StringComparer.Ordinal)
         {
@@ -20,7 +20,15 @@ namespace WindowsAutoPowerManager.Functions
             ["it"] = new Lazy<Language>(Italian.LangItalian, LazyThreadSafetyMode.ExecutionAndPublication),
             ["de"] = new Lazy<Language>(German.LangGerman, LazyThreadSafetyMode.ExecutionAndPublication),
             ["fr"] = new Lazy<Language>(French.LangFrench, LazyThreadSafetyMode.ExecutionAndPublication),
-            ["ru"] = new Lazy<Language>(Russian.LangRussian, LazyThreadSafetyMode.ExecutionAndPublication)
+            ["ru"] = new Lazy<Language>(Russian.LangRussian, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["es"] = new Lazy<Language>(Spanish.LangSpanish, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["ja"] = new Lazy<Language>(Japanese.LangJapanese, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["ko"] = new Lazy<Language>(Korean.LangKorean, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["zh"] = new Lazy<Language>(Chinese.LangChinese, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["hi"] = new Lazy<Language>(Hindi.LangHindi, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["pt"] = new Lazy<Language>(Portuguese.LangPortuguese, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["ar"] = new Lazy<Language>(Arabic.LangArabic, LazyThreadSafetyMode.ExecutionAndPublication),
+            ["id"] = new Lazy<Language>(Indonesian.LangIndonesian, LazyThreadSafetyMode.ExecutionAndPublication)
         };
 
         private static readonly object LangFileEnsureSyncRoot = new object();
