@@ -48,74 +48,62 @@ jobs:
         run: |
           $commitHash = git rev-parse --short=6 HEAD
           echo "commit_short=$commitHash" >> $env:GITHUB_OUTPUT
-          $commitCount = git rev-list --count HEAD
-          if (-not $commitCount) { $commitCount = "${{ github.run_number }}" }
 
-          $resolvedVersion = ""
-          if ("${{ github.ref_name }}" -eq "master") {
-            git fetch --tags --force
+          git fetch --tags --force
 
-            $semverTags = git tag -l "v*" |
-              Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
-              Sort-Object { [version]($_ -replace '^v', '') } -Descending
+          $semverTags = git tag -l "v*" |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } |
+            Sort-Object { [version]($_ -replace '^v', '') } -Descending
 
-            $latestTag = $semverTags | Select-Object -First 1
-            if ($latestTag) {
-              $ver = $latestTag -replace '^v', ''
-              $parts = $ver.Split('.')
-              $major = [int]$parts[0]
-              $minor = [int]$parts[1]
-              $patch = [int]$parts[2] + 1
-            } else {
-              $major = 1
-              $minor = 0
-              $patch = 1
-            }
-
-            function Test-VersionExists([string]$version) {
-              $tag = "v$version"
-
-              $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
-              if (-not [string]::IsNullOrWhiteSpace($remoteTag)) {
-                return $true
-              }
-
-              $repo = "${{ github.repository }}"
-              $url = "https://api.github.com/repos/$repo/releases/tags/$tag"
-              $headers = @{
-                Authorization = "Bearer $env:GITHUB_TOKEN"
-                Accept = "application/vnd.github+json"
-                "X-GitHub-Api-Version" = "2022-11-28"
-              }
-
-              try {
-                Invoke-RestMethod -Method Get -Uri $url -Headers $headers -ErrorAction Stop | Out-Null
-                return $true
-              } catch {
-                return $false
-              }
-            }
-
-            $newVersion = "$major.$minor.$patch"
-            while (Test-VersionExists $newVersion) {
-              $patch = $patch + 1
-              $newVersion = "$major.$minor.$patch"
-            }
-
-            $resolvedVersion = $newVersion
-            echo "is_release=true" >> $env:GITHUB_OUTPUT
+          $latestTag = $semverTags | Select-Object -First 1
+          if ($latestTag) {
+            $ver = $latestTag -replace '^v', ''
+            $parts = $ver.Split('.')
+            $major = [int]$parts[0]
+            $minor = [int]$parts[1]
+            $patch = [int]$parts[2] + 1
           } else {
-            $resolvedVersion = "1.0.$commitCount"
-            echo "is_release=false" >> $env:GITHUB_OUTPUT
+            $major = 1
+            $minor = 0
+            $patch = 1
           }
 
-          $epoch = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
-          $assemblyVersion = "1.0.$([int64]($epoch / 65536)).$([int64]($epoch % 65536))"
+          function Test-VersionExists([string]$version) {
+            $tag = "v$version"
 
-          echo "version=$resolvedVersion" >> $env:GITHUB_OUTPUT
+            $remoteTag = git ls-remote --tags origin "refs/tags/$tag"
+            if (-not [string]::IsNullOrWhiteSpace($remoteTag)) {
+              return $true
+            }
+
+            $repo = "${{ github.repository }}"
+            $url = "https://api.github.com/repos/$repo/releases/tags/$tag"
+            $headers = @{
+              Authorization = "Bearer $env:GITHUB_TOKEN"
+              Accept = "application/vnd.github+json"
+              "X-GitHub-Api-Version" = "2022-11-28"
+            }
+
+            try {
+              Invoke-RestMethod -Method Get -Uri $url -Headers $headers -ErrorAction Stop | Out-Null
+              return $true
+            } catch {
+              return $false
+            }
+          }
+
+          $newVersion = "$major.$minor.$patch"
+          while (Test-VersionExists $newVersion) {
+            $patch = $patch + 1
+            $newVersion = "$major.$minor.$patch"
+          }
+
+          $assemblyVersion = "$newVersion.0"
+
+          echo "version=$newVersion" >> $env:GITHUB_OUTPUT
           echo "assembly_version=$assemblyVersion" >> $env:GITHUB_OUTPUT
 
-          $setupName = "WindowsAutoPowerManager_Setup_${resolvedVersion}_$commitHash"
+          $setupName = "WindowsAutoPowerManager_Setup_${newVersion}_$commitHash"
           echo "setup_name=$setupName" >> $env:GITHUB_OUTPUT
 
       - name: Build Release
