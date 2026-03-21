@@ -1409,6 +1409,12 @@ body.subwindow-host .card {
     margin-bottom: 14px;
 }
 
+.about-app-icon {
+    width: 128px;
+    height: 128px;
+    margin-bottom: 14px;
+}
+
 .about-row {
     display: flex;
     align-items: center;
