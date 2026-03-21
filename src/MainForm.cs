@@ -385,8 +385,8 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
-                appVersion = BuildInfo.Version,
-                buildId = BuildInfo.CommitId
+                appVersion = BuildMetadata.Version,
+                buildId = BuildMetadata.CommitId
             };
         }
 
@@ -1579,7 +1579,7 @@ namespace WindowsAutoPowerManager
             DateTime now = DateTime.Now;
 
             // Update time in UI
-            string timeText = (Language.MainStatusBarCurrentTime ?? "Time") + " : " + now + "  |  Build Id: " + BuildInfo.CommitId;
+            string timeText = (Language.MainStatusBarCurrentTime ?? "Time") + " : " + now + "  |  Build Id: " + BuildMetadata.CommitId;
             PostMessage("updateTime", timeText);
 
             // Check pause expiration

@@ -113,26 +113,31 @@ if (-not $SkipRestore) {
     Write-Host "  [OK] Packages restored." -ForegroundColor Green
 }
 
-# --- Step 4: Inject Build Info ---
-Write-Step "Injecting Build Info"
-$buildInfoFile = Join-Path $projectRoot "src/BuildInfo.cs"
-if (Test-Path $buildInfoFile) {
-    $commitHash = git -C $projectRoot rev-parse --short=6 HEAD 2>$null
-    if ($commitHash) {
-        $content = Get-Content $buildInfoFile -Raw
-        $updated = $content -replace 'public const string CommitId = "dev"', "public const string CommitId = ""$commitHash"""
-        Set-Content $buildInfoFile $updated -NoNewline
-        Write-Host "  [OK] CommitId set to: $commitHash" -ForegroundColor Green
-    } else {
-        Write-Host "  [SKIP] Git not available, keeping default CommitId." -ForegroundColor Yellow
-    }
-} else {
-    Write-Host "  [SKIP] BuildInfo.cs not found." -ForegroundColor Yellow
-}
+# --- Step 4: Build metadata (without mutating tracked files) ---
+Write-Step "Preparing Build Metadata"
+$epoch = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+$buildNumber = git -C $projectRoot rev-list --count HEAD 2>$null
+if (-not $buildNumber) { $buildNumber = [string]($epoch % 100000) }
+$displayVersion = "1.0.$buildNumber"
+$buildPart = [int64]($epoch / 65536)
+$revisionPart = [int64]($epoch % 65536)
+$assemblyVersion = "1.0.$buildPart.$revisionPart"
+$commitHash = git -C $projectRoot rev-parse --short=6 HEAD 2>$null
+if (-not $commitHash) { $commitHash = "local" }
+$infoVersion = "$displayVersion+$commitHash"
+Write-Host "  [OK] Display version : $displayVersion" -ForegroundColor Green
+Write-Host "  [OK] Assembly version: $assemblyVersion" -ForegroundColor Green
+Write-Host "  [OK] Commit hash     : $commitHash" -ForegroundColor Green
+Write-Host "  [OK] Info version    : $infoVersion" -ForegroundColor Green
 
 # --- Step 5: Build ---
 Write-Step "Building Solution ($Configuration)"
-& $dotnetCmd build "$solutionFile" -c $Configuration --no-restore
+& $dotnetCmd build "$solutionFile" -c $Configuration --no-restore `
+    "-p:AssemblyVersion=$assemblyVersion" `
+    "-p:FileVersion=$assemblyVersion" `
+    "-p:Version=$displayVersion" `
+    "-p:InformationalVersion=$infoVersion" `
+    -p:IncludeSourceRevisionInInformationalVersion=false
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "  [FAIL] Build failed!" -ForegroundColor Red
@@ -141,7 +146,14 @@ if ($LASTEXITCODE -ne 0) {
 
 # --- Step 6: Publish (Installer Output) ---
 Write-Step "Publishing win-x64 (ReadyToRun)"
-& $dotnetCmd publish "$projectFile" -c $Configuration -r win-x64 --self-contained false --no-restore -p:PublishReadyToRun=true -p:PublishSingleFile=false
+& $dotnetCmd publish "$projectFile" -c $Configuration -r win-x64 --self-contained false --no-restore `
+    "-p:AssemblyVersion=$assemblyVersion" `
+    "-p:FileVersion=$assemblyVersion" `
+    "-p:Version=$displayVersion" `
+    "-p:InformationalVersion=$infoVersion" `
+    -p:IncludeSourceRevisionInInformationalVersion=false `
+    -p:PublishReadyToRun=true `
+    -p:PublishSingleFile=false
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "  [FAIL] Publish (win-x64) failed!" -ForegroundColor Red
@@ -150,7 +162,14 @@ if ($LASTEXITCODE -ne 0) {
 
 # --- Step 7: Publish x86 (Win10 legacy compatibility) ---
 Write-Step "Publishing win-x86 (ReadyToRun)"
-& $dotnetCmd publish "$projectFile" -c $Configuration -r win-x86 --self-contained false --no-restore -p:PublishReadyToRun=true -p:PublishSingleFile=false
+& $dotnetCmd publish "$projectFile" -c $Configuration -r win-x86 --self-contained false --no-restore `
+    "-p:AssemblyVersion=$assemblyVersion" `
+    "-p:FileVersion=$assemblyVersion" `
+    "-p:Version=$displayVersion" `
+    "-p:InformationalVersion=$infoVersion" `
+    -p:IncludeSourceRevisionInInformationalVersion=false `
+    -p:PublishReadyToRun=true `
+    -p:PublishSingleFile=false
 if ($LASTEXITCODE -ne 0) {
     Write-Host ""
     Write-Host "  [FAIL] Publish (win-x86) failed!" -ForegroundColor Red
@@ -162,7 +181,9 @@ Write-Host ""
 Write-Host "============================================" -ForegroundColor Green
 Write-Host "  BUILD SUCCEEDED" -ForegroundColor Green
 Write-Host "============================================" -ForegroundColor Green
-Write-Host "  Build Output  : bin/$Configuration/net8.0-windows/" -ForegroundColor White
-Write-Host "  Publish Output: bin/$Configuration/net8.0-windows/win-x64/publish/" -ForegroundColor White
-Write-Host "  Publish Output: bin/$Configuration/net8.0-windows/win-x86/publish/" -ForegroundColor White
+Write-Host "  Display Version: $displayVersion" -ForegroundColor White
+Write-Host "  Commit Hash    : $commitHash" -ForegroundColor White
+Write-Host "  Build Output   : bin/$Configuration/net8.0-windows10.0.19041.0/" -ForegroundColor White
+Write-Host "  Publish Output : bin/$Configuration/net8.0-windows10.0.19041.0/win-x64/publish/" -ForegroundColor White
+Write-Host "  Publish Output : bin/$Configuration/net8.0-windows10.0.19041.0/win-x86/publish/" -ForegroundColor White
 Write-Host ""

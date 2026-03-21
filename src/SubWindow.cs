@@ -257,8 +257,8 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
-                appVersion = BuildInfo.Version,
-                buildId = BuildInfo.CommitId
+                appVersion = BuildMetadata.Version,
+                buildId = BuildMetadata.CommitId
             };
         }
 

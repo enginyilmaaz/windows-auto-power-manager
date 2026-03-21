@@ -48,7 +48,10 @@ jobs:
         run: |
           $commitHash = git rev-parse --short=6 HEAD
           echo "commit_short=$commitHash" >> $env:GITHUB_OUTPUT
+          $commitCount = git rev-list --count HEAD
+          if (-not $commitCount) { $commitCount = "${{ github.run_number }}" }
 
+          $resolvedVersion = ""
           if ("${{ github.ref_name }}" -eq "master") {
             git fetch --tags --force
 
@@ -99,32 +102,29 @@ jobs:
               $newVersion = "$major.$minor.$patch"
             }
 
-            echo "version=$newVersion" >> $env:GITHUB_OUTPUT
+            $resolvedVersion = $newVersion
             echo "is_release=true" >> $env:GITHUB_OUTPUT
           } else {
-            echo "version=dev" >> $env:GITHUB_OUTPUT
+            $resolvedVersion = "1.0.$commitCount"
             echo "is_release=false" >> $env:GITHUB_OUTPUT
           }
 
-          $setupName = "WindowsAutoPowerManager_Setup_$( if ('${{ github.ref_name }}' -eq 'master') { $newVersion } else { 'dev' } )_$commitHash"
+          $epoch = [DateTimeOffset]::UtcNow.ToUnixTimeSeconds()
+          $assemblyVersion = "1.0.$([int64]($epoch / 65536)).$([int64]($epoch % 65536))"
+
+          echo "version=$resolvedVersion" >> $env:GITHUB_OUTPUT
+          echo "assembly_version=$assemblyVersion" >> $env:GITHUB_OUTPUT
+
+          $setupName = "WindowsAutoPowerManager_Setup_${resolvedVersion}_$commitHash"
           echo "setup_name=$setupName" >> $env:GITHUB_OUTPUT
 
-      - name: Inject Build Metadata
-        shell: pwsh
-        run: |
-          $file = "src/BuildInfo.cs"
-          $content = Get-Content $file -Raw
-          $content = $content -replace 'public const string Version = ".*?"', "public const string Version = ""${{ steps.version.outputs.version }}"""
-          $content = $content -replace 'public const string CommitId = ".*?"', "public const string CommitId = ""${{ steps.version.outputs.commit_short }}"""
-          Set-Content $file $content
-
       - name: Build Release
-        run: dotnet build "Windows Auto Power Manager.sln" -c Release --no-restore
+        run: dotnet build "Windows Auto Power Manager.sln" -c Release --no-restore -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:Version=${{ steps.version.outputs.version }} -p:InformationalVersion=${{ steps.version.outputs.version }}+${{ steps.version.outputs.commit_short }} -p:IncludeSourceRevisionInInformationalVersion=false
 
       - name: Publish Release (win-x64/win-x86)
         run: |
-          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x64 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
-          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x86 --self-contained false -p:PublishReadyToRun=true -p:PublishSingleFile=false
+          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x64 --self-contained false --no-restore -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:Version=${{ steps.version.outputs.version }} -p:InformationalVersion=${{ steps.version.outputs.version }}+${{ steps.version.outputs.commit_short }} -p:IncludeSourceRevisionInInformationalVersion=false -p:PublishReadyToRun=true -p:PublishSingleFile=false
+          dotnet publish "Windows Auto Power Manager.csproj" -c Release -r win-x86 --self-contained false --no-restore -p:AssemblyVersion=${{ steps.version.outputs.assembly_version }} -p:FileVersion=${{ steps.version.outputs.assembly_version }} -p:Version=${{ steps.version.outputs.version }} -p:InformationalVersion=${{ steps.version.outputs.version }}+${{ steps.version.outputs.commit_short }} -p:IncludeSourceRevisionInInformationalVersion=false -p:PublishReadyToRun=true -p:PublishSingleFile=false
 
       - name: Build Installer
         shell: pwsh

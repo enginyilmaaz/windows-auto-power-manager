@@ -4,7 +4,7 @@
 #  Uses local .NET 8 SDK from tools/dotnet/
 # =============================================
 
-set -e
+set -euo pipefail
 
 # --- Colors ---
 RED='\033[0;31m'
@@ -18,6 +18,7 @@ NC='\033[0m'
 TOOLS_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$TOOLS_DIR")"
 SOLUTION_FILE="$PROJECT_ROOT/Windows Auto Power Manager.sln"
+PROJECT_FILE="$PROJECT_ROOT/Windows Auto Power Manager.csproj"
 LOCAL_DOTNET="$TOOLS_DIR/dotnet/dotnet"
 
 # --- Defaults ---
@@ -126,29 +127,60 @@ if [ "$SKIP_RESTORE" = false ]; then
     echo -e "  ${GREEN}[OK] Packages restored.${NC}"
 fi
 
-# --- Step 4: Inject Build Info ---
-step "Injecting Build Info"
-BUILD_INFO_FILE="$PROJECT_ROOT/src/BuildInfo.cs"
-if [ -f "$BUILD_INFO_FILE" ]; then
-    COMMIT_HASH=$(git -C "$PROJECT_ROOT" rev-parse --short=6 HEAD 2>/dev/null || true)
-    if [ -n "$COMMIT_HASH" ]; then
-        sed -i "s/public const string CommitId = \"dev\"/public const string CommitId = \"$COMMIT_HASH\"/" "$BUILD_INFO_FILE"
-        echo -e "  ${GREEN}[OK] CommitId set to: $COMMIT_HASH${NC}"
-    else
-        echo -e "  ${YELLOW}[SKIP] Git not available, keeping default CommitId.${NC}"
-    fi
-else
-    echo -e "  ${YELLOW}[SKIP] BuildInfo.cs not found.${NC}"
-fi
+# --- Step 4: Build metadata (without mutating tracked files) ---
+step "Preparing Build Metadata"
+BUILD_EPOCH="$(date +%s)"
+BUILD_NUMBER="$(git -C "$PROJECT_ROOT" rev-list --count HEAD 2>/dev/null || echo "")"
+[[ -z "$BUILD_NUMBER" ]] && BUILD_NUMBER="$((BUILD_EPOCH % 100000))"
+DISPLAY_VERSION="1.0.$BUILD_NUMBER"
+ASSEMBLY_VERSION="1.0.$((BUILD_EPOCH / 65536)).$((BUILD_EPOCH % 65536))"
+COMMIT_HASH="$(git -C "$PROJECT_ROOT" rev-parse --short=6 HEAD 2>/dev/null || echo "")"
+[[ -z "$COMMIT_HASH" ]] && COMMIT_HASH="local"
+INFO_VERSION="$DISPLAY_VERSION+$COMMIT_HASH"
+echo -e "  ${GREEN}[OK]${NC} Display version : $DISPLAY_VERSION"
+echo -e "  ${GREEN}[OK]${NC} Assembly version: $ASSEMBLY_VERSION"
+echo -e "  ${GREEN}[OK]${NC} Commit hash     : $COMMIT_HASH"
+echo -e "  ${GREEN}[OK]${NC} Info version    : $INFO_VERSION"
 
 # --- Step 5: Build ---
 step "Building Solution ($CONFIGURATION)"
-"$DOTNET" build "$SOLUTION_FILE" -c "$CONFIGURATION" --no-restore
+"$DOTNET" build "$SOLUTION_FILE" -c "$CONFIGURATION" --no-restore \
+    -p:AssemblyVersion="$ASSEMBLY_VERSION" \
+    -p:FileVersion="$ASSEMBLY_VERSION" \
+    -p:Version="$DISPLAY_VERSION" \
+    -p:InformationalVersion="$INFO_VERSION" \
+    -p:IncludeSourceRevisionInInformationalVersion=false
+
+# --- Step 6: Publish (Installer Output) ---
+step "Publishing win-x64 (ReadyToRun)"
+"$DOTNET" publish "$PROJECT_FILE" -c "$CONFIGURATION" -r win-x64 --self-contained false --no-restore \
+    -p:AssemblyVersion="$ASSEMBLY_VERSION" \
+    -p:FileVersion="$ASSEMBLY_VERSION" \
+    -p:Version="$DISPLAY_VERSION" \
+    -p:InformationalVersion="$INFO_VERSION" \
+    -p:IncludeSourceRevisionInInformationalVersion=false \
+    -p:PublishReadyToRun=true \
+    -p:PublishSingleFile=false
+
+# --- Step 7: Publish x86 (Win10 legacy compatibility) ---
+step "Publishing win-x86 (ReadyToRun)"
+"$DOTNET" publish "$PROJECT_FILE" -c "$CONFIGURATION" -r win-x86 --self-contained false --no-restore \
+    -p:AssemblyVersion="$ASSEMBLY_VERSION" \
+    -p:FileVersion="$ASSEMBLY_VERSION" \
+    -p:Version="$DISPLAY_VERSION" \
+    -p:InformationalVersion="$INFO_VERSION" \
+    -p:IncludeSourceRevisionInInformationalVersion=false \
+    -p:PublishReadyToRun=true \
+    -p:PublishSingleFile=false
 
 # --- Done ---
 echo ""
 echo -e "${GREEN}============================================${NC}"
 echo -e "${GREEN}  BUILD SUCCEEDED${NC}"
 echo -e "${GREEN}============================================${NC}"
-echo -e "${WHITE}  Output: bin/$CONFIGURATION/net8.0-windows/${NC}"
+echo -e "${WHITE}  Display Version: $DISPLAY_VERSION${NC}"
+echo -e "${WHITE}  Commit Hash    : $COMMIT_HASH${NC}"
+echo -e "${WHITE}  Build Output   : bin/$CONFIGURATION/net8.0-windows10.0.19041.0/${NC}"
+echo -e "${WHITE}  Publish Output : bin/$CONFIGURATION/net8.0-windows10.0.19041.0/win-x64/publish/${NC}"
+echo -e "${WHITE}  Publish Output : bin/$CONFIGURATION/net8.0-windows10.0.19041.0/win-x86/publish/${NC}"
 echo ""
