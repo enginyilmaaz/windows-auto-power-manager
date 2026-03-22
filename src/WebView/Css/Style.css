@@ -1334,8 +1334,11 @@ body.subwindow-host .card {
 }
 
 .settings-config-main:hover,
-.settings-config-toggle:hover,
-.settings-config-split.open .settings-config-main,
+.settings-config-toggle:hover {
+    background: var(--bg-btn-secondary-hover);
+    color: var(--text-primary);
+}
+
 .settings-config-split.open .settings-config-toggle {
     background: var(--bg-btn-secondary-hover);
     color: var(--text-primary);
@@ -1348,9 +1351,14 @@ body.subwindow-host .card {
     border-right: none;
 }
 
+.settings-config-split.open .settings-config-main {
+    background: var(--bg-btn-secondary);
+    color: var(--text-secondary);
+}
+
 .settings-config-toggle {
-    min-width: 40px;
-    width: 40px;
+    min-width: 36px;
+    width: 36px;
     padding: 0;
     border-radius: 0 8px 8px 0;
     justify-content: center;
@@ -1386,10 +1394,12 @@ body.subwindow-host .card {
     position: absolute;
     left: 0;
     right: auto;
-    bottom: calc(100% + 8px);
+    bottom: calc(100% - 1px);
     min-width: 180px;
     padding: 6px;
-    border-radius: 10px;
+    border-radius: 10px 10px 0 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
     border: 1px solid var(--border-input);
     background: var(--bg-panel);
     box-shadow: var(--shadow-ctx);
@@ -1397,6 +1407,8 @@ body.subwindow-host .card {
     display: flex;
     flex-direction: column;
     gap: 2px;
+    transform-origin: bottom left;
+    animation: slideDown 0.15s ease;
 }
 
 .settings-config-item {
@@ -1416,6 +1428,16 @@ body.subwindow-host .card {
 .settings-config-item:hover {
     background: var(--hover-white-subtle);
     color: var(--text-primary);
+}
+
+.settings-config-item:first-child {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.settings-config-item:last-child {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .settings-page-card {
