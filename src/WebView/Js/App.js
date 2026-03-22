@@ -33,12 +33,17 @@ const App = {
             }
         });
 
-        // Menu item clicks - open in separate window
+        // Menu item clicks
         document.querySelectorAll('.menu-item[data-page]').forEach(function (item) {
             item.addEventListener('click', function (e) {
                 e.preventDefault();
                 var page = this.getAttribute('data-page');
-                Bridge.send('openWindow', { page: page });
+                if (page === 'main') {
+                    self.navigate('main');
+                    self.openNewActionModal();
+                } else {
+                    Bridge.send('openWindow', { page: page });
+                }
                 overlay.classList.add('hidden');
             });
         });
@@ -187,6 +192,14 @@ const App = {
         // Listen for navigate messages from C# (tray icon)
         Bridge.on('navigate', function (page) {
             self.navigate(page);
+        });
+
+        // Open "New Action" modal from native events (tray/menu)
+        Bridge.on('openNewAction', function () {
+            overlay.classList.add('hidden');
+            self._closePauseDropdown();
+            self.navigate('main');
+            self.openNewActionModal();
         });
     },
 

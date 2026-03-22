@@ -207,13 +207,6 @@ namespace WindowsAutoPowerManager
             {
                 e.Cancel = true;
                 Hide();
-
-                var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
-                if (main != null && !main.Visible)
-                {
-                    main.ShowMain();
-                }
-
                 return;
             }
 

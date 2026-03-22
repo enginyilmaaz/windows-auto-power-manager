@@ -592,7 +592,14 @@ namespace WindowsAutoPowerManager
                     break;
                 case "openWindow":
                     string page = data.GetProperty("page").GetString();
-                    OpenSubWindow(page);
+                    if (page == "main")
+                    {
+                        ShowMainAndOpenNewActionModal();
+                    }
+                    else
+                    {
+                        OpenSubWindow(page);
+                    }
                     break;
                 case "openUrl":
                     string url = data.GetProperty("url").GetString();
@@ -1731,6 +1738,12 @@ namespace WindowsAutoPowerManager
             Activate();
         }
 
+        private void ShowMainAndOpenNewActionModal()
+        {
+            ShowMain();
+            PostMessage("openNewAction", new { });
+        }
+
         private void NotifyIconMain_MouseDoubleClick(object sender, MouseEventArgs e)
         {
             ShowMain();
@@ -1770,7 +1783,7 @@ namespace WindowsAutoPowerManager
 
         private void addNewActionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ShowMain();
+            ShowMainAndOpenNewActionModal();
         }
 
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)

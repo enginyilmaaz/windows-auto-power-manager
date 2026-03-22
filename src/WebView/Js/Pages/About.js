@@ -6,7 +6,7 @@ window.AboutPage = {
         var buildId = Bridge._settings.buildId || 'dev';
 
         return '' +
-        '<div class="card">' +
+        '<div class="card about-page-card">' +
             '<div class="card-title">' +
                 '<span class="mi">info</span>' +
                 (L('AboutMenuItem') || 'About') +
@@ -32,6 +32,9 @@ window.AboutPage = {
                     '<a class="about-link" id="about-github-link" href="#">github.com/enginyilmaaz</a>' +
                 '</div>' +
             '</div>' +
+            '<div class="about-actions">' +
+                '<button class="btn btn-secondary" id="about-close">' + (L('LogViewerFormButtonCancel') || L('SettingsFormButtonCancel') || 'Close') + '</button>' +
+            '</div>' +
         '</div>';
     },
 
@@ -41,6 +44,13 @@ window.AboutPage = {
             link.addEventListener('click', function (e) {
                 e.preventDefault();
                 Bridge.send('openUrl', { url: 'https://github.com/enginyilmaaz' });
+            });
+        }
+
+        var closeBtn = document.getElementById('about-close');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', function () {
+                Bridge.send('closeWindow', {});
             });
         }
     }

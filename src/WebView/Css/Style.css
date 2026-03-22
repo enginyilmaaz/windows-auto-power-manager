@@ -1387,14 +1387,16 @@ body.subwindow-host .logs-page-card #log-table-wrap {
 }
 
 body.subwindow-host .settings-page-card,
-body.subwindow-host .help-page-card {
+body.subwindow-host .help-page-card,
+body.subwindow-host .about-page-card {
     min-height: calc(100vh - 76px);
     margin-bottom: 0;
 }
 
 body.subwindow-host .logs-actions,
 body.subwindow-host .settings-actions,
-body.subwindow-host .help-page-nav {
+body.subwindow-host .help-page-nav,
+body.subwindow-host .about-actions {
     position: sticky;
     bottom: -18px;
     z-index: 12;
@@ -1413,6 +1415,12 @@ body.subwindow-host .logs-actions {
 }
 
 body.subwindow-host .settings-actions {
+    padding-top: 10px;
+    padding-bottom: 14px;
+    margin-top: auto;
+}
+
+body.subwindow-host .about-actions {
     padding-top: 10px;
     padding-bottom: 14px;
     margin-top: auto;
@@ -1451,6 +1459,11 @@ body.subwindow-host .settings-actions {
 }
 
 /* ─── About Page ─── */
+.about-page-card {
+    display: flex;
+    flex-direction: column;
+}
+
 .about-content {
     display: flex;
     flex-direction: column;
@@ -1508,6 +1521,12 @@ body.subwindow-host .settings-actions {
     height: 1px;
     background: var(--border-row);
     margin: 8px 0;
+}
+
+.about-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
 }
 
 /* ─── Help Page ─── */
