@@ -66,6 +66,8 @@ namespace WindowsAutoPowerManager
         public MainForm()
         {
             InitializeComponent();
+            // Keep main window at least its initial rendered size.
+            MinimumSize = Size;
             ApplyExecutableIcon();
 
             string[] args = Environment.GetCommandLineArgs();
@@ -1461,7 +1463,9 @@ namespace WindowsAutoPowerManager
 
             if (pageName == "help")
             {
-                win.ClientSize = new System.Drawing.Size(680, 640);
+                // Lock Help window to a layout that always keeps TOC + content side-by-side.
+                win.ClientSize = new System.Drawing.Size(1180, 700);
+                win.MinimumSize = new System.Drawing.Size(1180, 700);
             }
 
             _subWindows[pageName] = win;
