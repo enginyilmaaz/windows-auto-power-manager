@@ -1303,21 +1303,44 @@ body.subwindow-host .card {
     margin-top: 16px;
 }
 
+.settings-actions .btn {
+    height: 38px;
+}
+
 .settings-config-split {
     position: relative;
     display: inline-flex;
-    align-items: stretch;
+    align-items: center;
+    overflow: hidden;
+    border-radius: 8px;
+    border: 1px solid var(--border-input);
     gap: 0;
 }
 
-.settings-config-toggle {
-    padding-left: 10px;
-    padding-right: 10px;
-    min-width: 38px;
+.settings-config-main {
+    border-radius: 0;
+    border-right: 1px solid var(--border-input);
+    padding-right: 12px;
+    padding-left: 14px;
 }
 
-.settings-config-toggle .mi {
-    font-size: 18px;
+.settings-config-toggle {
+    padding-left: 0;
+    padding-right: 0;
+    min-width: 34px;
+    width: 34px;
+    border-radius: 0;
+    justify-content: center;
+}
+
+.settings-config-caret {
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text-muted);
+}
+
+.settings-config-toggle:hover .settings-config-caret {
+    color: var(--text-primary);
 }
 
 .settings-config-menu {

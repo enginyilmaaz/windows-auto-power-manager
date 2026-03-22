@@ -103,9 +103,9 @@ window.SettingsPage = {
 
             '<div class="settings-actions">' +
                 '<div class="settings-config-split" id="set-config-split">' +
-                    '<button class="btn btn-secondary" id="set-export-conf">' + exportLabel + '</button>' +
-                    '<button class="btn btn-secondary settings-config-toggle" id="set-config-toggle" aria-label="' + importLabel + '">' +
-                        '<span class="mi">expand_more</span>' +
+                    '<button class="btn btn-secondary settings-config-main" id="set-export-conf">' + exportLabel + '</button>' +
+                    '<button class="btn btn-secondary settings-config-toggle" id="set-config-toggle" aria-label="' + importLabel + '" title="' + importLabel + '">' +
+                        '<span class="settings-config-caret">▾</span>' +
                     '</button>' +
                     '<div class="settings-config-menu hidden" id="set-config-menu">' +
                         '<button class="settings-config-item" id="set-import-conf">' + importLabel + '</button>' +
