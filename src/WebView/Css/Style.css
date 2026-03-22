@@ -1317,6 +1317,11 @@ body.subwindow-host .card {
     display: inline-flex;
     align-items: stretch;
     flex: 0 0 auto;
+    z-index: 0;
+}
+
+.settings-config-split.open {
+    z-index: 2;
 }
 
 .settings-config-main,
@@ -1324,6 +1329,8 @@ body.subwindow-host .card {
     border: 1px solid var(--border-input);
     background: var(--bg-btn-secondary);
     color: var(--text-secondary);
+    position: relative;
+    z-index: 2;
 }
 
 .settings-config-main:hover,
@@ -1377,7 +1384,8 @@ body.subwindow-host .card {
 
 .settings-config-menu {
     position: absolute;
-    right: 0;
+    left: 0;
+    right: auto;
     bottom: calc(100% + 8px);
     min-width: 180px;
     padding: 6px;
@@ -1385,7 +1393,7 @@ body.subwindow-host .card {
     border: 1px solid var(--border-input);
     background: var(--bg-panel);
     box-shadow: var(--shadow-ctx);
-    z-index: 1200;
+    z-index: 1;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -2194,6 +2202,47 @@ body.subwindow-host .about-actions {
 }
 
 /* ─── Help Page Sticky Layout (SubWindow) ─── */
+body.subwindow-host.help-page-active #page-container {
+    overflow: hidden;
+}
+
+body.subwindow-host.help-page-active .help-page-card {
+    height: 100%;
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.subwindow-host.help-page-active .help-content {
+    flex: 1;
+    min-height: 0;
+    align-items: stretch;
+}
+
+body.subwindow-host.help-page-active .help-toc-sidebar {
+    position: relative;
+    top: auto;
+    height: 100%;
+    max-height: none;
+    flex: 0 0 240px;
+}
+
+body.subwindow-host.help-page-active .help-main {
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+    padding-bottom: 88px;
+}
+
+body.subwindow-host.help-page-active .help-main::-webkit-scrollbar {
+    width: 5px;
+}
+
+body.subwindow-host.help-page-active .help-main::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
+}
+
 body.subwindow-host .help-search-box {
     position: static;
     background: var(--bg-input);
@@ -2220,6 +2269,32 @@ body.subwindow-host #help-search-results::-webkit-scrollbar {
 body.subwindow-host #help-search-results::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 3px;
+}
+
+@media (max-width: 760px) {
+    body.subwindow-host.help-page-active #page-container {
+        overflow-y: auto;
+    }
+
+    body.subwindow-host.help-page-active .help-page-card {
+        height: auto;
+    }
+
+    body.subwindow-host.help-page-active .help-content {
+        min-height: auto;
+    }
+
+    body.subwindow-host.help-page-active .help-toc-sidebar {
+        flex: 0 0 auto;
+        height: auto;
+        max-height: 220px;
+    }
+
+    body.subwindow-host.help-page-active .help-main {
+        overflow: visible;
+        padding-right: 0;
+        padding-bottom: 88px;
+    }
 }
 
 /* ─── Modern Loading Spinner ─── */

@@ -284,6 +284,7 @@ window.HelpPage = {
         var indicator = document.getElementById('help-page-indicator');
         var searchInput = document.getElementById('help-search');
         var sidebar = document.getElementById('help-toc-sidebar');
+        var helpMain = document.querySelector('.help-main');
         var tocLinks = document.querySelectorAll('.help-toc-link[data-page]');
 
         var currentPage = 0;
@@ -312,8 +313,12 @@ window.HelpPage = {
             }
 
             // Scroll to top
-            var pageContainer = document.getElementById('page-container');
-            if (pageContainer) pageContainer.scrollTop = 0;
+            if (helpMain) {
+                helpMain.scrollTop = 0;
+            } else {
+                var pageContainer = document.getElementById('page-container');
+                if (pageContainer) pageContainer.scrollTop = 0;
+            }
         }
 
         function showSearchResults(query) {

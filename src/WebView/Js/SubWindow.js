@@ -80,6 +80,11 @@
         return L('CommonLoading') || 'Loading...';
     }
 
+    function syncPageLayoutClass() {
+        if (!document.body) return;
+        document.body.classList.toggle('help-page-active', pageName === 'help');
+    }
+
     function applyLanguage() {
         var L = Bridge.lang.bind(Bridge);
         var title = document.getElementById('header-title');
@@ -119,6 +124,7 @@
         var container = document.getElementById('page-container');
         if (!container) return;
 
+        syncPageLayoutClass();
         container.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><div class="loading-text">' + getLoadingText() + '</div></div>';
         container.scrollTop = 0;
         var token = ++navigationToken;
@@ -148,6 +154,7 @@
         if (!pageConfig[page]) return;
         disposePageHandlers(pageName);
         pageName = page;
+        syncPageLayoutClass();
         applyLanguage();
         renderPage();
     }
