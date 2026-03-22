@@ -2226,6 +2226,8 @@ body.subwindow-host .about-actions {
 /* ─── Help Page Sticky Layout (SubWindow) ─── */
 body.subwindow-host.help-page-active #page-container {
     overflow: hidden;
+    padding-bottom: 14px;
+    scroll-padding-bottom: 14px;
 }
 
 body.subwindow-host.help-page-active .help-page-card {
