@@ -256,9 +256,11 @@ window.HelpPage = {
             '<div class="help-content">' +
                 tocHtml +
                 '<div class="help-main">' +
-                    '<div id="help-search-results" style="display:none"></div>' +
-                    '<div id="help-chapter-view"></div>' +
-                    '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
+                    '<div class="help-main-scroll">' +
+                        '<div id="help-search-results" style="display:none"></div>' +
+                        '<div id="help-chapter-view"></div>' +
+                        '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
+                    '</div>' +
                     '<div class="help-page-nav" id="help-page-nav">' +
                         '<button class="help-page-nav-btn" id="help-prev"><span class="mi">navigate_before</span>' + t.prevPage + '</button>' +
                         '<span class="help-page-indicator" id="help-page-indicator"></span>' +
@@ -284,7 +286,7 @@ window.HelpPage = {
         var indicator = document.getElementById('help-page-indicator');
         var searchInput = document.getElementById('help-search');
         var sidebar = document.getElementById('help-toc-sidebar');
-        var helpMain = document.querySelector('.help-main');
+        var helpMainScroll = document.querySelector('.help-main-scroll');
         var tocLinks = document.querySelectorAll('.help-toc-link[data-page]');
 
         var currentPage = 0;
@@ -313,8 +315,8 @@ window.HelpPage = {
             }
 
             // Scroll to top
-            if (helpMain) {
-                helpMain.scrollTop = 0;
+            if (helpMainScroll) {
+                helpMainScroll.scrollTop = 0;
             } else {
                 var pageContainer = document.getElementById('page-container');
                 if (pageContainer) pageContainer.scrollTop = 0;

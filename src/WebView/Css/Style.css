@@ -1723,6 +1723,25 @@ body.subwindow-host .about-actions {
 .help-main {
     flex: 1;
     min-width: 0;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.help-main-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
+}
+
+.help-main-scroll::-webkit-scrollbar {
+    width: 5px;
+}
+
+.help-main-scroll::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb);
+    border-radius: 3px;
 }
 
 .help-intro {
@@ -2230,7 +2249,7 @@ body.subwindow-host.help-page-active #page-container {
 }
 
 body.subwindow-host.help-page-active .help-page-card {
-    height: calc(100% - 84px);
+    height: 100%;
     margin-bottom: 0;
     display: flex;
     flex-direction: column;
@@ -2252,18 +2271,14 @@ body.subwindow-host.help-page-active .help-toc-sidebar {
 
 body.subwindow-host.help-page-active .help-main {
     min-height: 0;
+    overflow: hidden;
+    padding-right: 0;
+    padding-bottom: 0;
+}
+
+body.subwindow-host.help-page-active .help-main-scroll {
     overflow-y: auto;
     padding-right: 4px;
-    padding-bottom: 14px;
-}
-
-body.subwindow-host.help-page-active .help-main::-webkit-scrollbar {
-    width: 5px;
-}
-
-body.subwindow-host.help-page-active .help-main::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 3px;
 }
 
 body.subwindow-host .help-search-box {
@@ -2288,20 +2303,6 @@ body.subwindow-host .help-page-nav {
     box-shadow: none;
 }
 
-body.subwindow-host #help-search-results {
-    overflow-y: auto;
-    max-height: calc(100vh - 180px);
-}
-
-body.subwindow-host #help-search-results::-webkit-scrollbar {
-    width: 5px;
-}
-
-body.subwindow-host #help-search-results::-webkit-scrollbar-thumb {
-    background: var(--scrollbar-thumb);
-    border-radius: 3px;
-}
-
 @media (max-width: 760px) {
     body.subwindow-host.help-page-active #page-container {
         overflow-y: auto;
@@ -2323,8 +2324,11 @@ body.subwindow-host #help-search-results::-webkit-scrollbar-thumb {
 
     body.subwindow-host.help-page-active .help-main {
         overflow: visible;
+    }
+
+    body.subwindow-host.help-page-active .help-main-scroll {
+        overflow: visible;
         padding-right: 0;
-        padding-bottom: 14px;
     }
 }
 
