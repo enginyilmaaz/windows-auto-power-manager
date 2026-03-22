@@ -1662,9 +1662,30 @@ body.subwindow-host .logs-actions {
     flex-shrink: 0;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 920px) {
+    .help-content {
+        gap: 10px;
+    }
+
+    .help-toc-sidebar {
+        width: 210px;
+        min-width: 210px;
+        max-height: calc(100vh - 200px);
+    }
+
+    .help-toc-link {
+        font-size: 11px;
+        padding: 6px 7px;
+    }
+}
+
+@media (max-width: 760px) {
     .help-content {
         flex-direction: column;
+    }
+
+    .help-main {
+        width: 100%;
     }
 
     .help-toc-sidebar {
@@ -1672,7 +1693,24 @@ body.subwindow-host .logs-actions {
         top: auto;
         width: 100%;
         min-width: 0;
-        max-height: 260px;
+        max-height: 220px;
+    }
+
+    .help-page-nav {
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .help-page-indicator {
+        width: 100%;
+        text-align: center;
+        order: 3;
+    }
+
+    .help-page-nav-btn {
+        flex: 1;
+        min-width: 120px;
+        justify-content: center;
     }
 }
 
