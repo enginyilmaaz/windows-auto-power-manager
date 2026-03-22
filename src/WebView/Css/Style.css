@@ -290,6 +290,10 @@ body {
     user-select: none;
 }
 
+.hidden {
+    display: none !important;
+}
+
 #app {
     display: flex;
     flex-direction: column;
@@ -1301,24 +1305,59 @@ body.subwindow-host .card {
     gap: 10px;
     justify-content: flex-end;
     margin-top: 16px;
+    overflow: visible;
 }
 
 .settings-actions .btn {
     height: 38px;
 }
 
-.settings-config-dropdown {
+.settings-config-split {
     position: relative;
     display: inline-flex;
+    align-items: stretch;
+    flex: 0 0 auto;
 }
 
-.settings-config-trigger {
+.settings-config-main,
+.settings-config-toggle {
     border: 1px solid var(--border-input);
-    border-radius: 8px;
-    padding: 0 12px 0 14px;
-    min-width: 132px;
-    justify-content: space-between;
-    gap: 8px;
+    background: var(--bg-btn-secondary);
+    color: var(--text-secondary);
+}
+
+.settings-config-main:hover,
+.settings-config-toggle:hover,
+.settings-config-split.open .settings-config-main,
+.settings-config-split.open .settings-config-toggle {
+    background: var(--bg-btn-secondary-hover);
+    color: var(--text-primary);
+}
+
+.settings-config-main {
+    min-width: 140px;
+    padding: 0 16px;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+}
+
+.settings-config-toggle {
+    min-width: 40px;
+    width: 40px;
+    padding: 0;
+    border-radius: 0 8px 8px 0;
+    justify-content: center;
+    position: relative;
+}
+
+.settings-config-toggle::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 7px;
+    bottom: 7px;
+    width: 1px;
+    background: var(--border-input);
 }
 
 .settings-config-trigger-label {
@@ -1331,31 +1370,35 @@ body.subwindow-host .card {
     color: var(--text-muted);
 }
 
-.settings-config-trigger:hover .settings-config-caret {
+.settings-config-toggle:hover .settings-config-caret,
+.settings-config-split.open .settings-config-caret {
     color: var(--text-primary);
 }
 
 .settings-config-menu {
     position: absolute;
     right: 0;
-    bottom: calc(100% + 6px);
-    min-width: 160px;
-    padding: 4px;
-    border-radius: 8px;
+    bottom: calc(100% + 8px);
+    min-width: 180px;
+    padding: 6px;
+    border-radius: 10px;
     border: 1px solid var(--border-input);
     background: var(--bg-panel);
     box-shadow: var(--shadow-ctx);
     z-index: 1200;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
 }
 
 .settings-config-item {
     width: 100%;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     background: transparent;
     color: var(--text-secondary);
     text-align: left;
-    padding: 8px 10px;
+    padding: 10px 12px;
     font-size: 13px;
     font-weight: 600;
     cursor: pointer;
@@ -1509,6 +1552,7 @@ body.subwindow-host .settings-actions {
     padding-top: 10px;
     padding-bottom: 14px;
     margin-top: 0;
+    overflow: visible;
 }
 
 body.subwindow-host .about-actions {
@@ -1528,6 +1572,26 @@ body.subwindow-host .about-actions {
 
     .logs-actions .btn {
         width: 100%;
+    }
+
+    .settings-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .settings-actions .btn,
+    .settings-config-split {
+        width: 100%;
+    }
+
+    .settings-config-main {
+        flex: 1;
+    }
+
+    .settings-config-menu {
+        left: 0;
+        right: 0;
+        min-width: 0;
     }
 }
 

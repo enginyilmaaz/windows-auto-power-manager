@@ -102,13 +102,14 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-actions">' +
-                '<div class="settings-config-dropdown" id="set-config-split">' +
-                    '<button class="btn btn-secondary settings-config-trigger" id="set-config-trigger" aria-label="' + exportLabel + '" aria-haspopup="true" aria-expanded="false">' +
+                '<div class="settings-config-split" id="set-config-split">' +
+                    '<button class="btn btn-secondary settings-config-main" id="set-export-conf" aria-label="' + exportLabel + '">' +
                         '<span class="settings-config-trigger-label">' + exportLabel + '</span>' +
+                    '</button>' +
+                    '<button class="btn btn-secondary settings-config-toggle" id="set-config-trigger" aria-label="' + ((L('SettingsFormButtonImportConfig') || 'Import') + ' / ' + exportLabel + ' options') + '" aria-haspopup="true" aria-expanded="false">' +
                         '<span class="settings-config-caret">▾</span>' +
                     '</button>' +
                     '<div class="settings-config-menu hidden" id="set-config-menu">' +
-                        '<button class="settings-config-item" id="set-export-conf">' + exportLabel + '</button>' +
                         '<button class="settings-config-item" id="set-import-conf">' + importLabel + '</button>' +
                     '</div>' +
                 '</div>' +
@@ -174,6 +175,9 @@ window.SettingsPage = {
             if (configMenuEl) {
                 configMenuEl.classList.add('hidden');
             }
+            if (configSplitEl) {
+                configSplitEl.classList.remove('open');
+            }
             if (configTriggerEl) {
                 configTriggerEl.setAttribute('aria-expanded', 'false');
             }
@@ -186,6 +190,9 @@ window.SettingsPage = {
                 if (!configMenuEl) return;
                 var willOpen = configMenuEl.classList.contains('hidden');
                 configMenuEl.classList.toggle('hidden');
+                if (configSplitEl) {
+                    configSplitEl.classList.toggle('open', willOpen);
+                }
                 configTriggerEl.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
             };
             configTriggerEl.addEventListener('click', onConfigToggleClick);
