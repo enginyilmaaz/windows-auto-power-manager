@@ -470,7 +470,8 @@ namespace WindowsAutoPowerManager
                     updatedAction,
                     MainForm.ActionList.Where((_, actionIndex) => actionIndex != index),
                     MainForm.Language,
-                    out string validationMessage))
+                    out string validationMessage,
+                    MainForm.ActionList[index].IsEnabled))
             {
                 PostMessage("showToast", new
                 {
@@ -590,7 +591,25 @@ namespace WindowsAutoPowerManager
             int index = data.GetProperty("index").GetInt32();
             if (index < 0 || index >= MainForm.ActionList.Count) return;
 
-            MainForm.ActionList[index].IsEnabled = !MainForm.ActionList[index].IsEnabled;
+            bool willEnable = !MainForm.ActionList[index].IsEnabled;
+            if (willEnable &&
+                !ActionValidation.TryValidateActionForAdd(
+                    MainForm.ActionList[index],
+                    MainForm.ActionList.Where((_, actionIndex) => actionIndex != index),
+                    MainForm.Language,
+                    out string validationMessage))
+            {
+                PostMessage("showToast", new
+                {
+                    title = MainForm.Language.MessageTitleWarn,
+                    message = validationMessage,
+                    type = "warn",
+                    duration = 3000
+                });
+                return;
+            }
+
+            MainForm.ActionList[index].IsEnabled = willEnable;
 
             var mainWindow = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
             if (mainWindow != null)

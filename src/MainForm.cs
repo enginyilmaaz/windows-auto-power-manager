@@ -41,8 +41,12 @@ namespace WindowsAutoPowerManager
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
         private bool _pendingOpenNewActionModal;
+        private uint? _lastObservedIdleTimeSec;
         private readonly Dictionary<string, ActionRuntimeState> _actionRuntimeStates =
             new Dictionary<string, ActionRuntimeState>();
+        private const int WM_POWERBROADCAST = 0x0218;
+        private const int PBT_APMRESUMESUSPEND = 0x0007;
+        private const int PBT_APMRESUMEAUTOMATIC = 0x0012;
 
         [Flags]
         private enum ActionExecutionResult
@@ -126,6 +130,20 @@ namespace WindowsAutoPowerManager
             base.OnLoad(e);
         }
 
+        protected override void WndProc(ref Message m)
+        {
+            if (m.Msg == WM_POWERBROADCAST)
+            {
+                int powerEvent = m.WParam.ToInt32();
+                if (powerEvent == PBT_APMRESUMESUSPEND || powerEvent == PBT_APMRESUMEAUTOMATIC)
+                {
+                    HandleSystemResume();
+                }
+            }
+
+            base.WndProc(ref m);
+        }
+
         public void DeleteExpriedAction()
         {
             bool changed = false;
@@ -196,9 +214,9 @@ namespace WindowsAutoPowerManager
             {
                 DetectScreen.ManuelLockingActionLogger();
                 ActionList = LoadActionList();
-                RebuildActionRuntimeStates();
-
                 DeleteExpriedAction();
+                ResolveConflictingEnabledActions();
+                RebuildActionRuntimeStates();
 
                 // Setup timer
                 Timer.Interval = 1000;
@@ -474,6 +492,47 @@ namespace WindowsAutoPowerManager
         private Settings LoadSettings()
         {
             return SettingsStorage.LoadOrDefault();
+        }
+
+        private void HandleSystemResume()
+        {
+            _lastObservedIdleTimeSec = null;
+            NotifySystem.ResetIdleNotifications();
+            _executedIdleActionKeys.Clear();
+            Actions.TurnOff.RecordSystemResume();
+        }
+
+        private void ResolveConflictingEnabledActions()
+        {
+            bool changed = false;
+            var acceptedEnabledActions = new List<ActionModel>();
+
+            for (int index = 0; index < ActionList.Count; ++index)
+            {
+                ActionModel action = ActionList[index];
+                if (action == null || !action.IsEnabled)
+                {
+                    continue;
+                }
+
+                if (ActionValidation.TryValidateActionForAdd(
+                        action,
+                        acceptedEnabledActions,
+                        Language,
+                        out _))
+                {
+                    acceptedEnabledActions.Add(action);
+                    continue;
+                }
+
+                action.IsEnabled = false;
+                changed = true;
+            }
+
+            if (changed)
+            {
+                WriteJsonToActionList();
+            }
         }
 
         public void UpdateCachedSettings(Settings settings)
@@ -794,7 +853,8 @@ namespace WindowsAutoPowerManager
                     updatedAction,
                     ActionList.Where((_, actionIndex) => actionIndex != index),
                     Language,
-                    out string validationMessage))
+                    out string validationMessage,
+                    ActionList[index].IsEnabled))
             {
                 PostMessage("showToast", new
                 {
@@ -826,10 +886,26 @@ namespace WindowsAutoPowerManager
             int index = data.GetProperty("index").GetInt32();
             if (index < 0 || index >= ActionList.Count) return;
 
-            ActionList[index].IsEnabled = !ActionList[index].IsEnabled;
+            bool willEnable = !ActionList[index].IsEnabled;
+            if (willEnable &&
+                !ActionValidation.TryValidateActionForAdd(
+                    ActionList[index],
+                    ActionList.Where((_, actionIndex) => actionIndex != index),
+                    Language,
+                    out string validationMessage))
+            {
+                PostMessage("showToast", new
+                {
+                    title = Language.MessageTitleWarn,
+                    message = validationMessage,
+                    type = "warn",
+                    duration = 3000
+                });
+                return;
+            }
+
+            ActionList[index].IsEnabled = willEnable;
             WriteJsonToActionList();
-            RebuildActionRuntimeStates();
-            RefreshActionsInUI();
         }
 
         private static bool TryCreateActionModel(JsonElement data, string createdDate, out ActionModel action)
@@ -1736,8 +1812,16 @@ namespace WindowsAutoPowerManager
             }
 
             uint idleTimeSec = SystemIdleDetector.GetLastInputTime();
+            bool hadRecentUserActivity = _lastObservedIdleTimeSec.HasValue &&
+                                         idleTimeSec < _lastObservedIdleTimeSec.Value;
+            _lastObservedIdleTimeSec = idleTimeSec;
 
-            if (idleTimeSec == 0)
+            if (hadRecentUserActivity)
+            {
+                Actions.TurnOff.RecordPotentialWakeInteraction();
+            }
+
+            if (idleTimeSec == 0 || hadRecentUserActivity)
             {
                 NotifySystem.ResetIdleNotifications();
                 _executedIdleActionKeys.Clear();

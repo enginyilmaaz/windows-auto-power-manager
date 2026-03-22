@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using System.Windows.Forms;
 
 namespace WindowsAutoPowerManager.Functions
 {
@@ -141,15 +142,20 @@ namespace WindowsAutoPowerManager.Functions
             [Flags]
             private enum SendMessageTimeoutFlags : uint
             {
-                AbortIfHung = 0x0002
+                Block = 0x0001,
+                AbortIfHung = 0x0002,
+                NoTimeoutIfNotHung = 0x0008
             }
 
             private const uint WM_SYSCOMMAND = 0x0112;
             private static readonly IntPtr SC_MONITORPOWER = new IntPtr(0xF170);
             private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xFFFF);
-            private const uint MonitorPowerCallTimeoutMs = 500;
-            private const long MonitorOffCooldownMs = 4000;
+            private const uint MonitorPowerCallTimeoutMs = 1500;
+            private const long MonitorOffCooldownMs = 8000;
+            private const long MonitorWakeGuardMs = 15000;
+            private const long MonitorWakeTrackingWindowMs = 30000;
             private static long _lastMonitorOffTick = -MonitorOffCooldownMs;
+            private static long _lastWakeInteractionTick = -MonitorWakeGuardMs;
 
             [DllImport("user32.dll", SetLastError = true)]
             private static extern IntPtr SendMessageTimeout(
@@ -161,35 +167,70 @@ namespace WindowsAutoPowerManager.Functions
                 uint uTimeout,
                 out IntPtr lpdwResult);
 
-            [DllImport("user32.dll", SetLastError = true)]
-            private static extern bool PostMessage(
-                IntPtr hWnd,
-                uint msg,
-                IntPtr wParam,
-                IntPtr lParam);
-
-            public static bool SetMonitorState(MonitorState state)
+            private static bool TrySendMonitorPowerMessage(IntPtr windowHandle, MonitorState state)
             {
+                if (windowHandle == IntPtr.Zero)
+                {
+                    return false;
+                }
+
                 IntPtr lResult;
                 IntPtr sendResult = SendMessageTimeout(
-                    HWND_BROADCAST,
+                    windowHandle,
                     WM_SYSCOMMAND,
                     SC_MONITORPOWER,
                     new IntPtr((int)state),
-                    SendMessageTimeoutFlags.AbortIfHung,
+                    SendMessageTimeoutFlags.Block |
+                    SendMessageTimeoutFlags.AbortIfHung |
+                    SendMessageTimeoutFlags.NoTimeoutIfNotHung,
                     MonitorPowerCallTimeoutMs,
                     out lResult);
 
-                if (sendResult != IntPtr.Zero)
+                return sendResult != IntPtr.Zero;
+            }
+
+            public static bool SetMonitorState(MonitorState state)
+            {
+                if (TrySendMonitorPowerMessage(HWND_BROADCAST, state))
                 {
                     return true;
                 }
 
-                // Fallback for systems where broadcast send blocks or fails.
-                return PostMessage(HWND_BROADCAST, WM_SYSCOMMAND, SC_MONITORPOWER, new IntPtr((int)state));
+                foreach (Form form in Application.OpenForms)
+                {
+                    if (form == null || !form.IsHandleCreated)
+                    {
+                        continue;
+                    }
+
+                    if (TrySendMonitorPowerMessage(form.Handle, state))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
             }
 
-            private static bool IsMonitorOffInCooldown()
+            public static void RecordPotentialWakeInteraction()
+            {
+                long nowTick = Environment.TickCount64;
+                long lastMonitorOffTick = Interlocked.Read(ref _lastMonitorOffTick);
+
+                if (nowTick - lastMonitorOffTick > MonitorWakeTrackingWindowMs)
+                {
+                    return;
+                }
+
+                Interlocked.Exchange(ref _lastWakeInteractionTick, nowTick);
+            }
+
+            public static void RecordSystemResume()
+            {
+                Interlocked.Exchange(ref _lastWakeInteractionTick, Environment.TickCount64);
+            }
+
+            private static bool IsMonitorOffSuppressed()
             {
                 long nowTick = Environment.TickCount64;
                 long lastTick = Interlocked.Read(ref _lastMonitorOffTick);
@@ -199,19 +240,26 @@ namespace WindowsAutoPowerManager.Functions
                     return true;
                 }
 
-                Interlocked.Exchange(ref _lastMonitorOffTick, nowTick);
-                return false;
+                long lastWakeInteractionTick = Interlocked.Read(ref _lastWakeInteractionTick);
+                return nowTick - lastWakeInteractionTick < MonitorWakeGuardMs;
             }
 
             public static void Monitor()
             {
-                if (IsMonitorOffInCooldown())
+                if (IsMonitorOffSuppressed())
                 {
                     return;
                 }
 
+                if (!SetMonitorState(MonitorState.OFF))
+                {
+                    return;
+                }
+
+                long nowTick = Environment.TickCount64;
+                Interlocked.Exchange(ref _lastWakeInteractionTick, -MonitorWakeGuardMs);
+                Interlocked.Exchange(ref _lastMonitorOffTick, nowTick);
                 Logger.DoLog(Config.ActionTypes.TurnOffMonitor);
-                SetMonitorState(MonitorState.OFF);
             }
         }
 
