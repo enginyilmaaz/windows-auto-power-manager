@@ -1657,6 +1657,11 @@ body.subwindow-host .about-actions {
     transition: border-color 0.2s;
 }
 
+.help-toc-search-box {
+    margin-bottom: 12px;
+    flex-shrink: 0;
+}
+
 .help-search-box:focus-within {
     border-color: var(--accent-blue);
     box-shadow: 0 0 0 2px var(--accent-blue-shadow);
@@ -1694,7 +1699,7 @@ body.subwindow-host .about-actions {
     background: var(--bg-panel);
     border: 1px solid var(--border-main);
     border-radius: 10px;
-    overflow-y: auto;
+    overflow: hidden;
     padding: 12px;
     display: flex;
     flex-direction: column;
@@ -1704,11 +1709,11 @@ body.subwindow-host .about-actions {
     transform: none;
 }
 
-.help-toc-sidebar::-webkit-scrollbar {
+.help-toc-list::-webkit-scrollbar {
     width: 4px;
 }
 
-.help-toc-sidebar::-webkit-scrollbar-thumb {
+.help-toc-list::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb);
     border-radius: 2px;
 }
@@ -1734,6 +1739,9 @@ body.subwindow-host .about-actions {
     padding: 0;
     margin: 0;
     flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 2px;
 }
 
 .help-toc-list li {
@@ -2108,12 +2116,10 @@ body.subwindow-host .about-actions {
 
 /* ─── Help Page Sticky Layout (SubWindow) ─── */
 body.subwindow-host .help-search-box {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background: var(--bg-card);
-    padding-top: 10px;
-    padding-bottom: 10px;
+    position: static;
+    background: var(--bg-input);
+    padding-top: 0;
+    padding-bottom: 0;
     margin-bottom: 12px;
 }
 

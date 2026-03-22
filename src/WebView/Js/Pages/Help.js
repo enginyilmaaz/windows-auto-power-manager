@@ -231,6 +231,10 @@ window.HelpPage = {
 
         // TOC sidebar (always visible)
         var tocHtml = '<div class="help-toc-sidebar" id="help-toc-sidebar">' +
+            '<div class="help-search-box help-toc-search-box">' +
+                '<span class="mi">search</span>' +
+                '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
+            '</div>' +
             '<div class="help-toc-header">' +
                 '<span class="help-toc-title">' + t.tocTitle + '</span>' +
             '</div>' +
@@ -248,10 +252,6 @@ window.HelpPage = {
             '<div class="card-title">' +
                 '<span class="mi">help</span>' +
                 (L('HelpMenuItem') || 'Help') +
-            '</div>' +
-            '<div class="help-search-box">' +
-                '<span class="mi">search</span>' +
-                '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
             '</div>' +
             '<div class="help-content">' +
                 tocHtml +
