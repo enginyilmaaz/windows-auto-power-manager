@@ -66,8 +66,13 @@ namespace WindowsAutoPowerManager
         public MainForm()
         {
             InitializeComponent();
-            // Keep main window at least its initial rendered size.
-            MinimumSize = Size;
+            // Main window: widen by 30px, then lock resize (min=max) and disable maximize.
+            var lockedMainSize = new System.Drawing.Size(Size.Width + 30, Size.Height);
+            Size = lockedMainSize;
+            MinimumSize = lockedMainSize;
+            MaximumSize = lockedMainSize;
+            FormBorderStyle = FormBorderStyle.FixedSingle;
+            MaximizeBox = false;
             ApplyExecutableIcon();
 
             string[] args = Environment.GetCommandLineArgs();
@@ -1477,13 +1482,32 @@ namespace WindowsAutoPowerManager
             }
 
             var win = new SubWindow(pageName, GetSubWindowTitle(pageName));
+            win.FormBorderStyle = FormBorderStyle.FixedSingle;
+            win.MaximizeBox = false;
 
-            if (pageName == "help")
+            System.Drawing.Size targetClientSize;
+            switch (pageName)
             {
-                // Lock Help window to a layout that always keeps TOC + content side-by-side.
-                win.ClientSize = new System.Drawing.Size(1180, 700);
-                win.MinimumSize = new System.Drawing.Size(1180, 700);
+                case "help":
+                    // Keep help layout always side-by-side.
+                    targetClientSize = new System.Drawing.Size(1180, 700);
+                    break;
+                case "settings":
+                    targetClientSize = new System.Drawing.Size(610, 520);
+                    break;
+                case "logs":
+                case "about":
+                    // Requested: +30px width, -50px height from previous default (580x520).
+                    targetClientSize = new System.Drawing.Size(610, 470);
+                    break;
+                default:
+                    targetClientSize = win.ClientSize;
+                    break;
             }
+
+            win.ClientSize = targetClientSize;
+            win.MinimumSize = targetClientSize;
+            win.MaximumSize = targetClientSize;
 
             _subWindows[pageName] = win;
 

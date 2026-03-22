@@ -113,6 +113,9 @@ if (window.chrome && window.chrome.webview) {
             case 'navigate':
                 Bridge._emit('navigate', msg.data);
                 break;
+            case 'openNewAction':
+                Bridge._emit('openNewAction', msg.data);
+                break;
             case 'pauseStatus':
                 Bridge._isPaused = msg.data.isPaused;
                 Bridge._pauseRemainingSeconds = msg.data.remainingSeconds || 0;

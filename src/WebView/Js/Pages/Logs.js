@@ -81,7 +81,9 @@ window.LogsPage = {
                 '</div>' +
                 '<div id="log-result-meta" class="logs-result-meta"></div>' +
             '</div>' +
-            '<div id="log-table-wrap"></div>' +
+            '<div class="logs-table-card">' +
+                '<div id="log-table-wrap"></div>' +
+            '</div>' +
             '<div class="logs-actions">' +
                 '<button class="btn btn-danger" id="log-clear">' + (L('LogViewerFormButtonClearLogs') || 'Clear Logs') + '</button>' +
                 '<button class="btn btn-secondary" id="log-back">' + (L('LogViewerFormButtonCancel') || 'Back') + '</button>' +

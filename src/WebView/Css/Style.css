@@ -1311,6 +1311,13 @@ body.subwindow-host .card {
     min-height: 0;
 }
 
+.logs-table-card {
+    border: 1px solid var(--border-row);
+    background: var(--bg-panel);
+    border-radius: 10px;
+    padding: 10px;
+}
+
 .logs-filter-panel {
     border: none;
     background: transparent;
@@ -1388,6 +1395,13 @@ body.subwindow-host .logs-page-card {
 
 body.subwindow-host .logs-page-card #log-table-wrap {
     flex: 1;
+}
+
+body.subwindow-host .logs-page-card .logs-table-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-height: 0;
 }
 
 body.subwindow-host .settings-page-card,
@@ -1484,8 +1498,8 @@ body.subwindow-host .about-actions {
 }
 
 .about-app-icon {
-    width: 128px;
-    height: 128px;
+    width: 100px;
+    height: 100px;
     margin-bottom: 14px;
 }
 
