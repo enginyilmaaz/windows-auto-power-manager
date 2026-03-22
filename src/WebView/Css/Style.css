@@ -1458,8 +1458,13 @@ body.subwindow-host .card {
 /* ─── Help Page ─── */
 .help-content {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.help-main {
+    flex: 1;
+    min-width: 0;
 }
 
 .help-intro {
@@ -1527,55 +1532,25 @@ body.subwindow-host .card {
     color: var(--text-hint);
 }
 
-/* ─── TOC Sidebar (Right, Collapsible) ─── */
-.help-toc-toggle {
-    position: fixed;
-    right: 16px;
-    top: 56px;
-    z-index: 800;
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: 1px solid var(--border-input);
-    background: var(--bg-card);
-    color: var(--text-dim);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    transition: all 0.2s;
-}
-
-.help-toc-toggle:hover {
-    color: var(--accent-blue);
-    border-color: var(--accent-blue);
-}
-
-.help-toc-toggle .mi {
-    font-size: 18px;
-}
-
+/* ─── TOC Sidebar (Left, Fixed in Layout) ─── */
 .help-toc-sidebar {
-    position: fixed;
-    right: 0;
-    top: 44px;
-    bottom: 0;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
     width: 240px;
+    min-width: 240px;
+    max-height: calc(100vh - 180px);
     background: var(--bg-panel);
-    border-left: 1px solid var(--border-main);
-    box-shadow: -4px 0 16px rgba(0,0,0,0.12);
-    z-index: 790;
-    transform: translateX(100%);
-    transition: transform 0.25s ease;
+    border: 1px solid var(--border-main);
+    border-radius: 10px;
     overflow-y: auto;
-    padding: 14px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
 }
 
 .help-toc-sidebar.open {
-    transform: translateX(0);
+    transform: none;
 }
 
 .help-toc-sidebar::-webkit-scrollbar {
@@ -1590,7 +1565,7 @@ body.subwindow-host .card {
 .help-toc-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     margin-bottom: 12px;
     flex-shrink: 0;
 }
@@ -1601,27 +1576,6 @@ body.subwindow-host .card {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     color: var(--text-faint);
-}
-
-.help-toc-close {
-    background: none;
-    border: none;
-    color: var(--text-dim);
-    cursor: pointer;
-    padding: 2px;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    transition: all 0.15s;
-}
-
-.help-toc-close:hover {
-    color: var(--text-primary);
-    background: var(--hover-white);
-}
-
-.help-toc-close .mi {
-    font-size: 18px;
 }
 
 .help-toc-list {
@@ -1677,6 +1631,20 @@ body.subwindow-host .card {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+}
+
+@media (max-width: 980px) {
+    .help-content {
+        flex-direction: column;
+    }
+
+    .help-toc-sidebar {
+        position: relative;
+        top: auto;
+        width: 100%;
+        min-width: 0;
+        max-height: 260px;
+    }
 }
 
 /* ─── Chapter Cards ─── */

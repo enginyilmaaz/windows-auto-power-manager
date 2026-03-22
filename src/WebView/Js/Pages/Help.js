@@ -229,11 +229,10 @@ window.HelpPage = {
         this._currentPage = 0;
         this._t = t;
 
-        // TOC sidebar
+        // TOC sidebar (always visible)
         var tocHtml = '<div class="help-toc-sidebar" id="help-toc-sidebar">' +
             '<div class="help-toc-header">' +
                 '<span class="help-toc-title">' + t.tocTitle + '</span>' +
-                '<button class="help-toc-close" id="help-toc-close"><span class="mi">close</span></button>' +
             '</div>' +
             '<ul class="help-toc-list">';
         for (var i = 0; i < this._chapters.length; i++) {
@@ -244,9 +243,6 @@ window.HelpPage = {
         }
         tocHtml += '</ul></div>';
 
-        // TOC toggle button
-        var toggleHtml = '<button class="help-toc-toggle" id="help-toc-toggle" title="' + t.tocTitle + '"><span class="mi">menu_book</span></button>';
-
         return '' +
         '<div class="card">' +
             '<div class="card-title">' +
@@ -254,22 +250,23 @@ window.HelpPage = {
                 (L('HelpMenuItem') || 'Help') +
             '</div>' +
             '<div class="help-content">' +
-                '<div class="help-search-box">' +
-                    '<span class="mi">search</span>' +
-                    '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
-                '</div>' +
-                '<div id="help-search-results" style="display:none"></div>' +
-                '<div id="help-chapter-view"></div>' +
-                '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
-                '<div class="help-page-nav" id="help-page-nav">' +
-                    '<button class="help-page-nav-btn" id="help-prev"><span class="mi">navigate_before</span>' + t.prevPage + '</button>' +
-                    '<span class="help-page-indicator" id="help-page-indicator"></span>' +
-                    '<button class="help-page-nav-btn" id="help-next">' + t.nextPage + '<span class="mi">navigate_next</span></button>' +
+                tocHtml +
+                '<div class="help-main">' +
+                    '<div class="help-search-box">' +
+                        '<span class="mi">search</span>' +
+                        '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
+                    '</div>' +
+                    '<div id="help-search-results" style="display:none"></div>' +
+                    '<div id="help-chapter-view"></div>' +
+                    '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
+                    '<div class="help-page-nav" id="help-page-nav">' +
+                        '<button class="help-page-nav-btn" id="help-prev"><span class="mi">navigate_before</span>' + t.prevPage + '</button>' +
+                        '<span class="help-page-indicator" id="help-page-indicator"></span>' +
+                        '<button class="help-page-nav-btn" id="help-next">' + t.nextPage + '<span class="mi">navigate_next</span></button>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
-        '</div>' +
-        toggleHtml +
-        tocHtml;
+        '</div>';
     },
 
     afterRender() {
@@ -287,8 +284,6 @@ window.HelpPage = {
         var indicator = document.getElementById('help-page-indicator');
         var searchInput = document.getElementById('help-search');
         var sidebar = document.getElementById('help-toc-sidebar');
-        var toggleBtn = document.getElementById('help-toc-toggle');
-        var closeBtn = document.getElementById('help-toc-close');
         var tocLinks = document.querySelectorAll('.help-toc-link[data-page]');
 
         var currentPage = 0;
@@ -418,18 +413,8 @@ window.HelpPage = {
             });
         }
 
-        // TOC sidebar toggle
-        function openSidebar() { if (sidebar) sidebar.classList.add('open'); }
-        function closeSidebar() { if (sidebar) sidebar.classList.remove('open'); }
-
-        if (toggleBtn) {
-            toggleBtn.addEventListener('click', function () {
-                if (sidebar && sidebar.classList.contains('open')) closeSidebar();
-                else openSidebar();
-            });
-        }
-        if (closeBtn) {
-            closeBtn.addEventListener('click', closeSidebar);
+        if (sidebar) {
+            sidebar.classList.add('open');
         }
 
         // TOC links navigate to page
@@ -438,7 +423,6 @@ window.HelpPage = {
                 var pageIdx = parseInt(this.getAttribute('data-page'));
                 searchInput.value = '';
                 showPage(pageIdx);
-                closeSidebar();
             });
         }
     }
