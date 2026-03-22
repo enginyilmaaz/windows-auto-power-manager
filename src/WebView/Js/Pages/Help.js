@@ -248,25 +248,29 @@ window.HelpPage = {
         tocHtml += '</ul></div>';
 
         return '' +
-        '<div class="card help-page-card">' +
-            '<div class="card-title">' +
-                '<span class="mi">help</span>' +
-                (L('HelpMenuItem') || 'Help') +
-            '</div>' +
-            '<div class="help-content">' +
-                tocHtml +
-                '<div class="help-main">' +
-                    '<div class="help-main-scroll">' +
-                        '<div id="help-search-results" style="display:none"></div>' +
-                        '<div id="help-chapter-view"></div>' +
-                        '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
-                    '</div>' +
-                    '<div class="help-page-nav" id="help-page-nav">' +
-                        '<button class="help-page-nav-btn" id="help-prev"><span class="mi">navigate_before</span>' + t.prevPage + '</button>' +
-                        '<span class="help-page-indicator" id="help-page-indicator"></span>' +
-                        '<button class="help-page-nav-btn" id="help-next">' + t.nextPage + '<span class="mi">navigate_next</span></button>' +
+        '<div class="subpage-layout">' +
+            '<div class="card help-page-card subpage-card">' +
+                '<div class="card-title">' +
+                    '<span class="mi">help</span>' +
+                    (L('HelpMenuItem') || 'Help') +
+                '</div>' +
+                '<div class="subpage-scroll help-shell">' +
+                    '<div class="help-content">' +
+                        tocHtml +
+                        '<div class="help-main">' +
+                            '<div class="help-main-scroll">' +
+                                '<div id="help-search-results" style="display:none"></div>' +
+                                '<div id="help-chapter-view"></div>' +
+                                '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
+                            '</div>' +
+                        '</div>' +
                     '</div>' +
                 '</div>' +
+            '</div>' +
+            '<div class="help-page-nav subpage-footer" id="help-page-nav">' +
+                '<button class="help-page-nav-btn" id="help-prev"><span class="mi">navigate_before</span>' + t.prevPage + '</button>' +
+                '<span class="help-page-indicator" id="help-page-indicator"></span>' +
+                '<button class="help-page-nav-btn" id="help-next">' + t.nextPage + '<span class="mi">navigate_next</span></button>' +
             '</div>' +
         '</div>';
     },

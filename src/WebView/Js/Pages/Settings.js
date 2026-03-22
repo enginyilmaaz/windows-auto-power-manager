@@ -36,72 +36,74 @@ window.SettingsPage = {
         var exportLabel = stripConf(L('SettingsFormButtonExportConfig'), 'Export');
 
         return '' +
-        '<div class="card settings-page-card">' +
-            '<div class="card-title">' + (L('SettingsFormName') || 'Settings') + '</div>' +
+        '<div class="subpage-layout">' +
+            '<div class="card settings-page-card subpage-card">' +
+                '<div class="card-title">' + (L('SettingsFormName') || 'Settings') + '</div>' +
+                '<div class="subpage-scroll settings-scroll">' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelTheme') || 'Theme') + '</span>' +
+                        '<select id="set-theme" class="form-select" style="max-width:200px">' +
+                            '<option value="system"' + (s.theme === 'system' || !s.theme ? ' selected' : '') + '>' + (L('SettingsFormThemeSystem') || 'System Default') + '</option>' +
+                            '<option value="dark"' + (s.theme === 'dark' ? ' selected' : '') + '>' + (L('SettingsFormThemeDark') || 'Dark') + '</option>' +
+                            '<option value="light"' + (s.theme === 'light' ? ' selected' : '') + '>' + (L('SettingsFormThemeLight') || 'Light') + '</option>' +
+                        '</select>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelTheme') || 'Theme') + '</span>' +
-                '<select id="set-theme" class="form-select" style="max-width:200px">' +
-                    '<option value="system"' + (s.theme === 'system' || !s.theme ? ' selected' : '') + '>' + (L('SettingsFormThemeSystem') || 'System Default') + '</option>' +
-                    '<option value="dark"' + (s.theme === 'dark' ? ' selected' : '') + '>' + (L('SettingsFormThemeDark') || 'Dark') + '</option>' +
-                    '<option value="light"' + (s.theme === 'light' ? ' selected' : '') + '>' + (L('SettingsFormThemeLight') || 'Light') + '</option>' +
-                '</select>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelLanguage') || 'Language') + '</span>' +
+                        '<select id="set-lang" class="form-select" style="max-width:200px"></select>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelLanguage') || 'Language') + '</span>' +
-                '<select id="set-lang" class="form-select" style="max-width:200px"></select>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelLogs') || 'Record Logs') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-logs"' + (s.logsEnabled ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelLogs') || 'Record Logs') + '</span>' +
-                '<label class="toggle-switch">' +
-                    '<input type="checkbox" id="set-logs"' + (s.logsEnabled ? ' checked' : '') + '>' +
-                    '<span class="toggle-slider"></span>' +
-                '</label>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelStartWithWindows') || 'Start with Windows') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-startup"' + (s.startWithWindows ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelStartWithWindows') || 'Start with Windows') + '</span>' +
-                '<label class="toggle-switch">' +
-                    '<input type="checkbox" id="set-startup"' + (s.startWithWindows ? ' checked' : '') + '>' +
-                    '<span class="toggle-slider"></span>' +
-                '</label>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelRunInTaskbarWhenClosed') || 'Run in Taskbar When Closed') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-taskbar"' + (s.runInTaskbarWhenClosed ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelRunInTaskbarWhenClosed') || 'Run in Taskbar When Closed') + '</span>' +
-                '<label class="toggle-switch">' +
-                    '<input type="checkbox" id="set-taskbar"' + (s.runInTaskbarWhenClosed ? ' checked' : '') + '>' +
-                    '<span class="toggle-slider"></span>' +
-                '</label>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + t('SettingsFormLabelConfirmOnExit', 'Ask confirmation on Exit') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-confirm-exit"' + (s.confirmExitOnProgramExit !== false ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + t('SettingsFormLabelConfirmOnExit', 'Ask confirmation on Exit') + '</span>' +
-                '<label class="toggle-switch">' +
-                    '<input type="checkbox" id="set-confirm-exit"' + (s.confirmExitOnProgramExit !== false ? ' checked' : '') + '>' +
-                    '<span class="toggle-slider"></span>' +
-                '</label>' +
-            '</div>' +
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + (L('SettingsFormLabelIsCountdownNotifierEnabled') || 'Countdown Notifier') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-countdown"' + (s.isCountdownNotifierEnabled ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
 
-            '<div class="settings-row">' +
-                '<span class="settings-label">' + (L('SettingsFormLabelIsCountdownNotifierEnabled') || 'Countdown Notifier') + '</span>' +
-                '<label class="toggle-switch">' +
-                    '<input type="checkbox" id="set-countdown"' + (s.isCountdownNotifierEnabled ? ' checked' : '') + '>' +
-                    '<span class="toggle-slider"></span>' +
-                '</label>' +
-            '</div>' +
-
-            '<div class="settings-row">' +
-                '<div class="settings-label-group">' +
-                    '<span class="settings-label">' + (L('SettingsFormLabelCountdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
-                    '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipCountdownSeconds') || 'How long the warning is shown before the action runs.\nRecommended: 5-10 seconds.').replace(/"/g, '&quot;')) + '">info</span>' +
+                    '<div class="settings-row">' +
+                        '<div class="settings-label-group">' +
+                            '<span class="settings-label">' + (L('SettingsFormLabelCountdownNotifierSeconds') || 'Countdown Seconds') + '</span>' +
+                            '<span class="mi settings-info-icon" data-tooltip="' + ((L('TooltipCountdownSeconds') || 'How long the warning is shown before the action runs.\nRecommended: 5-10 seconds.').replace(/"/g, '&quot;')) + '">info</span>' +
+                        '</div>' +
+                        '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
+                    '</div>' +
                 '</div>' +
-                '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
             '</div>' +
-
-            '<div class="settings-actions">' +
+            '<div class="settings-actions subpage-footer">' +
                 '<div class="settings-config-split" id="set-config-split">' +
                     '<button class="btn btn-secondary settings-config-main" id="set-export-conf" aria-label="' + exportLabel + '">' +
                         '<span class="settings-config-trigger-label">' + exportLabel + '</span>' +

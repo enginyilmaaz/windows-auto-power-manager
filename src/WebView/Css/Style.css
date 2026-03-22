@@ -758,6 +758,16 @@ body.subwindow-host #page-container {
     scroll-padding-bottom: 104px;
 }
 
+body.subwindow-host.footer-layout-active #page-container {
+    padding: 14px 16px 0;
+    overflow: hidden;
+    scroll-padding-top: 14px;
+    scroll-padding-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
 /* ─── Cards ─── */
 .card {
     background: var(--bg-card);
@@ -1553,41 +1563,60 @@ body.subwindow-host .about-page-card {
     margin-bottom: 0;
 }
 
-body.subwindow-host .logs-actions,
-body.subwindow-host .settings-actions,
-body.subwindow-host .about-actions {
-    position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    z-index: 30;
-    border-top: 1px solid var(--border-row);
-    background: var(--bg-card);
-    margin: 0;
+body.subwindow-host.footer-layout-active .subpage-layout {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+body.subwindow-host.footer-layout-active .subpage-card {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    margin-bottom: 14px;
+}
+
+body.subwindow-host.footer-layout-active .subpage-scroll {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+}
+
+body.subwindow-host.footer-layout-active .subpage-footer {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    flex-shrink: 0;
+    min-height: 60px;
+    margin: 0 -16px;
+    padding-top: 10px;
+    padding-bottom: 14px;
     padding-left: 16px;
     padding-right: 16px;
+    border-top: 1px solid var(--border-row);
+    background: var(--bg-card);
     box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
-    min-height: 60px;
     align-items: center;
 }
 
-body.subwindow-host .logs-actions {
-    padding-top: 10px;
-    padding-bottom: 14px;
-    margin-top: 0;
+body.subwindow-host.footer-layout-active .settings-scroll,
+body.subwindow-host.footer-layout-active .about-shell,
+body.subwindow-host.footer-layout-active .logs-scroll {
+    overflow-y: auto;
 }
 
-body.subwindow-host .settings-actions {
-    padding-top: 10px;
-    padding-bottom: 14px;
-    margin-top: 0;
+body.subwindow-host.footer-layout-active .logs-scroll {
+    display: flex;
+    flex-direction: column;
+}
+
+body.subwindow-host.footer-layout-active .settings-actions {
     overflow: visible;
-}
-
-body.subwindow-host .about-actions {
-    padding-top: 10px;
-    padding-bottom: 14px;
-    margin-top: 0;
 }
 
 @media (max-width: 640px) {
@@ -1621,6 +1650,10 @@ body.subwindow-host .about-actions {
         left: 0;
         right: 0;
         min-width: 0;
+    }
+
+    body.subwindow-host.footer-layout-active .subpage-footer {
+        min-height: 0;
     }
 }
 
@@ -1718,6 +1751,11 @@ body.subwindow-host .about-actions {
     display: flex;
     align-items: flex-start;
     gap: 14px;
+}
+
+.help-shell {
+    display: flex;
+    min-height: 0;
 }
 
 .help-main {
@@ -2244,15 +2282,10 @@ body.subwindow-host .about-actions {
 /* ─── Help Page Sticky Layout (SubWindow) ─── */
 body.subwindow-host.help-page-active #page-container {
     overflow: hidden;
-    padding-bottom: 14px;
-    scroll-padding-bottom: 14px;
 }
 
 body.subwindow-host.help-page-active .help-page-card {
-    height: 100%;
-    margin-bottom: 0;
-    display: flex;
-    flex-direction: column;
+    min-height: 0;
 }
 
 body.subwindow-host.help-page-active .help-content {
@@ -2272,8 +2305,6 @@ body.subwindow-host.help-page-active .help-toc-sidebar {
 body.subwindow-host.help-page-active .help-main {
     min-height: 0;
     overflow: hidden;
-    padding-right: 0;
-    padding-bottom: 0;
 }
 
 body.subwindow-host.help-page-active .help-main-scroll {
@@ -2291,29 +2322,18 @@ body.subwindow-host .help-search-box {
 
 body.subwindow-host .help-page-nav {
     position: static;
-    left: auto;
-    right: auto;
-    bottom: auto;
-    z-index: auto;
-    padding-top: 10px;
-    padding-bottom: 14px;
     margin-top: 0;
-    border-top: 1px solid var(--border-row);
+    padding-top: 0;
+    padding-bottom: 0;
+    border-top: none;
     background: transparent;
     box-shadow: none;
 }
 
 @media (max-width: 760px) {
-    body.subwindow-host.help-page-active #page-container {
-        overflow-y: auto;
-    }
-
-    body.subwindow-host.help-page-active .help-page-card {
-        height: auto;
-    }
-
     body.subwindow-host.help-page-active .help-content {
-        min-height: auto;
+        min-height: 0;
+        flex-direction: column;
     }
 
     body.subwindow-host.help-page-active .help-toc-sidebar {
@@ -2323,11 +2343,11 @@ body.subwindow-host .help-page-nav {
     }
 
     body.subwindow-host.help-page-active .help-main {
-        overflow: visible;
+        overflow: hidden;
     }
 
     body.subwindow-host.help-page-active .help-main-scroll {
-        overflow: visible;
+        overflow-y: auto;
         padding-right: 0;
     }
 }

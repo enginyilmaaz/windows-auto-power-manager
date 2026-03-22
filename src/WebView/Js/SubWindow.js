@@ -82,7 +82,12 @@
 
     function syncPageLayoutClass() {
         if (!document.body) return;
+        var footerLayoutActive = pageName === 'settings' ||
+            pageName === 'logs' ||
+            pageName === 'help' ||
+            pageName === 'about';
         document.body.classList.toggle('help-page-active', pageName === 'help');
+        document.body.classList.toggle('footer-layout-active', footerLayoutActive);
     }
 
     function applyLanguage() {

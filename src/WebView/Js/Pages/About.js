@@ -6,33 +6,37 @@ window.AboutPage = {
         var buildId = Bridge._settings.buildId || 'dev';
 
         return '' +
-        '<div class="card about-page-card">' +
-            '<div class="card-title">' +
-                '<span class="mi">info</span>' +
-                (L('AboutMenuItem') || 'About') +
+        '<div class="subpage-layout">' +
+            '<div class="card about-page-card subpage-card">' +
+                '<div class="card-title">' +
+                    '<span class="mi">info</span>' +
+                    (L('AboutMenuItem') || 'About') +
+                '</div>' +
+                '<div class="subpage-scroll about-shell">' +
+                    '<div class="about-content">' +
+                        '<div class="about-app-name">' + (L('MainFormName') || 'Windows Auto Power Manager') + '</div>' +
+                        '<img src="Assets/app-icon.png" class="about-app-icon" alt="">' +
+                        '<div class="about-row">' +
+                            '<span class="about-label">' + (L('AboutLabelVersion') || 'Version') + '</span>' +
+                            '<span class="about-value">' + version + '</span>' +
+                        '</div>' +
+                        '<div class="about-row">' +
+                            '<span class="about-label">' + (L('AboutLabelBuildId') || 'Build ID') + '</span>' +
+                            '<span class="about-value">' + buildId + '</span>' +
+                        '</div>' +
+                        '<div class="about-divider"></div>' +
+                        '<div class="about-row">' +
+                            '<span class="about-label">' + (L('AboutLabelAuthor') || 'Author') + '</span>' +
+                            '<span class="about-value">enginyilmaaz</span>' +
+                        '</div>' +
+                        '<div class="about-row">' +
+                            '<span class="about-label">GitHub</span>' +
+                            '<a class="about-link" id="about-github-link" href="#">github.com/enginyilmaaz</a>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
             '</div>' +
-            '<div class="about-content">' +
-                '<div class="about-app-name">' + (L('MainFormName') || 'Windows Auto Power Manager') + '</div>' +
-                '<img src="Assets/app-icon.png" class="about-app-icon" alt="">' +
-                '<div class="about-row">' +
-                    '<span class="about-label">' + (L('AboutLabelVersion') || 'Version') + '</span>' +
-                    '<span class="about-value">' + version + '</span>' +
-                '</div>' +
-                '<div class="about-row">' +
-                    '<span class="about-label">' + (L('AboutLabelBuildId') || 'Build ID') + '</span>' +
-                    '<span class="about-value">' + buildId + '</span>' +
-                '</div>' +
-                '<div class="about-divider"></div>' +
-                '<div class="about-row">' +
-                    '<span class="about-label">' + (L('AboutLabelAuthor') || 'Author') + '</span>' +
-                    '<span class="about-value">enginyilmaaz</span>' +
-                '</div>' +
-                '<div class="about-row">' +
-                    '<span class="about-label">GitHub</span>' +
-                    '<a class="about-link" id="about-github-link" href="#">github.com/enginyilmaaz</a>' +
-                '</div>' +
-            '</div>' +
-            '<div class="about-actions">' +
+            '<div class="about-actions subpage-footer">' +
                 '<button class="btn btn-secondary" id="about-close">' + (L('LogViewerFormButtonCancel') || L('SettingsFormButtonCancel') || 'Close') + '</button>' +
             '</div>' +
         '</div>';

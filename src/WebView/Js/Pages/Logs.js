@@ -37,54 +37,58 @@ window.LogsPage = {
         };
 
         return '' +
-        '<div class="card logs-page-card">' +
-            '<div class="card-title">' + (L('LogViewerFormName') || 'Logs') + '</div>' +
-            '<div class="logs-filter-panel">' +
-                '<div class="logs-search-row">' +
-                    '<div class="toolbar-search logs-toolbar-search">' +
-                        '<span class="mi toolbar-search-icon">search</span>' +
-                        '<input type="text" id="log-search" class="toolbar-search-input" placeholder="' +
-                            t('ToolbarSearch', 'Search...') + '">' +
+        '<div class="subpage-layout">' +
+            '<div class="card logs-page-card subpage-card">' +
+                '<div class="card-title">' + (L('LogViewerFormName') || 'Logs') + '</div>' +
+                '<div class="subpage-scroll logs-scroll">' +
+                    '<div class="logs-filter-panel">' +
+                        '<div class="logs-search-row">' +
+                            '<div class="toolbar-search logs-toolbar-search">' +
+                                '<span class="mi toolbar-search-icon">search</span>' +
+                                '<input type="text" id="log-search" class="toolbar-search-input" placeholder="' +
+                                    t('ToolbarSearch', 'Search...') + '">' +
+                            '</div>' +
+                        '</div>' +
+                        '<div class="logs-filter-grid">' +
+                            '<div class="logs-filter-item">' +
+                                '<span class="form-label">' + t('LogViewerFormLabelFiltering', 'Filter') + '</span>' +
+                                '<select id="log-filter" class="form-select">' + self._renderActionTypeOptions() + '</select>' +
+                            '</div>' +
+                            '<div class="logs-filter-item">' +
+                                '<span class="form-label">' + t('LogViewerFormDateFrom', 'From date') + '</span>' +
+                                '<input type="date" id="log-date-from" class="form-input">' +
+                            '</div>' +
+                            '<div class="logs-filter-item">' +
+                                '<span class="form-label">' + t('LogViewerFormDateTo', 'To date') + '</span>' +
+                                '<input type="date" id="log-date-to" class="form-input">' +
+                            '</div>' +
+                            '<div class="logs-filter-item">' +
+                                '<span class="form-label">' + t('LogViewerFormLabelSorting', 'Sort') + '</span>' +
+                                '<select id="log-sort" class="form-select">' +
+                                    '<option value="newestToOld">' + t('LogViewerFormSortingNewestToOld', 'Newest first') + '</option>' +
+                                    '<option value="oldestToNewest">' + t('LogViewerFormSortingOldestToNewest', 'Oldest first') + '</option>' +
+                                    '<option value="actionAsc">' + t('LogViewerFormActionType', 'Action') + ' (A-Z)</option>' +
+                                    '<option value="actionDesc">' + t('LogViewerFormActionType', 'Action') + ' (Z-A)</option>' +
+                                '</select>' +
+                            '</div>' +
+                            '<div class="logs-filter-item">' +
+                                '<span class="form-label">' + t('LogViewerFormLabelRecordLimit', 'Shown records') + '</span>' +
+                                '<input type="number" id="log-limit" class="form-input" min="1" max="5000" step="1" value="' + (self._logLimit || 250) + '">' +
+                            '</div>' +
+                            '<div class="logs-filter-item logs-filter-actions-row">' +
+                                '<button class="btn btn-secondary logs-filter-reset" id="log-reset-filters">' +
+                                    t('LogViewerFormButtonResetFilters', 'Reset filters') +
+                                '</button>' +
+                            '</div>' +
+                        '</div>' +
+                        '<div id="log-result-meta" class="logs-result-meta"></div>' +
+                    '</div>' +
+                    '<div class="logs-table-card">' +
+                        '<div id="log-table-wrap"></div>' +
                     '</div>' +
                 '</div>' +
-                '<div class="logs-filter-grid">' +
-                    '<div class="logs-filter-item">' +
-                        '<span class="form-label">' + t('LogViewerFormLabelFiltering', 'Filter') + '</span>' +
-                        '<select id="log-filter" class="form-select">' + self._renderActionTypeOptions() + '</select>' +
-                    '</div>' +
-                    '<div class="logs-filter-item">' +
-                        '<span class="form-label">' + t('LogViewerFormDateFrom', 'From date') + '</span>' +
-                        '<input type="date" id="log-date-from" class="form-input">' +
-                    '</div>' +
-                    '<div class="logs-filter-item">' +
-                        '<span class="form-label">' + t('LogViewerFormDateTo', 'To date') + '</span>' +
-                        '<input type="date" id="log-date-to" class="form-input">' +
-                    '</div>' +
-                    '<div class="logs-filter-item">' +
-                        '<span class="form-label">' + t('LogViewerFormLabelSorting', 'Sort') + '</span>' +
-                        '<select id="log-sort" class="form-select">' +
-                            '<option value="newestToOld">' + t('LogViewerFormSortingNewestToOld', 'Newest first') + '</option>' +
-                            '<option value="oldestToNewest">' + t('LogViewerFormSortingOldestToNewest', 'Oldest first') + '</option>' +
-                            '<option value="actionAsc">' + t('LogViewerFormActionType', 'Action') + ' (A-Z)</option>' +
-                            '<option value="actionDesc">' + t('LogViewerFormActionType', 'Action') + ' (Z-A)</option>' +
-                        '</select>' +
-                    '</div>' +
-                    '<div class="logs-filter-item">' +
-                        '<span class="form-label">' + t('LogViewerFormLabelRecordLimit', 'Shown records') + '</span>' +
-                        '<input type="number" id="log-limit" class="form-input" min="1" max="5000" step="1" value="' + (self._logLimit || 250) + '">' +
-                    '</div>' +
-                    '<div class="logs-filter-item logs-filter-actions-row">' +
-                        '<button class="btn btn-secondary logs-filter-reset" id="log-reset-filters">' +
-                            t('LogViewerFormButtonResetFilters', 'Reset filters') +
-                        '</button>' +
-                    '</div>' +
-                '</div>' +
-                '<div id="log-result-meta" class="logs-result-meta"></div>' +
             '</div>' +
-            '<div class="logs-table-card">' +
-                '<div id="log-table-wrap"></div>' +
-            '</div>' +
-            '<div class="logs-actions">' +
+            '<div class="logs-actions subpage-footer">' +
                 '<button class="btn btn-danger" id="log-clear">' + (L('LogViewerFormButtonClearLogs') || 'Clear Logs') + '</button>' +
                 '<button class="btn btn-secondary" id="log-back">' + (L('LogViewerFormButtonCancel') || 'Back') + '</button>' +
             '</div>' +
