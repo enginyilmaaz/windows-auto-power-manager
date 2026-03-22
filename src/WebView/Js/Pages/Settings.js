@@ -102,12 +102,13 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-actions">' +
-                '<div class="settings-config-split" id="set-config-split">' +
-                    '<button class="btn btn-secondary settings-config-main" id="set-export-conf">' + exportLabel + '</button>' +
-                    '<button class="btn btn-secondary settings-config-toggle" id="set-config-toggle" aria-label="' + importLabel + '" title="' + importLabel + '">' +
+                '<div class="settings-config-dropdown" id="set-config-split">' +
+                    '<button class="btn btn-secondary settings-config-trigger" id="set-config-trigger" aria-label="' + exportLabel + '" aria-haspopup="true" aria-expanded="false">' +
+                        '<span class="settings-config-trigger-label">' + exportLabel + '</span>' +
                         '<span class="settings-config-caret">▾</span>' +
                     '</button>' +
                     '<div class="settings-config-menu hidden" id="set-config-menu">' +
+                        '<button class="settings-config-item" id="set-export-conf">' + exportLabel + '</button>' +
                         '<button class="settings-config-item" id="set-import-conf">' + importLabel + '</button>' +
                     '</div>' +
                 '</div>' +
@@ -166,25 +167,30 @@ window.SettingsPage = {
         self._registerCleanup(offLanguageList);
 
         var configSplitEl = document.getElementById('set-config-split');
-        var configToggleEl = document.getElementById('set-config-toggle');
+        var configTriggerEl = document.getElementById('set-config-trigger');
         var configMenuEl = document.getElementById('set-config-menu');
 
         var closeConfigMenu = function () {
             if (configMenuEl) {
                 configMenuEl.classList.add('hidden');
             }
+            if (configTriggerEl) {
+                configTriggerEl.setAttribute('aria-expanded', 'false');
+            }
         };
 
-        if (configToggleEl) {
+        if (configTriggerEl) {
             var onConfigToggleClick = function (e) {
                 e.preventDefault();
                 e.stopPropagation();
                 if (!configMenuEl) return;
+                var willOpen = configMenuEl.classList.contains('hidden');
                 configMenuEl.classList.toggle('hidden');
+                configTriggerEl.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
             };
-            configToggleEl.addEventListener('click', onConfigToggleClick);
+            configTriggerEl.addEventListener('click', onConfigToggleClick);
             self._registerCleanup(function () {
-                configToggleEl.removeEventListener('click', onConfigToggleClick);
+                configTriggerEl.removeEventListener('click', onConfigToggleClick);
             });
         }
 
