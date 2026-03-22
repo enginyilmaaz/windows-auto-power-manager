@@ -1555,7 +1555,6 @@ body.subwindow-host .about-page-card {
 
 body.subwindow-host .logs-actions,
 body.subwindow-host .settings-actions,
-body.subwindow-host .help-page-nav,
 body.subwindow-host .about-actions {
     position: fixed;
     left: 0;
@@ -2231,7 +2230,7 @@ body.subwindow-host.help-page-active #page-container {
 }
 
 body.subwindow-host.help-page-active .help-page-card {
-    height: 100%;
+    height: calc(100% - 84px);
     margin-bottom: 0;
     display: flex;
     flex-direction: column;
@@ -2255,7 +2254,7 @@ body.subwindow-host.help-page-active .help-main {
     min-height: 0;
     overflow-y: auto;
     padding-right: 4px;
-    padding-bottom: 88px;
+    padding-bottom: 14px;
 }
 
 body.subwindow-host.help-page-active .help-main::-webkit-scrollbar {
@@ -2276,9 +2275,17 @@ body.subwindow-host .help-search-box {
 }
 
 body.subwindow-host .help-page-nav {
+    position: static;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
     padding-top: 10px;
     padding-bottom: 14px;
     margin-top: 0;
+    border-top: 1px solid var(--border-row);
+    background: transparent;
+    box-shadow: none;
 }
 
 body.subwindow-host #help-search-results {
@@ -2317,7 +2324,7 @@ body.subwindow-host #help-search-results::-webkit-scrollbar-thumb {
     body.subwindow-host.help-page-active .help-main {
         overflow: visible;
         padding-right: 0;
-        padding-bottom: 88px;
+        padding-bottom: 14px;
     }
 }
 
