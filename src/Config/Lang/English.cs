@@ -98,6 +98,7 @@ namespace WindowsAutoPowerManager.Lang
                 LogViewerFormFilterUnlocks = "Unlocks",
                 LogViewerFormDateFrom = "From date",
                 LogViewerFormDateTo = "To date",
+                LogViewerFormLabelRecordLimit = "Shown records",
                 LogViewerFormButtonResetFilters = "Reset filters",
                 MessageContentClearedLogs = "All records deleted successfully",
                 MessageContentThisWillAutoClose = "This window will close automatically",

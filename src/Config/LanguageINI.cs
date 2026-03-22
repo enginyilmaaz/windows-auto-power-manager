@@ -107,6 +107,7 @@
         public string LogViewerFormFilterAppTerminates { get; set; }
         public string LogViewerFormDateFrom { get; set; }
         public string LogViewerFormDateTo { get; set; }
+        public string LogViewerFormLabelRecordLimit { get; set; }
         public string LogViewerFormButtonResetFilters { get; set; }
 
         public string MessageContentCountdownNotify { get; set; }

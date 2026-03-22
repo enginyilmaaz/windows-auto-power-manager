@@ -1293,6 +1293,15 @@ body.subwindow-host .card {
 }
 
 /* ─── Logs Page ─── */
+.logs-page-card {
+    display: flex;
+    flex-direction: column;
+}
+
+#log-table-wrap {
+    min-height: 0;
+}
+
 .logs-filter-panel {
     border: 1px solid var(--border-row);
     background: var(--bg-panel);
@@ -1361,6 +1370,26 @@ body.subwindow-host .card {
     gap: 10px;
     margin-top: 14px;
     justify-content: flex-end;
+}
+
+body.subwindow-host .logs-page-card {
+    min-height: calc(100vh - 96px);
+    margin-bottom: 0;
+}
+
+body.subwindow-host .logs-page-card #log-table-wrap {
+    flex: 1;
+}
+
+body.subwindow-host .logs-actions {
+    position: sticky;
+    bottom: -18px;
+    z-index: 10;
+    border-top: 1px solid var(--border-row);
+    background: var(--bg-card);
+    padding-top: 10px;
+    padding-bottom: 14px;
+    margin-top: 10px;
 }
 
 @media (max-width: 640px) {

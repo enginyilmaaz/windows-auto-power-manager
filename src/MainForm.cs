@@ -582,7 +582,7 @@ namespace WindowsAutoPowerManager
                     HandleLoadSettings();
                     break;
                 case "loadLogs":
-                    HandleLoadLogs();
+                    HandleLoadLogs(data);
                     break;
                 case "clearLogs":
                     HandleClearLogs();
@@ -940,10 +940,16 @@ namespace WindowsAutoPowerManager
 
         private void HandleLoadLogs()
         {
+            HandleLoadLogs(default);
+        }
+
+        private void HandleLoadLogs(JsonElement data)
+        {
 #if DEBUG
             long perfStart = DebugPerformanceTracker.Start();
 #endif
-            var rawLogs = Logger.GetRecentLogs(250);
+            int limit = ResolveLogsLimit(data);
+            var rawLogs = Logger.GetRecentLogs(limit);
             var logs = rawLogs.Select(l => new
             {
                 id = l.Id ?? "",
@@ -956,6 +962,40 @@ namespace WindowsAutoPowerManager
 #if DEBUG
             DebugPerformanceTracker.Record("MainForm.HandleLoadLogs", perfStart);
 #endif
+        }
+
+        private static int ResolveLogsLimit(JsonElement data)
+        {
+            const int defaultLimit = 250;
+            const int maxLimit = 5000;
+            int limit = defaultLimit;
+
+            if (data.ValueKind == JsonValueKind.Object &&
+                data.TryGetProperty("limit", out JsonElement limitElement))
+            {
+                if (limitElement.ValueKind == JsonValueKind.Number &&
+                    limitElement.TryGetInt32(out int numericLimit))
+                {
+                    limit = numericLimit;
+                }
+                else if (limitElement.ValueKind == JsonValueKind.String &&
+                         int.TryParse(limitElement.GetString(), out int stringLimit))
+                {
+                    limit = stringLimit;
+                }
+            }
+
+            if (limit < 1)
+            {
+                return 1;
+            }
+
+            if (limit > maxLimit)
+            {
+                return maxLimit;
+            }
+
+            return limit;
         }
 
         private string TranslateLogAction(string raw)

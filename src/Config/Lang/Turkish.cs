@@ -97,6 +97,7 @@ namespace WindowsAutoPowerManager.Lang
                 LogViewerFormFilterUnlocks = "Kilidin açılması",
                 LogViewerFormDateFrom = "Başlangıç tarihi",
                 LogViewerFormDateTo = "Bitiş tarihi",
+                LogViewerFormLabelRecordLimit = "Gösterilecek kayıt",
                 LogViewerFormButtonResetFilters = "Filtreleri sıfırla",
 
 

@@ -4,6 +4,7 @@ window.LogsPage = {
     _allLogs: [],
     _cleanupFns: [],
     _searchQuery: '',
+    _logLimit: 250,
 
     _registerCleanup(fn) {
         if (typeof fn === 'function') {
@@ -36,7 +37,7 @@ window.LogsPage = {
         };
 
         return '' +
-        '<div class="card">' +
+        '<div class="card logs-page-card">' +
             '<div class="card-title">' + (L('LogViewerFormName') || 'Logs') + '</div>' +
             '<div class="logs-filter-panel">' +
                 '<div class="logs-search-row">' +
@@ -68,6 +69,10 @@ window.LogsPage = {
                             '<option value="actionDesc">' + t('LogViewerFormActionType', 'Action') + ' (Z-A)</option>' +
                         '</select>' +
                     '</div>' +
+                    '<div class="logs-filter-item">' +
+                        '<span class="form-label">' + t('LogViewerFormLabelRecordLimit', 'Shown records') + '</span>' +
+                        '<input type="number" id="log-limit" class="form-input" min="1" max="5000" step="1" value="' + (self._logLimit || 250) + '">' +
+                    '</div>' +
                     '<div class="logs-filter-item logs-filter-actions-row">' +
                         '<button class="btn btn-secondary logs-filter-reset" id="log-reset-filters">' +
                             t('LogViewerFormButtonResetFilters', 'Reset filters') +
@@ -92,8 +97,8 @@ window.LogsPage = {
         var self = this;
         self._disposeHandlers();
         self._searchQuery = '';
-
-        Bridge.send('loadLogs', {});
+        self._logLimit = self._normalizeLimit(self._logLimit);
+        self._requestLogsWithCurrentLimit();
 
         var offLogsLoaded = Bridge.on('logsLoaded', function (data) {
             self._allLogs = data || [];
@@ -141,6 +146,33 @@ window.LogsPage = {
             searchEl.removeEventListener('input', onSearchInput);
         });
 
+        var limitEl = document.getElementById('log-limit');
+        if (limitEl) {
+            limitEl.value = String(self._logLimit);
+
+            var onLimitCommit = function () {
+                self._logLimit = self._normalizeLimit(limitEl.value);
+                limitEl.value = String(self._logLimit);
+                self._requestLogsWithCurrentLimit();
+            };
+
+            var onLimitKeyDown = function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    onLimitCommit();
+                }
+            };
+
+            limitEl.addEventListener('change', onLimitCommit);
+            limitEl.addEventListener('blur', onLimitCommit);
+            limitEl.addEventListener('keydown', onLimitKeyDown);
+            self._registerCleanup(function () {
+                limitEl.removeEventListener('change', onLimitCommit);
+                limitEl.removeEventListener('blur', onLimitCommit);
+                limitEl.removeEventListener('keydown', onLimitKeyDown);
+            });
+        }
+
         var resetEl = document.getElementById('log-reset-filters');
         var onResetClick = function () {
             if (filterEl) filterEl.value = 'all';
@@ -182,6 +214,18 @@ window.LogsPage = {
         self._registerCleanup(function () {
             backEl.removeEventListener('click', onBackClick);
         });
+    },
+
+    _normalizeLimit(value) {
+        var parsed = parseInt(value, 10);
+        if (isNaN(parsed)) return 250;
+        if (parsed < 1) return 1;
+        if (parsed > 5000) return 5000;
+        return parsed;
+    },
+
+    _requestLogsWithCurrentLimit() {
+        Bridge.send('loadLogs', { limit: this._logLimit });
     },
 
     _filterMap: {
