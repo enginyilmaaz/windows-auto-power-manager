@@ -24,7 +24,7 @@ window.SettingsPage = {
         var s = Bridge._settings || {};
 
         return '' +
-        '<div class="card">' +
+        '<div class="card settings-page-card">' +
             '<div class="card-title">' + (L('SettingsFormName') || 'Settings') + '</div>' +
 
             '<div class="settings-row">' +

@@ -244,7 +244,7 @@ window.HelpPage = {
         tocHtml += '</ul></div>';
 
         return '' +
-        '<div class="card">' +
+        '<div class="card help-page-card">' +
             '<div class="card-title">' +
                 '<span class="mi">help</span>' +
                 (L('HelpMenuItem') || 'Help') +

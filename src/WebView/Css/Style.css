@@ -1292,6 +1292,11 @@ body.subwindow-host .card {
     margin-top: 16px;
 }
 
+.settings-page-card {
+    display: flex;
+    flex-direction: column;
+}
+
 /* ─── Logs Page ─── */
 .logs-page-card {
     display: flex;
@@ -1303,10 +1308,10 @@ body.subwindow-host .card {
 }
 
 .logs-filter-panel {
-    border: 1px solid var(--border-row);
-    background: var(--bg-panel);
-    border-radius: 10px;
-    padding: 12px;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+    padding: 0;
     margin-bottom: 14px;
 }
 
@@ -1373,7 +1378,7 @@ body.subwindow-host .card {
 }
 
 body.subwindow-host .logs-page-card {
-    min-height: calc(100vh - 96px);
+    min-height: calc(100vh - 76px);
     margin-bottom: 0;
 }
 
@@ -1381,15 +1386,36 @@ body.subwindow-host .logs-page-card #log-table-wrap {
     flex: 1;
 }
 
-body.subwindow-host .logs-actions {
+body.subwindow-host .settings-page-card,
+body.subwindow-host .help-page-card {
+    min-height: calc(100vh - 76px);
+    margin-bottom: 0;
+}
+
+body.subwindow-host .logs-actions,
+body.subwindow-host .settings-actions,
+body.subwindow-host .help-page-nav {
     position: sticky;
     bottom: -18px;
-    z-index: 10;
+    z-index: 12;
     border-top: 1px solid var(--border-row);
     background: var(--bg-card);
+    margin-left: -18px;
+    margin-right: -18px;
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+body.subwindow-host .logs-actions {
     padding-top: 10px;
     padding-bottom: 14px;
-    margin-top: 10px;
+    margin-top: auto;
+}
+
+body.subwindow-host .settings-actions {
+    padding-top: 10px;
+    padding-bottom: 14px;
+    margin-top: auto;
 }
 
 @media (max-width: 640px) {
@@ -1997,12 +2023,9 @@ body.subwindow-host .help-search-box {
 }
 
 body.subwindow-host .help-page-nav {
-    position: sticky;
-    bottom: -18px;
-    z-index: 10;
-    background: var(--bg-card);
     padding-top: 10px;
     padding-bottom: 14px;
+    margin-top: 8px;
 }
 
 body.subwindow-host #help-search-results {
