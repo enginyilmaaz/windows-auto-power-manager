@@ -99,6 +99,7 @@ if (window.chrome && window.chrome.webview) {
                 break;
             case 'settingsLoaded':
                 Bridge._settings = msg.data || {};
+                Bridge.applyTheme(Bridge._settings.theme || 'system');
                 Bridge._emit('settingsLoaded', Bridge._settings);
                 break;
             case 'logsLoaded':
@@ -122,6 +123,10 @@ if (window.chrome && window.chrome.webview) {
                 Bridge._emit('pauseStatus', msg.data);
                 break;
             case 'themeChanged':
+                if (!Bridge._settings) {
+                    Bridge._settings = {};
+                }
+                Bridge._settings.theme = msg.data || 'system';
                 Bridge.applyTheme(msg.data);
                 break;
             case 'addActionResult':

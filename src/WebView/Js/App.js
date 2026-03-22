@@ -527,6 +527,10 @@ const App = {
         var token = ++this._navigationToken;
         var self = this;
         this._showPageLoading();
+        var loadingContainer = document.getElementById('page-container');
+        if (loadingContainer) {
+            loadingContainer.scrollTop = 0;
+        }
 
         this.ensurePageLoaded(page)
             .then(function (pageObject) {
@@ -537,6 +541,7 @@ const App = {
 
                 self._disposePageHandlers(targetPage);
                 container.innerHTML = pageObject.render();
+                container.scrollTop = 0;
                 if (pageObject.afterRender) {
                     pageObject.afterRender();
                 }

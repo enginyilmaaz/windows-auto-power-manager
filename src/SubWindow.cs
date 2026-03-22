@@ -684,25 +684,33 @@ namespace WindowsAutoPowerManager
             string currentLang = previousSettings.Language;
             bool previousStartWithWindows = previousSettings.StartWithWindows;
             SettingsStorage.Save(newSettings);
-            Logger.UpdateSettings(newSettings);
-            main?.UpdateCachedSettings(newSettings);
-
-            if (newSettings.StartWithWindows != previousStartWithWindows)
+            if (main != null)
             {
-                if (newSettings.StartWithWindows)
-                    StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
-                else
-                    StartWithWindows.DeleteStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
+                main.SyncSettingsAcrossUi(newSettings, currentLang, previousStartWithWindows);
             }
-
-            if (newSettings.IsCountdownNotifierEnabled)
+            else
             {
-                NotifySystem.PrewarmCountdownNotifier();
-            }
+                Logger.UpdateSettings(newSettings);
 
-            if (!string.Equals(currentLang, newSettings.Language, StringComparison.Ordinal))
-            {
-                main?.RefreshLanguageUI();
+                if (newSettings.StartWithWindows != previousStartWithWindows)
+                {
+                    if (newSettings.StartWithWindows)
+                    {
+                        StartWithWindows.AddStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
+                    }
+                    else
+                    {
+                        StartWithWindows.DeleteStartup(MainForm.Language.SettingsFormAddStartupAppName ?? Constants.AppName);
+                    }
+                }
+
+                if (newSettings.IsCountdownNotifierEnabled)
+                {
+                    NotifySystem.PrewarmCountdownNotifier();
+                }
+
+                PostMessage("settingsLoaded", BuildSettingsPayload(newSettings));
+                PostMessage("themeChanged", newSettings.Theme ?? "system");
             }
 
             PostMessage("showToast", new

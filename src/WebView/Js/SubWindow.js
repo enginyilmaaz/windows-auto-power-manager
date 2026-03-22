@@ -120,6 +120,7 @@
         if (!container) return;
 
         container.innerHTML = '<div class="loading-container"><div class="loading-spinner"></div><div class="loading-text">' + getLoadingText() + '</div></div>';
+        container.scrollTop = 0;
         var token = ++navigationToken;
         var targetPage = pageName;
         disposePageHandlers(targetPage);
@@ -129,6 +130,7 @@
                 if (token !== navigationToken) return;
 
                 container.innerHTML = page.render();
+                container.scrollTop = 0;
                 if (page.afterRender) {
                     page.afterRender();
                 }

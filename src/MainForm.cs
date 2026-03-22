@@ -487,6 +487,51 @@ namespace WindowsAutoPowerManager
             Logger.UpdateSettings(settings);
         }
 
+        public void SyncSettingsAcrossUi(Settings settings, string previousLanguage, bool previousStartWithWindows)
+        {
+            if (settings == null)
+            {
+                return;
+            }
+
+            _cachedSettings = settings;
+            Logger.UpdateSettings(settings);
+
+            bool isDark = DetermineIfDark(settings.Theme);
+            ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
+            BackColor = isDark
+                ? System.Drawing.Color.FromArgb(26, 27, 46)
+                : System.Drawing.Color.FromArgb(240, 242, 245);
+
+            if (settings.StartWithWindows != previousStartWithWindows)
+            {
+                if (settings.StartWithWindows)
+                {
+                    StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
+                }
+                else
+                {
+                    StartWithWindows.DeleteStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
+                }
+            }
+
+            if (settings.IsCountdownNotifierEnabled)
+            {
+                NotifySystem.PrewarmCountdownNotifier();
+            }
+
+            if (!string.Equals(previousLanguage, settings.Language, StringComparison.Ordinal))
+            {
+                RefreshLanguageUI();
+                return;
+            }
+
+            object settingsPayload = BuildSettingsPayload(settings);
+            PostMessage("settingsLoaded", settingsPayload);
+            PostMessage("themeChanged", settings.Theme ?? "system");
+            BroadcastSubWindowSettings();
+        }
+
         public Settings GetCachedSettingsOrDefault()
         {
             return _cachedSettings ?? LoadSettings();
@@ -939,33 +984,7 @@ namespace WindowsAutoPowerManager
             string currentLang = _cachedSettings?.Language ?? "auto";
             bool previousStartWithWindows = _cachedSettings?.StartWithWindows ?? false;
             SettingsStorage.Save(newSettings);
-            _cachedSettings = newSettings;
-            Logger.UpdateSettings(newSettings);
-
-            // Update tray menu renderer and form BackColor based on theme
-            bool isDark = DetermineIfDark(newSettings.Theme);
-            ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
-            BackColor = isDark
-                ? System.Drawing.Color.FromArgb(26, 27, 46)
-                : System.Drawing.Color.FromArgb(240, 242, 245);
-
-            if (newSettings.StartWithWindows != previousStartWithWindows)
-            {
-                if (newSettings.StartWithWindows)
-                    StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
-                else
-                    StartWithWindows.DeleteStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
-            }
-
-            if (newSettings.IsCountdownNotifierEnabled)
-            {
-                NotifySystem.PrewarmCountdownNotifier();
-            }
-
-            if (!string.Equals(currentLang, newSettings.Language, StringComparison.Ordinal))
-            {
-                RefreshLanguageUI();
-            }
+            SyncSettingsAcrossUi(newSettings, currentLang, previousStartWithWindows);
 
             PostMessage("showToast", new
             {

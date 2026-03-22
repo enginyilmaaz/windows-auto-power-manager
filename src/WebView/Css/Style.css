@@ -749,7 +749,9 @@ body {
 }
 
 body.subwindow-host #page-container {
-    padding: 16px 16px 92px;
+    padding: 14px 16px 104px;
+    scroll-padding-top: 14px;
+    scroll-padding-bottom: 104px;
 }
 
 /* ─── Cards ─── */
@@ -1183,6 +1185,11 @@ body.subwindow-host .card {
     border-bottom: none;
 }
 
+.settings-page-card .settings-row:last-of-type {
+    border-bottom: none;
+    padding-bottom: 6px;
+}
+
 .settings-label {
     font-weight: 500;
     font-size: 13px;
@@ -1389,7 +1396,6 @@ body.subwindow-host .card {
 }
 
 body.subwindow-host .logs-page-card {
-    min-height: calc(100vh - 76px);
     margin-bottom: 0;
 }
 
@@ -1407,7 +1413,6 @@ body.subwindow-host .logs-page-card .logs-table-card {
 body.subwindow-host .settings-page-card,
 body.subwindow-host .help-page-card,
 body.subwindow-host .about-page-card {
-    min-height: calc(100vh - 76px);
     margin-bottom: 0;
 }
 
@@ -1426,6 +1431,8 @@ body.subwindow-host .about-actions {
     padding-left: 16px;
     padding-right: 16px;
     box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
+    min-height: 60px;
+    align-items: center;
 }
 
 body.subwindow-host .logs-actions {
@@ -2053,10 +2060,10 @@ body.subwindow-host .about-actions {
 /* ─── Help Page Sticky Layout (SubWindow) ─── */
 body.subwindow-host .help-search-box {
     position: sticky;
-    top: -18px;
+    top: 0;
     z-index: 10;
     background: var(--bg-card);
-    padding-top: 14px;
+    padding-top: 10px;
     padding-bottom: 10px;
     margin-bottom: 12px;
 }
