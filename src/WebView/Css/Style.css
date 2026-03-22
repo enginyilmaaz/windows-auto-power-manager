@@ -1773,6 +1773,12 @@ body.subwindow-host.footer-layout-active .settings-actions {
     padding-right: 2px;
 }
 
+.help-main-scroll,
+.help-main-scroll * {
+    -webkit-user-select: text;
+    user-select: text;
+}
+
 .help-main-scroll::-webkit-scrollbar {
     width: 5px;
 }
