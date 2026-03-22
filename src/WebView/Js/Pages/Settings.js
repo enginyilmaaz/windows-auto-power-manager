@@ -22,6 +22,10 @@ window.SettingsPage = {
     render() {
         var L = Bridge.lang.bind(Bridge);
         var s = Bridge._settings || {};
+        var t = function (key, fallback) {
+            var translated = L(key);
+            return (!translated || translated === key) ? fallback : translated;
+        };
 
         return '' +
         '<div class="card settings-page-card">' +
@@ -61,6 +65,14 @@ window.SettingsPage = {
                 '<span class="settings-label">' + (L('SettingsFormLabelRunInTaskbarWhenClosed') || 'Run in Taskbar When Closed') + '</span>' +
                 '<label class="toggle-switch">' +
                     '<input type="checkbox" id="set-taskbar"' + (s.runInTaskbarWhenClosed ? ' checked' : '') + '>' +
+                    '<span class="toggle-slider"></span>' +
+                '</label>' +
+            '</div>' +
+
+            '<div class="settings-row">' +
+                '<span class="settings-label">' + t('SettingsFormLabelConfirmOnExit', 'Ask confirmation on Exit') + '</span>' +
+                '<label class="toggle-switch">' +
+                    '<input type="checkbox" id="set-confirm-exit"' + (s.confirmExitOnProgramExit !== false ? ' checked' : '') + '>' +
                     '<span class="toggle-slider"></span>' +
                 '</label>' +
             '</div>' +
@@ -112,6 +124,8 @@ window.SettingsPage = {
             if (el) el.checked = !!s.startWithWindows;
             el = document.getElementById('set-taskbar');
             if (el) el.checked = !!s.runInTaskbarWhenClosed;
+            el = document.getElementById('set-confirm-exit');
+            if (el) el.checked = s.confirmExitOnProgramExit !== false;
             el = document.getElementById('set-countdown');
             if (el) el.checked = !!s.isCountdownNotifierEnabled;
             el = document.getElementById('set-seconds');
@@ -148,15 +162,18 @@ window.SettingsPage = {
 
         var saveEl = document.getElementById('set-save');
         var onSaveClick = function () {
-            Bridge.send('saveSettings', {
+            var payload = {
                 logsEnabled: document.getElementById('set-logs').checked,
                 startWithWindows: document.getElementById('set-startup').checked,
                 runInTaskbarWhenClosed: document.getElementById('set-taskbar').checked,
+                confirmExitOnProgramExit: document.getElementById('set-confirm-exit').checked,
                 isCountdownNotifierEnabled: document.getElementById('set-countdown').checked,
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
                 language: document.getElementById('set-lang').value,
                 theme: document.getElementById('set-theme').value
-            });
+            };
+            Bridge._settings = Object.assign({}, Bridge._settings, payload);
+            Bridge.send('saveSettings', payload);
         };
         saveEl.addEventListener('click', onSaveClick);
         self._registerCleanup(function () {

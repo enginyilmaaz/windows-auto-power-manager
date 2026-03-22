@@ -52,7 +52,27 @@ const App = {
         document.getElementById('mi-exit').addEventListener('click', function (e) {
             e.preventDefault();
             overlay.classList.add('hidden');
-            Bridge.send('exitApp', {});
+            var L = Bridge.lang.bind(Bridge);
+            var shouldConfirmExit = !(Bridge._settings && Bridge._settings.confirmExitOnProgramExit === false);
+            var exitConfirmMessage = L('MessageContentConfirmExitProgram');
+            if (!exitConfirmMessage || exitConfirmMessage === 'MessageContentConfirmExitProgram') {
+                exitConfirmMessage = 'Are you sure you want to exit the program?';
+            }
+
+            if (!shouldConfirmExit) {
+                Bridge.send('exitApp', {});
+                return;
+            }
+
+            self.openConfirmModal({
+                title: L('MessageTitleWarn') || 'Warning',
+                message: exitConfirmMessage,
+                cancelText: L('SettingsFormButtonCancel') || 'Cancel',
+                confirmText: L('ContextMenuStripNotifyIconExitProgram') || 'Exit',
+                onConfirm: function () {
+                    Bridge.send('exitApp', {});
+                }
+            });
         });
 
         // ─── Toolbar: Add button → open modal ───

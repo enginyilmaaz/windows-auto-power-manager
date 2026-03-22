@@ -45,6 +45,7 @@ namespace WindowsAutoPowerManager.Lang
                 MessageContentConfirmDeleteAction = "Bu görevi silmek istediğine emin misin?",
                 MessageContentActionAllDeleted = "Tüm görevler başarıyla silindi",
                 MessageContentActionCreated = "Görev ekleme başarılı",
+                MessageContentConfirmExitProgram = "Programı kapatmak istediğinize emin misiniz?",
                 MessageContentActionChoose = "Eksik seçim yaptınız, düzeltin",
                 MessageContentMaxActionWarn = "En fazla 5 görev oluşturabilirsin",
                 MessageContentIdleActionConflict =
@@ -115,6 +116,7 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelLogs = "Kayıt Tut",
                 SettingsFormLabelStartWithWindows = "Sistem başlangıcında çalışsın",
                 SettingsFormLabelRunInTaskbarWhenClosed = "Kapatılsa da arkaplanda çalışsın",
+                SettingsFormLabelConfirmOnExit = "Programdan çıkarken onay iste",
                 SettingsFormLabelCountdownNotifierSeconds = "Uyarı gösterilecek süre (sn.)",
                 SettingsFormLabelIsCountdownNotifierEnabled = "İşlem yapılmadan uyarı göster",
                 SettingsFormCheckboxEnabled = "Aktif",

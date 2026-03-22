@@ -30,8 +30,27 @@ namespace WindowsAutoPowerManager.Functions
                     return Config.SettingsINI.DefaulSettingFile();
                 }
 
+                bool hasConfirmExitOnProgramExit = false;
+                try
+                {
+                    using var doc = JsonDocument.Parse(json, new JsonDocumentOptions
+                    {
+                        AllowTrailingCommas = true,
+                        CommentHandling = JsonCommentHandling.Skip
+                    });
+
+                    if (doc.RootElement.ValueKind == JsonValueKind.Object)
+                    {
+                        hasConfirmExitOnProgramExit = doc.RootElement.TryGetProperty("confirmExitOnProgramExit", out _);
+                    }
+                }
+                catch
+                {
+                    // Ignore parse issues here; deserializer path below will handle fallback/default behavior.
+                }
+
                 var parsed = JsonSerializer.Deserialize<Settings>(json, ReadOptions);
-                return Normalize(parsed);
+                return Normalize(parsed, hasConfirmExitOnProgramExit);
             }
             catch
             {
@@ -44,7 +63,7 @@ namespace WindowsAutoPowerManager.Functions
             JsonWriter.WriteJson(SettingsPath, true, Normalize(settings));
         }
 
-        private static Settings Normalize(Settings settings)
+        private static Settings Normalize(Settings settings, bool hasConfirmExitOnProgramExit = true)
         {
             var defaults = Config.SettingsINI.DefaulSettingFile();
             if (settings == null)
@@ -65,6 +84,11 @@ namespace WindowsAutoPowerManager.Functions
             if (settings.CountdownNotifierSeconds < 0)
             {
                 settings.CountdownNotifierSeconds = defaults.CountdownNotifierSeconds;
+            }
+
+            if (!hasConfirmExitOnProgramExit)
+            {
+                settings.ConfirmExitOnProgramExit = defaults.ConfirmExitOnProgramExit;
             }
 
             return settings;

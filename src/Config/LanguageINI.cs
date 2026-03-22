@@ -52,6 +52,7 @@
         public string MessageContentDatagridMainActionChoose { get; set; }
         public string MessageContentActionChoose { get; set; }
         public string MessageContentActionCreated { get; set; }
+        public string MessageContentConfirmExitProgram { get; set; }
         public string MessageContentMaxActionWarn { get; set; }
         public string MessageContentIdleActionConflict { get; set; }
         public string MessageContentAnother { get; set; }
@@ -123,6 +124,7 @@
         public string SettingsFormLabelLogs { get; set; }
         public string SettingsFormLabelStartWithWindows { get; set; }
         public string SettingsFormLabelRunInTaskbarWhenClosed { get; set; }
+        public string SettingsFormLabelConfirmOnExit { get; set; }
         public string SettingsFormLabelCountdownNotifierSeconds { get; set; }
         public string SettingsFormLabelIsCountdownNotifierEnabled { get; set; }
         public string SettingsFormCheckboxEnabled { get; set; }

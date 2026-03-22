@@ -748,6 +748,10 @@ body {
     padding: 16px;
 }
 
+body.subwindow-host #page-container {
+    padding: 16px 16px 92px;
+}
+
 /* ─── Cards ─── */
 .card {
     background: var(--bg-card);
@@ -1397,33 +1401,35 @@ body.subwindow-host .logs-actions,
 body.subwindow-host .settings-actions,
 body.subwindow-host .help-page-nav,
 body.subwindow-host .about-actions {
-    position: sticky;
-    bottom: -18px;
-    z-index: 12;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
     border-top: 1px solid var(--border-row);
     background: var(--bg-card);
-    margin-left: -18px;
-    margin-right: -18px;
-    padding-left: 18px;
-    padding-right: 18px;
+    margin: 0;
+    padding-left: 16px;
+    padding-right: 16px;
+    box-shadow: 0 -6px 16px rgba(0,0,0,0.08);
 }
 
 body.subwindow-host .logs-actions {
     padding-top: 10px;
     padding-bottom: 14px;
-    margin-top: auto;
+    margin-top: 0;
 }
 
 body.subwindow-host .settings-actions {
     padding-top: 10px;
     padding-bottom: 14px;
-    margin-top: auto;
+    margin-top: 0;
 }
 
 body.subwindow-host .about-actions {
     padding-top: 10px;
     padding-bottom: 14px;
-    margin-top: auto;
+    margin-top: 0;
 }
 
 @media (max-width: 640px) {
@@ -2044,7 +2050,7 @@ body.subwindow-host .help-search-box {
 body.subwindow-host .help-page-nav {
     padding-top: 10px;
     padding-bottom: 14px;
-    margin-top: 8px;
+    margin-top: 0;
 }
 
 body.subwindow-host #help-search-results {

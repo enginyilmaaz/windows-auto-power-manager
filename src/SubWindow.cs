@@ -246,6 +246,7 @@ namespace WindowsAutoPowerManager
                 logsEnabled = resolved.LogsEnabled,
                 startWithWindows = resolved.StartWithWindows,
                 runInTaskbarWhenClosed = resolved.RunInTaskbarWhenClosed,
+                confirmExitOnProgramExit = resolved.ConfirmExitOnProgramExit,
                 isCountdownNotifierEnabled = resolved.IsCountdownNotifierEnabled,
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
@@ -651,11 +652,27 @@ namespace WindowsAutoPowerManager
 
         private void HandleSaveSettings(JsonElement data)
         {
+            bool confirmExitOnProgramExit = true;
+            if (data.TryGetProperty("confirmExitOnProgramExit", out JsonElement confirmExitElement))
+            {
+                if (confirmExitElement.ValueKind == JsonValueKind.True ||
+                    confirmExitElement.ValueKind == JsonValueKind.False)
+                {
+                    confirmExitOnProgramExit = confirmExitElement.GetBoolean();
+                }
+                else if (confirmExitElement.ValueKind == JsonValueKind.String &&
+                         bool.TryParse(confirmExitElement.GetString(), out bool parsedConfirmExit))
+                {
+                    confirmExitOnProgramExit = parsedConfirmExit;
+                }
+            }
+
             var newSettings = new Settings
             {
                 LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
                 StartWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
                 RunInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
+                ConfirmExitOnProgramExit = confirmExitOnProgramExit,
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),

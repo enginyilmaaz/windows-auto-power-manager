@@ -9,6 +9,7 @@
                 LogsEnabled = true,
                 StartWithWindows = false,
                 RunInTaskbarWhenClosed = false,
+                ConfirmExitOnProgramExit = true,
                 IsCountdownNotifierEnabled = true,
                 CountdownNotifierSeconds = 5,
                 Language = "auto",

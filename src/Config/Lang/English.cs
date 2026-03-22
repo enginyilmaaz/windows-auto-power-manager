@@ -45,6 +45,7 @@ namespace WindowsAutoPowerManager.Lang
                 MessageContentConfirmDeleteAction = "Are you sure you want to delete this action?",
                 MessageContentActionAllDeleted = "All actions deleted successfully",
                 MessageContentActionCreated = "Action created successfully",
+                MessageContentConfirmExitProgram = "Are you sure you want to exit the program?",
                 MessageContentActionChoose = "Made the missing choice, correct it",
                 MessageContentMaxActionWarn = "You did not choose",
                 MessageContentIdleActionConflict =
@@ -115,6 +116,7 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelLogs = "Keep a record",
                 SettingsFormLabelStartWithWindows = "Run at system startup",
                 SettingsFormLabelRunInTaskbarWhenClosed = "Work in the background",
+                SettingsFormLabelConfirmOnExit = "Ask confirmation on Exit",
                 SettingsFormLabelCountdownNotifierSeconds = "Time to be warned (sec)",
                 SettingsFormLabelIsCountdownNotifierEnabled = "Show alert before the action",
                 SettingsFormCheckboxEnabled = "Enable",
