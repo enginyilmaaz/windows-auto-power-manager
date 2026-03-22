@@ -1303,6 +1303,55 @@ body.subwindow-host .card {
     margin-top: 16px;
 }
 
+.settings-config-split {
+    position: relative;
+    display: inline-flex;
+    align-items: stretch;
+    gap: 0;
+}
+
+.settings-config-toggle {
+    padding-left: 10px;
+    padding-right: 10px;
+    min-width: 38px;
+}
+
+.settings-config-toggle .mi {
+    font-size: 18px;
+}
+
+.settings-config-menu {
+    position: absolute;
+    right: 0;
+    bottom: calc(100% + 6px);
+    min-width: 160px;
+    padding: 4px;
+    border-radius: 8px;
+    border: 1px solid var(--border-input);
+    background: var(--bg-panel);
+    box-shadow: var(--shadow-ctx);
+    z-index: 1200;
+}
+
+.settings-config-item {
+    width: 100%;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-secondary);
+    text-align: left;
+    padding: 8px 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.settings-config-item:hover {
+    background: var(--hover-white-subtle);
+    color: var(--text-primary);
+}
+
 .settings-page-card {
     display: flex;
     flex-direction: column;

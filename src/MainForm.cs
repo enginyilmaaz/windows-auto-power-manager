@@ -1525,15 +1525,16 @@ namespace WindowsAutoPowerManager
                     targetClientSize = new System.Drawing.Size(1180, 700);
                     break;
                 case "settings":
-                    targetClientSize = new System.Drawing.Size(610, 520);
+                    // Requested: +80px width, +120px height for settings window.
+                    targetClientSize = new System.Drawing.Size(690, 640);
                     break;
                 case "logs":
                     // Keep logs window exactly the same size as the main window.
                     targetClientSize = this.ClientSize;
                     break;
                 case "about":
-                    // About requested +50px height from current size.
-                    targetClientSize = new System.Drawing.Size(610, 520);
+                    // Requested: +90px height for about window.
+                    targetClientSize = new System.Drawing.Size(610, 610);
                     break;
                 default:
                     targetClientSize = win.ClientSize;

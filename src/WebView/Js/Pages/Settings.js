@@ -26,6 +26,14 @@ window.SettingsPage = {
             var translated = L(key);
             return (!translated || translated === key) ? fallback : translated;
         };
+        var stripConf = function (label, fallback) {
+            var base = label || fallback;
+            return String(base || fallback || '')
+                .replace(/\s*\(\.conf\)\s*/gi, '')
+                .trim();
+        };
+        var importLabel = stripConf(L('SettingsFormButtonImportConfig'), 'Import');
+        var exportLabel = stripConf(L('SettingsFormButtonExportConfig'), 'Export');
 
         return '' +
         '<div class="card settings-page-card">' +
@@ -94,9 +102,16 @@ window.SettingsPage = {
             '</div>' +
 
             '<div class="settings-actions">' +
-                '<button class="btn btn-secondary" id="set-import-conf">' + (L('SettingsFormButtonImportConfig') || 'Import (.conf)') + '</button>' +
-                '<button class="btn btn-secondary" id="set-export-conf">' + (L('SettingsFormButtonExportConfig') || 'Export (.conf)') + '</button>' +
-                '<button class="btn btn-secondary" id="set-cancel">' + (L('SettingsFormButtonCancel') || 'Cancel') + '</button>' +
+                '<div class="settings-config-split" id="set-config-split">' +
+                    '<button class="btn btn-secondary" id="set-export-conf">' + exportLabel + '</button>' +
+                    '<button class="btn btn-secondary settings-config-toggle" id="set-config-toggle" aria-label="' + importLabel + '">' +
+                        '<span class="mi">expand_more</span>' +
+                    '</button>' +
+                    '<div class="settings-config-menu hidden" id="set-config-menu">' +
+                        '<button class="settings-config-item" id="set-import-conf">' + importLabel + '</button>' +
+                    '</div>' +
+                '</div>' +
+                '<button class="btn btn-danger" id="set-cancel">' + (L('SettingsFormButtonCancel') || 'Cancel') + '</button>' +
                 '<button class="btn btn-success" id="set-save">' + (L('SettingsFormButtonSave') || 'Save') + '</button>' +
             '</div>' +
         '</div>';
@@ -150,14 +165,36 @@ window.SettingsPage = {
         });
         self._registerCleanup(offLanguageList);
 
-        // Live theme preview
-        var themeEl = document.getElementById('set-theme');
-        var onThemeChange = function () {
-            Bridge.applyTheme(this.value);
+        var configSplitEl = document.getElementById('set-config-split');
+        var configToggleEl = document.getElementById('set-config-toggle');
+        var configMenuEl = document.getElementById('set-config-menu');
+
+        var closeConfigMenu = function () {
+            if (configMenuEl) {
+                configMenuEl.classList.add('hidden');
+            }
         };
-        themeEl.addEventListener('change', onThemeChange);
+
+        if (configToggleEl) {
+            var onConfigToggleClick = function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!configMenuEl) return;
+                configMenuEl.classList.toggle('hidden');
+            };
+            configToggleEl.addEventListener('click', onConfigToggleClick);
+            self._registerCleanup(function () {
+                configToggleEl.removeEventListener('click', onConfigToggleClick);
+            });
+        }
+
+        var onDocumentClick = function (e) {
+            if (!configSplitEl || configSplitEl.contains(e.target)) return;
+            closeConfigMenu();
+        };
+        document.addEventListener('click', onDocumentClick);
         self._registerCleanup(function () {
-            themeEl.removeEventListener('change', onThemeChange);
+            document.removeEventListener('click', onDocumentClick);
         });
 
         var saveEl = document.getElementById('set-save');
@@ -182,6 +219,7 @@ window.SettingsPage = {
 
         var importEl = document.getElementById('set-import-conf');
         var onImportClick = function () {
+            closeConfigMenu();
             Bridge.send('importSettingsConfig', {});
         };
         importEl.addEventListener('click', onImportClick);
@@ -191,6 +229,7 @@ window.SettingsPage = {
 
         var exportEl = document.getElementById('set-export-conf');
         var onExportClick = function () {
+            closeConfigMenu();
             Bridge.send('exportSettingsConfig', {});
         };
         exportEl.addEventListener('click', onExportClick);
