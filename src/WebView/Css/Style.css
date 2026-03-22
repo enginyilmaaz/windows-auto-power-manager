@@ -1662,7 +1662,7 @@ body.subwindow-host .logs-actions {
     flex-shrink: 0;
 }
 
-@media (max-width: 980px) {
+@media (max-width: 640px) {
     .help-content {
         flex-direction: column;
     }
