@@ -40,6 +40,7 @@ namespace WindowsAutoPowerManager
         private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
+        private bool _pendingOpenNewActionModal;
         private readonly Dictionary<string, ActionRuntimeState> _actionRuntimeStates =
             new Dictionary<string, ActionRuntimeState>();
 
@@ -332,8 +333,20 @@ namespace WindowsAutoPowerManager
             if (_initSent || !_webViewReady || !_bootDataReady) return;
             _initSent = true;
             SendInitData();
+            TryDispatchPendingOpenNewActionModal();
             HideLoadingOverlay();
             StartSubWindowPrewarm();
+        }
+
+        private void TryDispatchPendingOpenNewActionModal()
+        {
+            if (!_pendingOpenNewActionModal || !_initSent || !_webViewReady)
+            {
+                return;
+            }
+
+            _pendingOpenNewActionModal = false;
+            PostMessage("openNewAction", new { });
         }
 
         private void StartSubWindowPrewarm()
@@ -1786,7 +1799,9 @@ namespace WindowsAutoPowerManager
         private void ShowMainAndOpenNewActionModal()
         {
             ShowMain();
-            PostMessage("openNewAction", new { });
+            _pendingOpenNewActionModal = true;
+            TrySendInitData();
+            TryDispatchPendingOpenNewActionModal();
         }
 
         private void NotifyIconMain_MouseDoubleClick(object sender, MouseEventArgs e)
