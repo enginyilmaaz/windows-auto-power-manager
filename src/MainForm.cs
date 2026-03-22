@@ -1528,9 +1528,11 @@ namespace WindowsAutoPowerManager
                     targetClientSize = new System.Drawing.Size(610, 520);
                     break;
                 case "logs":
-                case "about":
-                    // Requested: +30px width, -50px height from previous default (580x520).
                     targetClientSize = new System.Drawing.Size(610, 470);
+                    break;
+                case "about":
+                    // About requested +50px height from current size.
+                    targetClientSize = new System.Drawing.Size(610, 520);
                     break;
                 default:
                     targetClientSize = win.ClientSize;

@@ -249,13 +249,13 @@ window.HelpPage = {
                 '<span class="mi">help</span>' +
                 (L('HelpMenuItem') || 'Help') +
             '</div>' +
+            '<div class="help-search-box">' +
+                '<span class="mi">search</span>' +
+                '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
+            '</div>' +
             '<div class="help-content">' +
                 tocHtml +
                 '<div class="help-main">' +
-                    '<div class="help-search-box">' +
-                        '<span class="mi">search</span>' +
-                        '<input type="text" class="help-search-input" id="help-search" placeholder="' + t.searchPlaceholder + '">' +
-                    '</div>' +
                     '<div id="help-search-results" style="display:none"></div>' +
                     '<div id="help-chapter-view"></div>' +
                     '<div class="help-no-result" id="help-no-result" style="display:none">' + t.noResult + '</div>' +
