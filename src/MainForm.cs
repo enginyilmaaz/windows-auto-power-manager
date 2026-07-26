@@ -37,14 +37,11 @@ namespace WindowsAutoPowerManager
         private Panel _loadingOverlay;
         private Label _loadingLabel;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "help", "about" };
-        private readonly HashSet<string> _executedIdleActionKeys = new HashSet<string>();
-        private readonly Dictionary<string, DateTime> _certainTimeLastExecutionDates = new Dictionary<string, DateTime>();
         private bool _subWindowPrewarmStarted;
         private bool _startupErrorShown;
         private bool _pendingOpenNewActionModal;
         private uint? _lastObservedIdleTimeSec;
-        private readonly Dictionary<string, ActionRuntimeState> _actionRuntimeStates =
-            new Dictionary<string, ActionRuntimeState>();
+        private readonly ActionScheduler _scheduler = new ActionScheduler();
         private const int WM_POWERBROADCAST = 0x0218;
         private const int PBT_APMRESUMESUSPEND = 0x0007;
         private const int PBT_APMRESUMEAUTOMATIC = 0x0012;
@@ -70,26 +67,6 @@ namespace WindowsAutoPowerManager
             public Guid PowerSetting;
             public uint DataLength;
             public byte Data;
-        }
-
-        [Flags]
-        private enum ActionExecutionResult
-        {
-            None = 0,
-            Executed = 1,
-            RemoveAction = 2,
-            NeedsPersist = 4
-        }
-
-        private sealed class ActionRuntimeState
-        {
-            public string ExecutionKey;
-            public uint IdleSeconds;
-            public bool HasIdleSeconds;
-            public DateTime FromNowTarget;
-            public bool HasFromNowTarget;
-            public TimeSpan CertainTimeOfDay;
-            public bool HasCertainTime;
         }
 
         public MainForm()
@@ -233,7 +210,7 @@ namespace WindowsAutoPowerManager
                 ActionModel action = ActionList[index];
                 if (action.TriggerType == Config.TriggerTypes.FromNow)
                 {
-                    if (!TryParseFromNowValue(action, out DateTime actionDate) || now > actionDate)
+                    if (!ActionScheduler.TryParseFromNowValue(action, out DateTime actionDate) || now > actionDate)
                     {
                         ActionList.RemoveAt(index);
                         changed = true;
@@ -247,7 +224,7 @@ namespace WindowsAutoPowerManager
             }
             else
             {
-                RebuildActionRuntimeStates();
+                _scheduler.RebuildRuntimeStates(ActionList);
             }
         }
 
@@ -295,7 +272,7 @@ namespace WindowsAutoPowerManager
                 ActionList = LoadActionList();
                 DeleteExpriedAction();
                 ResolveConflictingEnabledActions();
-                RebuildActionRuntimeStates();
+                _scheduler.RebuildRuntimeStates(ActionList);
 
                 // Setup timer
                 Timer.Interval = 1000;
@@ -1538,7 +1515,7 @@ namespace WindowsAutoPowerManager
             long perfStart = DebugPerformanceTracker.Start();
 #endif
             JsonWriter.WriteJson(AppContext.BaseDirectory + "\\ActionList.json", true, ActionList);
-            RebuildActionRuntimeStates();
+            _scheduler.RebuildRuntimeStates(ActionList);
             CleanupActionExecutionState();
             RefreshActionsInUI();
 #if DEBUG
@@ -1548,83 +1525,14 @@ namespace WindowsAutoPowerManager
 
         private void CleanupActionExecutionState()
         {
-            var validKeys = new HashSet<string>(ActionList.Select(BuildActionExecutionKey));
-            _executedIdleActionKeys.RemoveWhere(key => !validKeys.Contains(key));
-
-            foreach (string key in _certainTimeLastExecutionDates.Keys.ToList())
-            {
-                if (!validKeys.Contains(key))
-                {
-                    _certainTimeLastExecutionDates.Remove(key);
-                }
-            }
-
+            _scheduler.CleanupState(ActionList);
             NotifySystem.CleanupState(ActionList);
-        }
-
-        private void RebuildActionRuntimeStates()
-        {
-            _actionRuntimeStates.Clear();
-            foreach (ActionModel action in ActionList)
-            {
-                string key = BuildActionExecutionKey(action);
-                _actionRuntimeStates[key] = BuildActionRuntimeState(action, key);
-            }
-        }
-
-        private ActionRuntimeState BuildActionRuntimeState(ActionModel action, string actionKey)
-        {
-            var state = new ActionRuntimeState
-            {
-                ExecutionKey = actionKey ?? string.Empty
-            };
-
-            if (TryGetSystemIdleSeconds(action, out uint idleSeconds))
-            {
-                state.IdleSeconds = idleSeconds;
-                state.HasIdleSeconds = true;
-            }
-
-            if (TryParseFromNowValue(action, out DateTime fromNowTarget))
-            {
-                state.FromNowTarget = fromNowTarget;
-                state.HasFromNowTarget = true;
-            }
-
-            if (action != null &&
-                !string.IsNullOrWhiteSpace(action.Value) &&
-                action.TriggerType == Config.TriggerTypes.CertainTime &&
-                DateTime.TryParseExact(
-                    action.Value,
-                    "HH:mm:ss",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out DateTime parsedTime))
-            {
-                state.CertainTimeOfDay = parsedTime.TimeOfDay;
-                state.HasCertainTime = true;
-            }
-
-            return state;
-        }
-
-        private ActionRuntimeState GetOrCreateActionRuntimeState(ActionModel action)
-        {
-            string key = BuildActionExecutionKey(action);
-            if (_actionRuntimeStates.TryGetValue(key, out ActionRuntimeState state))
-            {
-                return state;
-            }
-
-            state = BuildActionRuntimeState(action, key);
-            _actionRuntimeStates[key] = state;
-            return state;
         }
 
         public void RefreshUIAfterToggle()
         {
             WriteJsonToActionList();
-            RebuildActionRuntimeStates();
+            _scheduler.RebuildRuntimeStates(ActionList);
             RefreshActionsInUI();
         }
 
@@ -1717,158 +1625,6 @@ namespace WindowsAutoPowerManager
 
         // =============== Timer & Action Execution ===============
 
-        private ActionExecutionResult DoAction(
-            ActionModel action,
-            ActionRuntimeState state,
-            uint idleTimeSec,
-            DateTime now)
-        {
-            if (action == null || state == null)
-            {
-                return ActionExecutionResult.None;
-            }
-
-            string actionKey = state.ExecutionKey;
-            ActionExecutionResult result = ActionExecutionResult.None;
-
-            if (action.TriggerType == Config.TriggerTypes.SystemIdle)
-            {
-                if (!state.HasIdleSeconds)
-                {
-                    return ActionExecutionResult.None;
-                }
-
-                if (idleTimeSec < state.IdleSeconds)
-                {
-                    // Re-arm only once the idle counter genuinely falls back below this action's
-                    // own threshold. Re-arming on any decrease of the idle counter let the action
-                    // fire again while the system was still past the threshold, which turned the
-                    // display off and on repeatedly.
-                    _executedIdleActionKeys.Remove(actionKey);
-                    return ActionExecutionResult.None;
-                }
-
-                if (_executedIdleActionKeys.Add(actionKey))
-                {
-                    Actions.DoActionByTypes(action);
-                    return ActionExecutionResult.Executed;
-                }
-
-                return ActionExecutionResult.None;
-            }
-
-            if (action.TriggerType == Config.TriggerTypes.CertainTime &&
-                ShouldExecuteCertainTimeAction(state, actionKey, now))
-            {
-                if (IsSkippedCertainTimeAction == false)
-                {
-                    Actions.DoActionByTypes(action);
-                    result |= ActionExecutionResult.Executed;
-                }
-                else
-                {
-                    IsSkippedCertainTimeAction = false;
-                }
-
-                _certainTimeLastExecutionDates[actionKey] = now.Date;
-            }
-
-            if (action.TriggerType == Config.TriggerTypes.FromNow &&
-                state.HasFromNowTarget &&
-                now >= state.FromNowTarget)
-            {
-                Actions.DoActionByTypes(action);
-                result |= ActionExecutionResult.Executed |
-                          ActionExecutionResult.RemoveAction |
-                          ActionExecutionResult.NeedsPersist;
-            }
-
-            return result;
-        }
-
-        private static string BuildActionExecutionKey(ActionModel action)
-        {
-            if (action == null) return string.Empty;
-
-            return (action.CreatedDate ?? string.Empty) + "|" +
-                   (action.TriggerType ?? string.Empty) + "|" +
-                   (action.ActionType ?? string.Empty) + "|" +
-                   (action.Value ?? string.Empty);
-        }
-
-        private bool ShouldExecuteCertainTimeAction(ActionRuntimeState state, string actionKey, DateTime now)
-        {
-            if (state == null || !state.HasCertainTime)
-            {
-                return false;
-            }
-
-            DateTime scheduledTime = now.Date.Add(state.CertainTimeOfDay);
-            if (now < scheduledTime)
-            {
-                return false;
-            }
-
-            if (_certainTimeLastExecutionDates.TryGetValue(actionKey, out DateTime lastExecutionDate) &&
-                lastExecutionDate.Date == now.Date)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool TryParseFromNowValue(ActionModel action, out DateTime targetTime)
-        {
-            targetTime = default;
-            if (action == null || string.IsNullOrWhiteSpace(action.Value))
-            {
-                return false;
-            }
-
-            return DateTime.TryParseExact(
-                action.Value,
-                "dd.MM.yyyy HH:mm:ss",
-                CultureInfo.InvariantCulture,
-                DateTimeStyles.None,
-                out targetTime);
-        }
-
-        private static bool TryGetSystemIdleSeconds(ActionModel action, out uint seconds)
-        {
-            seconds = 0;
-            if (action == null || string.IsNullOrWhiteSpace(action.Value))
-            {
-                return false;
-            }
-
-            if (!uint.TryParse(action.Value, out uint parsed))
-            {
-                return false;
-            }
-
-            if (parsed == 0)
-            {
-                return false;
-            }
-
-            if (string.IsNullOrEmpty(action.ValueUnit))
-            {
-                if (parsed > uint.MaxValue / 60)
-                {
-                    return false;
-                }
-
-                seconds = parsed * 60;
-            }
-            else
-            {
-                seconds = parsed;
-            }
-
-            return true;
-        }
-
         private void TimerTick(object sender, EventArgs e)
         {
 #if DEBUG
@@ -1935,8 +1691,20 @@ namespace WindowsAutoPowerManager
                 ActionModel action = ActionList[index];
                 if (!action.IsEnabled) continue;
 
-                ActionRuntimeState state = GetOrCreateActionRuntimeState(action);
-                ActionExecutionResult actionResult = DoAction(action, state, idleTimeSec, now);
+                bool skipCertainTimeAction = IsSkippedCertainTimeAction;
+                ActionExecutionResult actionResult = _scheduler.Decide(
+                    action,
+                    idleTimeSec,
+                    now,
+                    ref skipCertainTimeAction);
+                IsSkippedCertainTimeAction = skipCertainTimeAction;
+
+                // The scheduler decides and this loop performs, so the ordering against the
+                // notification below stays exactly as it was when both lived in DoAction.
+                if ((actionResult & ActionExecutionResult.Executed) != 0)
+                {
+                    Actions.DoActionByTypes(action);
+                }
 
                 if ((actionResult & ActionExecutionResult.RemoveAction) != 0)
                 {
