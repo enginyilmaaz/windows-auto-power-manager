@@ -1,6 +1,6 @@
-﻿using System;
-using System.Diagnostics;
+using System;
 using System.IO;
+using System.Threading;
 using System.Windows.Forms;
 using WindowsAutoPowerManager.Config;
 using WindowsAutoPowerManager.Functions;
@@ -9,26 +9,32 @@ namespace WindowsAutoPowerManager
 {
     internal static class Program
     {
-        public static Process PriorProcess()
-        // Returns a System.Diagnostics.Process pointing to
-        // a pre-existing process with the same name as the
-        // current one, if any; or null if the current process
-        // is unique.
+        // Held for the lifetime of the process; releasing it would let a second instance start.
+        private static Mutex _singleInstanceMutex;
+
+        /// <summary>
+        ///     Claims the single-instance lock, returning false when another instance holds it.
+        /// </summary>
+        private static bool TryClaimSingleInstance()
         {
-            Process curr = Process.GetCurrentProcess();
-            Process[] procs = Process.GetProcessesByName(curr.ProcessName);
-            foreach (Process p in procs)
+            // Session-local, matching the previous same-user process scan. Enumerating processes
+            // and reading MainModule threw for processes owned by other users or running elevated,
+            // which surfaced as a startup error dialog. An abandoned mutex is released when the
+            // owning process dies, so a crashed instance no longer blocks the next launch.
+            _singleInstanceMutex = new Mutex(
+                true,
+                @"Local\WindowsAutoPowerManager.SingleInstance",
+                out bool createdNew);
+
+            if (createdNew)
             {
-                if (p.Id != curr.Id &&
-                    p.MainModule.FileName == curr.MainModule.FileName)
-                {
-                    return p;
-                }
+                return true;
             }
 
-            return null;
+            _singleInstanceMutex.Dispose();
+            _singleInstanceMutex = null;
+            return false;
         }
-
 
         /// <summary>
         ///     The main entry point for the application.
@@ -43,7 +49,7 @@ namespace WindowsAutoPowerManager
                     SettingsStorage.Save(SettingsINI.DefaulSettingFile());
                 }
 
-                if (PriorProcess() != null)
+                if (!TryClaimSingleInstance())
                 {
                     return;
                 }
