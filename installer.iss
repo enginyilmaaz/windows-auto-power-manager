@@ -33,6 +33,12 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x86 x64
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
+; Pick the language from Windows every time. Without these the wizard language depended on
+; Inno's defaults and on whatever a previous install happened to record, which is how an
+; installer came up in a language unrelated to the system.
+ShowLanguageDialog=no
+LanguageDetectionMethod=uilanguage
+UsePreviousLanguage=no
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
