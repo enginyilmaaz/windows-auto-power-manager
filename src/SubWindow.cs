@@ -17,6 +17,7 @@ namespace WindowsAutoPowerManager
         private bool _webViewReady;
         private bool _webViewInitStarted;
         private bool _isPrewarmedHidden;
+        private bool _isSuspended;
         private bool _allowClose;
         private Panel _loadingOverlay;
         private Label _loadingLabel;
@@ -96,6 +97,45 @@ namespace WindowsAutoPowerManager
             _webViewReady = true;
             HideLoadingOverlay();
             SendInitData();
+            SuspendWebViewIfHidden();
+        }
+
+        // Prewarmed sub-windows stay alive for the whole session so they open instantly, but an
+        // idle renderer holds around 90 MB. Suspending frees most of that while keeping the
+        // warmed-up navigation, so reopening is still immediate.
+        private async void SuspendWebViewIfHidden()
+        {
+            if (IsDisposed || _isSuspended || webView?.CoreWebView2 == null) return;
+            if (Visible && Opacity > 0) return;
+
+            try
+            {
+                webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                _isSuspended = await webView.CoreWebView2.TrySuspendAsync();
+            }
+            catch
+            {
+                // Suspension is a memory optimization only, never a correctness requirement.
+            }
+        }
+
+        private void ResumeWebView()
+        {
+            if (IsDisposed || webView?.CoreWebView2 == null) return;
+
+            try
+            {
+                if (_isSuspended)
+                {
+                    webView.CoreWebView2.Resume();
+                    _isSuspended = false;
+                }
+
+                webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+            }
+            catch
+            {
+            }
         }
 
         private void InitializeLoadingOverlay(bool isDark)
@@ -167,6 +207,8 @@ namespace WindowsAutoPowerManager
         {
             if (IsDisposed) return;
 
+            ResumeWebView();
+
             ShowInTaskbar = true;
             Opacity = 1;
 
@@ -207,6 +249,7 @@ namespace WindowsAutoPowerManager
             {
                 e.Cancel = true;
                 Hide();
+                SuspendWebViewIfHidden();
                 return;
             }
 

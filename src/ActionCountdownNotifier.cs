@@ -27,6 +27,7 @@ namespace WindowsAutoPowerManager
         private bool _hasPendingNotification;
         private bool _showAfterInitialized;
         private bool _isPrewarmedHidden;
+        private bool _isSuspended;
         private bool _initSent;
         private bool _timerStarted;
         private Panel _loadingOverlay;
@@ -92,6 +93,10 @@ namespace WindowsAutoPowerManager
             int _showTimeSecond,
             ActionModel _action)
         {
+            // Must run before the init payload is posted: a suspended renderer would not process
+            // the countdown message until it is resumed.
+            ResumeWebView();
+
             ConfigureNotification(
                 _messageTitle,
                 _messageContentCountdownNotify,
@@ -224,6 +229,44 @@ namespace WindowsAutoPowerManager
             if (_webViewReady) return;
             _webViewReady = true;
             TrySendInitData();
+            SuspendWebViewIfHidden();
+        }
+
+        // The notifier is prewarmed and then sits hidden for hours between countdowns. Suspending
+        // releases most of the renderer memory without giving up the warmed-up navigation.
+        private async void SuspendWebViewIfHidden()
+        {
+            if (IsDisposed || _isSuspended || _hasPendingNotification || webView?.CoreWebView2 == null) return;
+            if (Visible && Opacity > 0) return;
+
+            try
+            {
+                webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Low;
+                _isSuspended = await webView.CoreWebView2.TrySuspendAsync();
+            }
+            catch
+            {
+                // Suspension is a memory optimization only, never a correctness requirement.
+            }
+        }
+
+        private void ResumeWebView()
+        {
+            if (IsDisposed || webView?.CoreWebView2 == null) return;
+
+            try
+            {
+                if (_isSuspended)
+                {
+                    webView.CoreWebView2.Resume();
+                    _isSuspended = false;
+                }
+
+                webView.CoreWebView2.MemoryUsageTargetLevel = CoreWebView2MemoryUsageTargetLevel.Normal;
+            }
+            catch
+            {
+            }
         }
 
         private void TrySendInitData()
@@ -322,6 +365,8 @@ namespace WindowsAutoPowerManager
 
         private void ShowForUser()
         {
+            ResumeWebView();
+
             _showAfterInitialized = false;
             ShowInTaskbar = false;
             if (_isPrewarmedHidden)
@@ -365,6 +410,7 @@ namespace WindowsAutoPowerManager
                 Location = new Point(-32000, -32000);
                 Opacity = 0;
                 _isPrewarmedHidden = true;
+                SuspendWebViewIfHidden();
             }
         }
 

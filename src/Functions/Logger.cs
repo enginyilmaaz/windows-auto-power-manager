@@ -17,6 +17,7 @@ namespace WindowsAutoPowerManager.Functions
         private static List<LogSystem> _logCache = new List<LogSystem>();
         private static Timer _flushTimer;
         private static bool _initialized;
+        private static bool _logsLoaded;
         private static bool _logsEnabled = true;
 
         public static void Initialize(Settings settings)
@@ -82,6 +83,8 @@ namespace WindowsAutoPowerManager.Functions
 
             lock (SyncRoot)
             {
+                EnsureLogsLoadedLocked();
+
                 int startIndex = Math.Max(0, _logCache.Count - limit);
                 var result = new List<LogSystem>(_logCache.Count - startIndex);
 
@@ -100,6 +103,8 @@ namespace WindowsAutoPowerManager.Functions
 
             lock (SyncRoot)
             {
+                // The file is deleted below, so there is nothing left worth loading from disk.
+                _logsLoaded = true;
                 _logCache.Clear();
                 _flushTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
             }
@@ -123,6 +128,8 @@ namespace WindowsAutoPowerManager.Functions
 
             lock (SyncRoot)
             {
+                // The incoming set replaces the history outright, so a disk load would be discarded.
+                _logsLoaded = true;
                 _logCache = logs?
                     .Where(log => log != null)
                     .Select(log => new LogSystem
@@ -150,6 +157,9 @@ namespace WindowsAutoPowerManager.Functions
                     return;
                 }
 
+                // Without this the stored history would be replaced by the entries added since
+                // startup, because the flush rewrites the whole file from the cache.
+                EnsureLogsLoadedLocked();
                 snapshot = new List<LogSystem>(_logCache);
             }
 
@@ -182,11 +192,32 @@ namespace WindowsAutoPowerManager.Functions
 
                 Settings resolvedSettings = settings ?? SettingsStorage.LoadOrDefault();
                 _logsEnabled = resolvedSettings?.LogsEnabled ?? true;
-                _logCache = ReadLogsFromDisk();
-                TrimToLimitLocked();
                 _flushTimer = new Timer(_ => Flush(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
                 _initialized = true;
             }
+        }
+
+        // The log file grows to thousands of entries, and appending one line at startup does not
+        // need any of them. Reading is deferred to the first flush (which runs on the timer's
+        // thread pool thread) or to the first reader, keeping the parse off the startup path.
+        private static void EnsureLogsLoadedLocked()
+        {
+            if (_logsLoaded)
+            {
+                return;
+            }
+
+            _logsLoaded = true;
+
+            List<LogSystem> fromDisk = ReadLogsFromDisk();
+            if (fromDisk.Count > 0)
+            {
+                // Entries recorded before the load keep their order after the stored history.
+                fromDisk.AddRange(_logCache);
+                _logCache = fromDisk;
+            }
+
+            TrimToLimitLocked();
         }
 
         private static List<LogSystem> ReadLogsFromDisk()
