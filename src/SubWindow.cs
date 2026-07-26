@@ -812,7 +812,7 @@ namespace WindowsAutoPowerManager
         private static int ResolveLogsLimit(JsonElement data)
         {
             const int defaultLimit = 250;
-            const int maxLimit = 5000;
+            const int maxLimit = Logger.MaxLogCount;
             int limit = defaultLimit;
 
             if (data.ValueKind == JsonValueKind.Object &&

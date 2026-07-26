@@ -12,7 +12,9 @@ namespace WindowsAutoPowerManager.Functions
         private static readonly object SyncRoot = new object();
         private static readonly string LogPath = Path.Combine(AppContext.BaseDirectory, "Logs.json");
         private static readonly TimeSpan FlushDelay = TimeSpan.FromSeconds(1);
-        private const int MaxLogCount = 5000;
+        // Every flush rewrites the whole file, so retention directly sets the write cost of each
+        // logged action. The viewer requests 250 by default, so this still keeps ample history.
+        public const int MaxLogCount = 1000;
 
         private static List<LogSystem> _logCache = new List<LogSystem>();
         private static Timer _flushTimer;
@@ -163,7 +165,9 @@ namespace WindowsAutoPowerManager.Functions
                 snapshot = new List<LogSystem>(_logCache);
             }
 
-            JsonWriter.WriteJson(LogPath, true, snapshot);
+            // Written compact: the log is machine-read, and indenting roughly doubles the bytes
+            // rewritten on every flush.
+            JsonWriter.WriteJson(LogPath, false, snapshot);
         }
 
         private static void EnsureInitialized(Settings settings)
