@@ -74,6 +74,7 @@ namespace WindowsAutoPowerManager.Lang
                 LogViewerFormUnlockComputer = "Bilgisayarın kilidi açıldı",
                 LogViewerFormSleepComputer = "Bilgisayarı otomatik olarak uyku moduna alındı",
                 LogViewerFormTurnOffMonitor = "Ekran otomatik olarak kapatıldı",
+                LogViewerFormTurnOffMonitorFailed = "Ekran kapatılamadı",
                 LogViewerFormShutdownComputer = "Bilgisayar otomatik olarak  kapatıldı",
                 LogViewerFormRestartComputer = "Bilgisayar otomatik olarak  yeniden başlatıldı",
                 LogViewerFormLogOffWindows = "Oturum otomatik olarak  kapatıldı",

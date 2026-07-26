@@ -82,6 +82,7 @@
         public string LogViewerFormUnlockComputer { get; set; }
         public string LogViewerFormSleepComputer { get; set; }
         public string LogViewerFormTurnOffMonitor { get; set; }
+        public string LogViewerFormTurnOffMonitorFailed { get; set; }
         public string LogViewerFormShutdownComputer { get; set; }
         public string LogViewerFormRestartComputer { get; set; }
         public string LogViewerFormLogOffWindows { get; set; }

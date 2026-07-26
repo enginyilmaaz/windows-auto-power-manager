@@ -291,6 +291,10 @@ namespace WindowsAutoPowerManager.Functions
 
                 if (!SetMonitorState(MonitorState.OFF))
                 {
+                    // Without this the action leaves no trace at all when the display refuses to
+                    // turn off, which makes the difference between "suppressed" and "attempted and
+                    // failed" invisible in the log.
+                    Logger.DoLog(Config.ActionTypes.TurnOffMonitorFailed);
                     return;
                 }
 

@@ -5,6 +5,7 @@ namespace WindowsAutoPowerManager.Config
         public static readonly string LockComputer = "LockComputer";
         public static readonly string SleepComputer = "SleepComputer";
         public static readonly string TurnOffMonitor = "TurnOffMonitor";
+        public static readonly string TurnOffMonitorFailed = "TurnOffMonitorFailed";
         public static readonly string ShutdownComputer = "ShutdownComputer";
         public static readonly string RestartComputer = "RestartComputer";
         public static readonly string LogOffWindows = "LogOffWindows";

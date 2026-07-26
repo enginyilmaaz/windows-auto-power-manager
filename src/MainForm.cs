@@ -1229,6 +1229,8 @@ namespace WindowsAutoPowerManager
             if (raw == Config.ActionTypes.LogOffWindows) return Language.LogViewerFormLogOffWindows;
             if (raw == Config.ActionTypes.SleepComputer) return Language.LogViewerFormSleepComputer;
             if (raw == Config.ActionTypes.TurnOffMonitor) return Language.LogViewerFormTurnOffMonitor;
+            // Languages whose stored file predates this key fall back to the raw type.
+            if (raw == Config.ActionTypes.TurnOffMonitorFailed) return Language.LogViewerFormTurnOffMonitorFailed ?? raw;
             if (raw == Config.ActionTypes.AppStarted) return Language.LogViewerFormAppStarted;
             if (raw == Config.ActionTypes.AppTerminated) return Language.LogViewerFormAppTerminated;
             return raw;

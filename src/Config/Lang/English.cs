@@ -75,6 +75,7 @@ namespace WindowsAutoPowerManager.Lang
                 LogViewerFormUnlockComputer = "The computer was unlocked",
                 LogViewerFormSleepComputer = "The computer was put to sleep automatically",
                 LogViewerFormTurnOffMonitor = "The monitor was turned off automatically",
+                LogViewerFormTurnOffMonitorFailed = "The monitor could not be turned off",
                 LogViewerFormShutdownComputer = "The monitor was shutdown automatically",
                 LogViewerFormRestartComputer = "The monitor was restarted automatically",
                 LogViewerFormLogOffWindows = "The session was logged off automatically",
