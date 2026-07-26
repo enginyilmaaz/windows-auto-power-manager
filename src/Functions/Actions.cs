@@ -153,9 +153,18 @@ namespace WindowsAutoPowerManager.Functions
             private const uint MonitorPowerCallTimeoutMs = 1500;
             private const long MonitorOffCooldownMs = 8000;
             private const long MonitorWakeGuardMs = 15000;
-            private const long MonitorWakeTrackingWindowMs = 30000;
+            private const int DisplayStateUnknown = -1;
+            private const int DisplayStateOff = 0;
+            private const int DisplayStateOn = 1;
             private static long _lastMonitorOffTick = -MonitorOffCooldownMs;
             private static long _lastWakeInteractionTick = -MonitorWakeGuardMs;
+
+            // Last state reported by GUID_CONSOLE_DISPLAY_STATE, or DisplayStateUnknown until
+            // the first notification arrives.
+            private static int _displayState = DisplayStateUnknown;
+
+            // 1 while a monitor off we issued has not been followed by the display coming back on.
+            private static int _monitorOffInEffect;
 
             [DllImport("user32.dll", SetLastError = true)]
             private static extern IntPtr SendMessageTimeout(
@@ -212,26 +221,55 @@ namespace WindowsAutoPowerManager.Functions
                 return false;
             }
 
-            public static void RecordPotentialWakeInteraction()
+            // Called from the display power notification (GUID_CONSOLE_DISPLAY_STATE). The input
+            // that wakes a display turned off through SC_MONITORPOWER is frequently consumed as
+            // the wake event and never reaches GetLastInputInfo, so this is the only dependable
+            // signal that the user is back in front of the screen.
+            public static void NotifyDisplayStateChanged(bool isDisplayOn)
             {
-                long nowTick = Environment.TickCount64;
-                long lastMonitorOffTick = Interlocked.Read(ref _lastMonitorOffTick);
+                Interlocked.Exchange(ref _displayState, isDisplayOn ? DisplayStateOn : DisplayStateOff);
 
-                if (nowTick - lastMonitorOffTick > MonitorWakeTrackingWindowMs)
+                if (!isDisplayOn)
                 {
                     return;
                 }
 
-                Interlocked.Exchange(ref _lastWakeInteractionTick, nowTick);
+                Interlocked.Exchange(ref _monitorOffInEffect, 0);
+                Interlocked.Exchange(ref _lastWakeInteractionTick, Environment.TickCount64);
+            }
+
+            public static void RecordPotentialWakeInteraction()
+            {
+                // Observed input means the screen is visible. This also self-heals the tracked
+                // state if a display on notification was missed while the recipient window handle
+                // was being recreated, which would otherwise suppress monitor off permanently.
+                Interlocked.CompareExchange(ref _displayState, DisplayStateOn, DisplayStateOff);
+
+                // The wake guard is only meaningful while a monitor off we issued is still in
+                // effect. Arming it on ordinary activity would delay every later monitor off by
+                // the guard duration, so the flag is consumed on the first input that follows.
+                if (Interlocked.CompareExchange(ref _monitorOffInEffect, 0, 1) != 1)
+                {
+                    return;
+                }
+
+                Interlocked.Exchange(ref _lastWakeInteractionTick, Environment.TickCount64);
             }
 
             public static void RecordSystemResume()
             {
+                Interlocked.Exchange(ref _monitorOffInEffect, 0);
+                Interlocked.Exchange(ref _displayState, DisplayStateUnknown);
                 Interlocked.Exchange(ref _lastWakeInteractionTick, Environment.TickCount64);
             }
 
             private static bool IsMonitorOffSuppressed()
             {
+                if (Interlocked.CompareExchange(ref _displayState, 0, 0) == DisplayStateOff)
+                {
+                    return true;
+                }
+
                 long nowTick = Environment.TickCount64;
                 long lastTick = Interlocked.Read(ref _lastMonitorOffTick);
 
@@ -259,6 +297,7 @@ namespace WindowsAutoPowerManager.Functions
                 long nowTick = Environment.TickCount64;
                 Interlocked.Exchange(ref _lastWakeInteractionTick, -MonitorWakeGuardMs);
                 Interlocked.Exchange(ref _lastMonitorOffTick, nowTick);
+                Interlocked.Exchange(ref _monitorOffInEffect, 1);
                 Logger.DoLog(Config.ActionTypes.TurnOffMonitor);
             }
         }

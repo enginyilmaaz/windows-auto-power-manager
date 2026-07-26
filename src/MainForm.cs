@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using System.Windows.Forms;
 using Microsoft.Web.WebView2.Core;
@@ -47,6 +48,29 @@ namespace WindowsAutoPowerManager
         private const int WM_POWERBROADCAST = 0x0218;
         private const int PBT_APMRESUMESUSPEND = 0x0007;
         private const int PBT_APMRESUMEAUTOMATIC = 0x0012;
+        private const int PBT_POWERSETTINGCHANGE = 0x8013;
+        private const uint DEVICE_NOTIFY_WINDOW_HANDLE = 0x00000000;
+        private static readonly Guid GuidConsoleDisplayState =
+            new Guid("6fe69556-704a-47a0-8f24-c28d936fda47");
+        private IntPtr _displayStateNotificationHandle = IntPtr.Zero;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        private static extern IntPtr RegisterPowerSettingNotification(
+            IntPtr recipient,
+            ref Guid powerSettingGuid,
+            uint flags);
+
+        [DllImport("user32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool UnregisterPowerSettingNotification(IntPtr handle);
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        private struct POWERBROADCAST_SETTING
+        {
+            public Guid PowerSetting;
+            public uint DataLength;
+            public byte Data;
+        }
 
         [Flags]
         private enum ActionExecutionResult
@@ -130,6 +154,31 @@ namespace WindowsAutoPowerManager
             base.OnLoad(e);
         }
 
+        protected override void OnHandleCreated(EventArgs e)
+        {
+            base.OnHandleCreated(e);
+
+            if (_displayStateNotificationHandle == IntPtr.Zero)
+            {
+                Guid displayStateGuid = GuidConsoleDisplayState;
+                _displayStateNotificationHandle = RegisterPowerSettingNotification(
+                    Handle,
+                    ref displayStateGuid,
+                    DEVICE_NOTIFY_WINDOW_HANDLE);
+            }
+        }
+
+        protected override void OnHandleDestroyed(EventArgs e)
+        {
+            if (_displayStateNotificationHandle != IntPtr.Zero)
+            {
+                UnregisterPowerSettingNotification(_displayStateNotificationHandle);
+                _displayStateNotificationHandle = IntPtr.Zero;
+            }
+
+            base.OnHandleDestroyed(e);
+        }
+
         protected override void WndProc(ref Message m)
         {
             if (m.Msg == WM_POWERBROADCAST)
@@ -139,9 +188,39 @@ namespace WindowsAutoPowerManager
                 {
                     HandleSystemResume();
                 }
+                else if (powerEvent == PBT_POWERSETTINGCHANGE)
+                {
+                    HandleDisplayStateChange(m.LParam);
+                }
             }
 
             base.WndProc(ref m);
+        }
+
+        private void HandleDisplayStateChange(IntPtr lParam)
+        {
+            if (lParam == IntPtr.Zero)
+            {
+                return;
+            }
+
+            POWERBROADCAST_SETTING setting;
+            try
+            {
+                setting = Marshal.PtrToStructure<POWERBROADCAST_SETTING>(lParam);
+            }
+            catch
+            {
+                return;
+            }
+
+            if (setting.PowerSetting != GuidConsoleDisplayState || setting.DataLength < 1)
+            {
+                return;
+            }
+
+            // 0 = off, 1 = on, 2 = dimmed. Anything other than off means the screen is visible.
+            Actions.TurnOff.NotifyDisplayStateChanged(setting.Data != 0);
         }
 
         public void DeleteExpriedAction()
@@ -496,9 +575,12 @@ namespace WindowsAutoPowerManager
 
         private void HandleSystemResume()
         {
+            // Executed idle actions are deliberately not cleared here. A resume triggered by the
+            // power button leaves the idle counter above the threshold, so re-arming on resume
+            // made the action fire again immediately. Each action re-arms itself in DoAction once
+            // the idle counter drops back below its own threshold.
             _lastObservedIdleTimeSec = null;
             NotifySystem.ResetIdleNotifications();
-            _executedIdleActionKeys.Clear();
             Actions.TurnOff.RecordSystemResume();
         }
 
@@ -1654,7 +1736,17 @@ namespace WindowsAutoPowerManager
                     return ActionExecutionResult.None;
                 }
 
-                if (idleTimeSec >= state.IdleSeconds && _executedIdleActionKeys.Add(actionKey))
+                if (idleTimeSec < state.IdleSeconds)
+                {
+                    // Re-arm only once the idle counter genuinely falls back below this action's
+                    // own threshold. Re-arming on any decrease of the idle counter let the action
+                    // fire again while the system was still past the threshold, which turned the
+                    // display off and on repeatedly.
+                    _executedIdleActionKeys.Remove(actionKey);
+                    return ActionExecutionResult.None;
+                }
+
+                if (_executedIdleActionKeys.Add(actionKey))
                 {
                     Actions.DoActionByTypes(action);
                     return ActionExecutionResult.Executed;
@@ -1824,7 +1916,6 @@ namespace WindowsAutoPowerManager
             if (idleTimeSec == 0 || hadRecentUserActivity)
             {
                 NotifySystem.ResetIdleNotifications();
-                _executedIdleActionKeys.Clear();
             }
 
             if (_cachedSettings == null)
