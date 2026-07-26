@@ -9,6 +9,7 @@ on:
     paths:
       - '.github/workflows/build-and-release.yml'
       - 'src/**'
+      - 'tests/**'
       - '*.sln'
       - '*.csproj'
       - 'installer.iss'
@@ -48,6 +49,11 @@ jobs:
 
       - name: Minify CSS
         run: node tools/minify-css.js
+
+      # Runs before the version is determined, so a failure stops the run without
+      # consuming a release number.
+      - name: Run tests
+        run: dotnet test "tests/WindowsAutoPowerManager.Tests/WindowsAutoPowerManager.Tests.csproj" -c Release --no-restore
 
       - name: Determine version and commit info
         id: version

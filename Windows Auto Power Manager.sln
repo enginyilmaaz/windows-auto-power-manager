@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29905.134
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Windows Auto Power Manager", "Windows Auto Power Manager.csproj", "{9E741018-0E77-4458-BCDE-803A66EEF48C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WindowsAutoPowerManager.Tests", "tests\WindowsAutoPowerManager.Tests\WindowsAutoPowerManager.Tests.csproj", "{7C3A1E62-9B4D-4F58-A1D6-2E5B8C0F3A47}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{9E741018-0E77-4458-BCDE-803A66EEF48C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9E741018-0E77-4458-BCDE-803A66EEF48C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9E741018-0E77-4458-BCDE-803A66EEF48C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C3A1E62-9B4D-4F58-A1D6-2E5B8C0F3A47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C3A1E62-9B4D-4F58-A1D6-2E5B8C0F3A47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C3A1E62-9B4D-4F58-A1D6-2E5B8C0F3A47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C3A1E62-9B4D-4F58-A1D6-2E5B8C0F3A47}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

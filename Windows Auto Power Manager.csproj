@@ -28,6 +28,18 @@
 
   </ItemGroup>
 
+  <!-- This project sits at the repository root, so the SDK's default globs would otherwise
+       compile the test project's sources into the application. -->
+  <ItemGroup>
+    <Compile Remove="tests/**" />
+    <EmbeddedResource Remove="tests/**" />
+    <None Remove="tests/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="WindowsAutoPowerManager.Tests" />
+  </ItemGroup>
+
   <ItemGroup>
     <Content Include="src\WebView\**\*">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
