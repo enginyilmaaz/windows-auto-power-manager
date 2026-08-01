@@ -124,6 +124,8 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormUpdateDaily = "Daily",
                 SettingsFormUpdateWeekly = "Weekly",
                 UpdateTitle = "Update",
+                UpdateCheckButton = "Check for updates",
+                UpdateChecking = "Checking...",
                 UpdateAvailableTitle = "Update available",
                 UpdateAvailableMessage = "A newer version is available.",
                 UpdateLater = "Later",

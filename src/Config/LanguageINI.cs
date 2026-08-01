@@ -132,6 +132,8 @@
         public string SettingsFormUpdateDaily { get; set; }
         public string SettingsFormUpdateWeekly { get; set; }
         public string UpdateTitle { get; set; }
+        public string UpdateCheckButton { get; set; }
+        public string UpdateChecking { get; set; }
         public string UpdateAvailableTitle { get; set; }
         public string UpdateAvailableMessage { get; set; }
         public string UpdateLater { get; set; }

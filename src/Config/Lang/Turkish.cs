@@ -124,6 +124,8 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormUpdateDaily = "Günlük",
                 SettingsFormUpdateWeekly = "Haftalık",
                 UpdateTitle = "Güncelleme",
+                UpdateCheckButton = "Güncelleme kontrolü yap",
+                UpdateChecking = "Kontrol ediliyor...",
                 UpdateAvailableTitle = "Güncelleme mevcut",
                 UpdateAvailableMessage = "Yeni bir sürüm yayınlandı.",
                 UpdateLater = "Sonra",

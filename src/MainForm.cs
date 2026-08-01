@@ -1220,7 +1220,7 @@ namespace WindowsAutoPowerManager
                 if (info.IsAvailable)
                 {
                     _pendingUpdate = info;
-                    PostMessage("updateAvailable", new
+                    BroadcastUpdateMessage("updateAvailable", new
                     {
                         current = info.CurrentVersion,
                         latest = info.LatestVersion,
@@ -1233,7 +1233,7 @@ namespace WindowsAutoPowerManager
                 // A scheduled check stays silent; only an explicit request reports the outcome.
                 if (isManual)
                 {
-                    PostMessage("updateStatus", new
+                    BroadcastUpdateMessage("updateStatus", new
                     {
                         reason = info.Reason,
                         current = info.CurrentVersion,
@@ -1591,6 +1591,28 @@ namespace WindowsAutoPowerManager
             {
                 RefreshLanguageUI();
             }
+        }
+
+        /// <summary>
+        ///     Update outcomes reach the sub-windows as well, so the About page can report the
+        ///     result of a check the user started there.
+        /// </summary>
+        private void BroadcastUpdateMessage(string type, object data)
+        {
+            PostMessage(type, data);
+
+            foreach (SubWindow subWindow in _subWindows.Values.ToList())
+            {
+                if (!subWindow.IsDisposed)
+                {
+                    subWindow.PostUpdateMessage(type, data);
+                }
+            }
+        }
+
+        public void RequestUpdateCheck()
+        {
+            _ = RunUpdateCheckAsync(isManual: true);
         }
 
         private void BroadcastSubWindowSettings()

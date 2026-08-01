@@ -21,6 +21,12 @@ window.AboutPage = {
                             '<span class="about-value">' + version + '</span>' +
                         '</div>' +
                         '<div class="about-row">' +
+                            '<button class="btn btn-secondary about-update-btn" id="about-check-update">' +
+                                (L('UpdateCheckButton') || 'Check for updates') +
+                            '</button>' +
+                            '<span class="about-update-status" id="about-update-status"></span>' +
+                        '</div>' +
+                        '<div class="about-row">' +
                             '<span class="about-label">' + (L('AboutLabelBuildId') || 'Build ID') + '</span>' +
                             '<span class="about-value">' + buildId + '</span>' +
                         '</div>' +
@@ -57,5 +63,57 @@ window.AboutPage = {
                 Bridge.send('closeWindow', {});
             });
         }
+
+        this._wireUpdateCheck();
+    },
+
+    _wireUpdateCheck() {
+        var button = document.getElementById('about-check-update');
+        var status = document.getElementById('about-update-status');
+        if (!button || !status) return;
+
+        var self = this;
+        button.addEventListener('click', function () {
+            button.disabled = true;
+            status.className = 'about-update-status';
+            status.textContent = self._text('UpdateChecking', 'Checking...');
+            Bridge.send('checkUpdate', {});
+        });
+
+        // Subscribed once for the lifetime of the window: afterRender runs again on every
+        // navigation, and re-subscribing would stack a handler per visit. The elements are looked
+        // up at delivery time because a later render replaces them.
+        if (this._updateListenersBound) return;
+        this._updateListenersBound = true;
+
+        function report(message, tone) {
+            var el = document.getElementById('about-update-status');
+            var btn = document.getElementById('about-check-update');
+            if (btn) btn.disabled = false;
+            if (!el) return;
+            el.textContent = message;
+            el.className = 'about-update-status' + (tone ? ' about-update-status-' + tone : '');
+        }
+
+        // The result arrives as a broadcast, so the outcome is shown here rather than only in
+        // the main window where the download dialog lives.
+        Bridge.on('updateAvailable', function (data) {
+            report(self._text('UpdateAvailableTitle', 'Update available') + ': v' + ((data && data.latest) || '?'), 'available');
+        });
+
+        Bridge.on('updateStatus', function (data) {
+            var reason = data && data.reason;
+            if (reason === 'installing') return;
+            if (reason === 'up-to-date') {
+                report(self._text('UpdateUpToDate', 'You are on the latest version.'), 'ok');
+                return;
+            }
+            report(self._text('UpdateFailed', 'Could not complete the update.'), 'error');
+        });
+    },
+
+    _text(key, fallback) {
+        var value = Bridge.lang(key);
+        return (value && value !== key) ? value : fallback;
     }
 };

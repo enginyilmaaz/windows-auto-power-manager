@@ -424,7 +424,17 @@ namespace WindowsAutoPowerManager
                 case "closeWindow":
                     Close();
                     break;
+                case "checkUpdate":
+                    // The main form owns the update state, so the request is forwarded rather
+                    // than run here where a second check could start in parallel.
+                    Application.OpenForms.OfType<MainForm>().FirstOrDefault()?.RequestUpdateCheck();
+                    break;
             }
+        }
+
+        public void PostUpdateMessage(string type, object data)
+        {
+            PostMessage(type, data);
         }
 
         // =============== Action Handlers ===============
