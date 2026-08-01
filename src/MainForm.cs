@@ -81,15 +81,7 @@ namespace WindowsAutoPowerManager
             MaximizeBox = false;
             ApplyExecutableIcon();
 
-            string[] args = Environment.GetCommandLineArgs();
-            foreach (string arg in args)
-            {
-                if (arg == "-runInTaskBar")
-                {
-                    _startMinimizedToTray = true;
-                    break;
-                }
-            }
+            _startMinimizedToTray = StartWithWindows.IsRunInTaskBarRequested(Environment.GetCommandLineArgs());
 
             bool isDark = ReadCachedThemeIsDark();
             CreateWebViewControl(isDark);
@@ -296,6 +288,7 @@ namespace WindowsAutoPowerManager
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
                 Logger.Initialize(_cachedSettings);
+                RepairStartupRegistration(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
                 ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
                 ContextMenuStripNotifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
@@ -317,6 +310,22 @@ namespace WindowsAutoPowerManager
 
                 Logger.DoLog(Config.ActionTypes.AppStarted, _cachedSettings);
             }
+        }
+
+        /// <summary>
+        ///     Rewrites the startup entry on every launch while the setting is on. It was only ever
+        ///     written when the setting was saved, so an entry created before the tray argument
+        ///     existed kept launching the visible window forever, with the setting still reading as
+        ///     enabled. Writing it again is cheap and repairs entries altered outside the app.
+        /// </summary>
+        private void RepairStartupRegistration(Settings settings)
+        {
+            if (settings == null || !settings.StartWithWindows)
+            {
+                return;
+            }
+
+            StartWithWindows.AddStartup(Language.SettingsFormAddStartupAppName ?? Constants.AppName);
         }
 
         private async System.Threading.Tasks.Task InitializeWebView()

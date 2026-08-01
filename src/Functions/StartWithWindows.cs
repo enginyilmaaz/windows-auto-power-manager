@@ -13,7 +13,31 @@ namespace WindowsAutoPowerManager.Functions
 
         private static string StartupCommand
         {
-            get { return "\"" + Application.ExecutablePath + "\" -runInTaskBar"; }
+            get { return "\"" + Application.ExecutablePath + "\" " + Config.Constants.RunInTaskBarArgument; }
+        }
+
+        /// <summary>
+        ///     Reports whether the process was launched by the startup entry and should stay in the
+        ///     tray. The switch prefix is ignored because an entry rewritten by hand or by another
+        ///     tool may use either form, and an unrecognised switch silently shows the window.
+        /// </summary>
+        public static bool IsRunInTaskBarRequested(string[] args)
+        {
+            if (args == null)
+            {
+                return false;
+            }
+
+            foreach (string arg in args)
+            {
+                string switchName = arg?.TrimStart('-', '/');
+                if (string.Equals(switchName, Config.Constants.RunInTaskBarSwitch, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static void AddStartup(string appTitle)
@@ -122,7 +146,7 @@ namespace WindowsAutoPowerManager.Functions
                 shortcutType.InvokeMember("TargetPath", BindingFlags.SetProperty, null, shortcut,
                     new object[] { Application.ExecutablePath });
                 shortcutType.InvokeMember("Arguments", BindingFlags.SetProperty, null, shortcut,
-                    new object[] { "-runInTaskBar" });
+                    new object[] { Config.Constants.RunInTaskBarArgument });
                 shortcutType.InvokeMember("WorkingDirectory", BindingFlags.SetProperty, null, shortcut,
                     new object[] { AppContext.BaseDirectory });
                 shortcutType.InvokeMember("Description", BindingFlags.SetProperty, null, shortcut,
