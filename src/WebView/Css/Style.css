@@ -2488,15 +2488,24 @@ body.subwindow-host .help-page-nav {
 }
 
 /* Update check row on the About page. */
+.about-version-row {
+    gap: 10px;
+}
+
+/* Sits directly beside the version number rather than on a row of its own. */
 .about-update-btn {
-    padding: 6px 12px;
+    margin-left: auto;
+    padding: 5px 10px;
     font-size: 12px;
+    white-space: nowrap;
 }
 
 .about-update-status {
     font-size: 12px;
     color: var(--text-muted);
     text-align: right;
+    min-height: 16px;
+    margin: -2px 0 4px;
 }
 
 .about-update-status-ok {
