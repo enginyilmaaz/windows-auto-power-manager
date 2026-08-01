@@ -294,6 +294,8 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
+                updateCheckEnabled = resolved.UpdateCheckEnabled,
+                updateCheckInterval = UpdatePolicy.NormalizeInterval(resolved.UpdateCheckInterval),
                 appVersion = BuildMetadata.Version,
                 buildId = BuildMetadata.CommitId
             };
@@ -738,11 +740,17 @@ namespace WindowsAutoPowerManager
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),
-                Theme = data.GetProperty("theme").GetString()
+                Theme = data.GetProperty("theme").GetString(),
+                UpdateCheckEnabled = JsonPayload.ReadBoolean(data, "updateCheckEnabled", true),
+                UpdateCheckInterval = UpdatePolicy.NormalizeInterval(JsonPayload.ReadString(data, "updateCheckInterval"))
             };
 
             var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
             var previousSettings = main?.GetCachedSettingsOrDefault() ?? LoadSettings();
+
+            // The payload carries no schedule field, so rebuilding the settings from it would reset
+            // the interval on every save and a check would never come due.
+            newSettings.LastUpdateCheckUtc = previousSettings?.LastUpdateCheckUtc;
             string currentLang = previousSettings.Language;
             bool previousStartWithWindows = previousSettings.StartWithWindows;
             SettingsStorage.Save(newSettings);

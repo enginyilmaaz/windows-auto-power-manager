@@ -129,6 +129,15 @@ if (window.chrome && window.chrome.webview) {
                 Bridge._settings.theme = msg.data || 'system';
                 Bridge.applyTheme(msg.data);
                 break;
+            case 'updateAvailable':
+                Bridge._emit('updateAvailable', msg.data);
+                break;
+            case 'updateProgress':
+                Bridge._emit('updateProgress', msg.data);
+                break;
+            case 'updateStatus':
+                Bridge._emit('updateStatus', msg.data);
+                break;
             case 'addActionResult':
                 Bridge._emit('addActionResult', msg.data);
                 break;

@@ -126,6 +126,21 @@
         public string SettingsFormLabelStartWithWindows { get; set; }
         public string SettingsFormLabelRunInTaskbarWhenClosed { get; set; }
         public string SettingsFormLabelConfirmOnExit { get; set; }
+        public string SettingsFormLabelUpdateCheck { get; set; }
+        public string SettingsFormLabelUpdateInterval { get; set; }
+        public string SettingsFormUpdateHourly { get; set; }
+        public string SettingsFormUpdateDaily { get; set; }
+        public string SettingsFormUpdateWeekly { get; set; }
+        public string UpdateTitle { get; set; }
+        public string UpdateAvailableTitle { get; set; }
+        public string UpdateAvailableMessage { get; set; }
+        public string UpdateLater { get; set; }
+        public string UpdateInstall { get; set; }
+        public string UpdateDownloading { get; set; }
+        public string UpdateRunInBackground { get; set; }
+        public string UpdateInstalling { get; set; }
+        public string UpdateUpToDate { get; set; }
+        public string UpdateFailed { get; set; }
         public string SettingsFormLabelCountdownNotifierSeconds { get; set; }
         public string SettingsFormLabelIsCountdownNotifierEnabled { get; set; }
         public string SettingsFormCheckboxEnabled { get; set; }

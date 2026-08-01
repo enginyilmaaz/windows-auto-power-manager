@@ -13,6 +13,8 @@
 #endif
 #define MyAppPublisher "enginyilmaaz"
 #define MyAppExeName "Windows Auto Power Manager.exe"
+; Must match Constants.RunInTaskBarArgument so a relaunch after a silent update stays in the tray.
+#define RunInTaskBarArgument "-runInTaskBar"
 
 [Setup]
 AppId={{9E741018-0E77-4458-BCDE-803A66EEF48C}
@@ -117,7 +119,9 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall skipifsilent
+; No skipifsilent: the in-app updater installs silently and relies on this entry to bring the
+; app back, since a process cannot relaunch itself after exiting to release its own executable.
+Filename: "{app}\{#MyAppExeName}"; Parameters: "{#RunInTaskBarArgument}"; Description: "{cm:LaunchProgram,{#MyAppName}}"; Flags: nowait postinstall
 
 [Code]
 var

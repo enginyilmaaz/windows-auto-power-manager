@@ -41,6 +41,10 @@ namespace WindowsAutoPowerManager
         private bool _startupErrorShown;
         private bool _pendingOpenNewActionModal;
         private uint? _lastObservedIdleTimeSec;
+        private bool _updateCheckRunning;
+        private bool _updateDownloadRunning;
+        private bool _startupUpdateCheckStarted;
+        private UpdateInfo _pendingUpdate;
         private readonly ActionScheduler _scheduler = new ActionScheduler();
         private const int WM_POWERBROADCAST = 0x0218;
         private const int PBT_APMRESUMESUSPEND = 0x0007;
@@ -419,6 +423,22 @@ namespace WindowsAutoPowerManager
             TryDispatchPendingOpenNewActionModal();
             HideLoadingOverlay();
             StartSubWindowPrewarm();
+            StartStartupUpdateCheck();
+        }
+
+        /// <summary>
+        ///     Runs once per launch regardless of the interval, so a long-running install still
+        ///     learns about a release published while it was closed.
+        /// </summary>
+        private void StartStartupUpdateCheck()
+        {
+            if (_startupUpdateCheckStarted || _cachedSettings == null || !_cachedSettings.UpdateCheckEnabled)
+            {
+                return;
+            }
+
+            _startupUpdateCheckStarted = true;
+            _ = RunUpdateCheckAsync(isManual: false);
         }
 
         private void TryDispatchPendingOpenNewActionModal()
@@ -489,6 +509,8 @@ namespace WindowsAutoPowerManager
                 countdownNotifierSeconds = resolved.CountdownNotifierSeconds,
                 language = resolved.Language,
                 theme = resolved.Theme,
+                updateCheckEnabled = resolved.UpdateCheckEnabled,
+                updateCheckInterval = UpdatePolicy.NormalizeInterval(resolved.UpdateCheckInterval),
                 appVersion = BuildMetadata.Version,
                 buildId = BuildMetadata.CommitId
             };
@@ -770,6 +792,12 @@ namespace WindowsAutoPowerManager
                     break;
                 case "saveSettings":
                     HandleSaveSettings(data);
+                    break;
+                case "checkUpdate":
+                    _ = RunUpdateCheckAsync(isManual: true);
+                    break;
+                case "startUpdateDownload":
+                    _ = RunUpdateDownloadAsync();
                     break;
                 case "loadSettings":
                     HandleLoadSettings();
@@ -1122,7 +1150,14 @@ namespace WindowsAutoPowerManager
                 IsCountdownNotifierEnabled = data.GetProperty("isCountdownNotifierEnabled").GetBoolean(),
                 CountdownNotifierSeconds = data.GetProperty("countdownNotifierSeconds").GetInt32(),
                 Language = data.GetProperty("language").GetString(),
-                Theme = data.GetProperty("theme").GetString()
+                Theme = data.GetProperty("theme").GetString(),
+                UpdateCheckEnabled = JsonPayload.ReadBoolean(data, "updateCheckEnabled", true),
+                UpdateCheckInterval = UpdatePolicy.NormalizeInterval(JsonPayload.ReadString(data, "updateCheckInterval")),
+
+                // Carried over deliberately: the payload has no such field, so rebuilding the
+                // settings from it would reset the schedule on every save and the interval would
+                // never elapse.
+                LastUpdateCheckUtc = _cachedSettings?.LastUpdateCheckUtc
             };
 
             string currentLang = _cachedSettings?.Language ?? "auto";
@@ -1143,6 +1178,129 @@ namespace WindowsAutoPowerManager
         {
             var settingsObj = _cachedSettings ?? LoadSettings();
             PostMessage("settingsLoaded", BuildSettingsPayload(settingsObj));
+        }
+
+        // =============== Update Check ===============
+
+        /// <summary>
+        ///     Runs from the one-second tick. The schedule is stored in settings rather than kept in
+        ///     memory, so closing the app does not restart the interval.
+        /// </summary>
+        private void MaybeRunScheduledUpdateCheck(DateTime now)
+        {
+            if (_updateCheckRunning || _cachedSettings == null || !_cachedSettings.UpdateCheckEnabled)
+            {
+                return;
+            }
+
+            if (!UpdatePolicy.IsCheckDue(
+                    _cachedSettings.LastUpdateCheckUtc,
+                    now.ToUniversalTime(),
+                    _cachedSettings.UpdateCheckInterval))
+            {
+                return;
+            }
+
+            _ = RunUpdateCheckAsync(isManual: false);
+        }
+
+        private async System.Threading.Tasks.Task RunUpdateCheckAsync(bool isManual)
+        {
+            if (_updateCheckRunning)
+            {
+                return;
+            }
+
+            _updateCheckRunning = true;
+            try
+            {
+                UpdateInfo info = await UpdateChecker.CheckAsync();
+                RecordUpdateCheckTime();
+
+                if (info.IsAvailable)
+                {
+                    _pendingUpdate = info;
+                    PostMessage("updateAvailable", new
+                    {
+                        current = info.CurrentVersion,
+                        latest = info.LatestVersion,
+                        assetName = info.AssetName,
+                        releaseUrl = info.ReleaseUrl
+                    });
+                    return;
+                }
+
+                // A scheduled check stays silent; only an explicit request reports the outcome.
+                if (isManual)
+                {
+                    PostMessage("updateStatus", new
+                    {
+                        reason = info.Reason,
+                        current = info.CurrentVersion,
+                        latest = info.LatestVersion
+                    });
+                }
+            }
+            finally
+            {
+                _updateCheckRunning = false;
+            }
+        }
+
+        private void RecordUpdateCheckTime()
+        {
+            if (_cachedSettings == null)
+            {
+                return;
+            }
+
+            _cachedSettings.LastUpdateCheckUtc = DateTime.UtcNow;
+            SettingsStorage.Save(_cachedSettings);
+        }
+
+        private async System.Threading.Tasks.Task RunUpdateDownloadAsync()
+        {
+            UpdateInfo info = _pendingUpdate;
+            if (info == null || _updateDownloadRunning)
+            {
+                return;
+            }
+
+            _updateDownloadRunning = true;
+            try
+            {
+                var progress = new Progress<UpdateDownloadProgress>(value => PostMessage("updateProgress", new
+                {
+                    received = value.Received,
+                    total = value.Total
+                }));
+
+                string installerPath = await UpdateChecker.DownloadInstallerAsync(
+                    info, progress, System.Threading.CancellationToken.None);
+
+                if (!UpdateChecker.StartInstaller(installerPath))
+                {
+                    PostMessage("updateStatus", new { reason = UpdateInfo.ReasonError });
+                    return;
+                }
+
+                PostMessage("updateStatus", new { reason = "installing" });
+
+                // The installer cannot replace a running executable, so the app has to step aside.
+                // It relaunches the app once it is done.
+                IsApplicationExiting = true;
+                Logger.DoLog(Config.ActionTypes.AppTerminated, _cachedSettings);
+                Logger.Flush();
+                Application.Exit();
+            }
+            catch (Exception)
+            {
+                PostMessage("updateStatus", new { reason = UpdateInfo.ReasonError });
+            }
+            finally
+            {
+                _updateDownloadRunning = false;
+            }
         }
 
         private void HandleLoadLogs()
@@ -1750,6 +1908,8 @@ namespace WindowsAutoPowerManager
             {
                 WriteJsonToActionList();
             }
+
+            MaybeRunScheduledUpdateCheck(now);
 
 #if DEBUG
             DebugPerformanceTracker.Record("MainForm.TimerTick", perfStart);

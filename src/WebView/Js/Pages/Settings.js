@@ -101,6 +101,23 @@ window.SettingsPage = {
                         '</div>' +
                         '<input type="number" id="set-seconds" class="form-input" style="max-width:80px;text-align:center" min="0" max="30" value="' + (s.countdownNotifierSeconds || 5) + '">' +
                     '</div>' +
+
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + t('SettingsFormLabelUpdateCheck', 'Check for updates') + '</span>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-update-check"' + (s.updateCheckEnabled !== false ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
+
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' + t('SettingsFormLabelUpdateInterval', 'Update check interval') + '</span>' +
+                        '<select id="set-update-interval" class="form-select" style="max-width:200px">' +
+                            '<option value="hourly"' + (s.updateCheckInterval === 'hourly' ? ' selected' : '') + '>' + t('SettingsFormUpdateHourly', 'Hourly') + '</option>' +
+                            '<option value="daily"' + (s.updateCheckInterval === 'daily' || !s.updateCheckInterval ? ' selected' : '') + '>' + t('SettingsFormUpdateDaily', 'Daily') + '</option>' +
+                            '<option value="weekly"' + (s.updateCheckInterval === 'weekly' ? ' selected' : '') + '>' + t('SettingsFormUpdateWeekly', 'Weekly') + '</option>' +
+                        '</select>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="settings-actions subpage-footer">' +
@@ -149,6 +166,12 @@ window.SettingsPage = {
             if (el) el.checked = !!s.isCountdownNotifierEnabled;
             el = document.getElementById('set-seconds');
             if (el) el.value = s.countdownNotifierSeconds || 5;
+
+            el = document.getElementById('set-update-check');
+            if (el) el.checked = s.updateCheckEnabled !== false;
+
+            el = document.getElementById('set-update-interval');
+            if (el) el.value = s.updateCheckInterval || 'daily';
         });
         self._registerCleanup(offSettingsLoaded);
 
@@ -221,6 +244,8 @@ window.SettingsPage = {
                 confirmExitOnProgramExit: document.getElementById('set-confirm-exit').checked,
                 isCountdownNotifierEnabled: document.getElementById('set-countdown').checked,
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
+                updateCheckEnabled: document.getElementById('set-update-check').checked,
+                updateCheckInterval: document.getElementById('set-update-interval').value,
                 language: document.getElementById('set-lang').value,
                 theme: document.getElementById('set-theme').value
             };

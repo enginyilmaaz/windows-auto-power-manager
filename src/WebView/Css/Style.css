@@ -2393,3 +2393,96 @@ body.subwindow-host .help-page-nav {
     0%, 100% { opacity: 0.5; }
     50% { opacity: 1; }
 }
+
+/* ===== Update dialog ===== */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 12px 18px 16px;
+}
+
+.update-dialog .modal-body {
+    padding-bottom: 4px;
+}
+
+.update-message {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.update-versions {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 14px;
+}
+
+.update-arrow {
+    font-family: 'Material Icons Round';
+    font-size: 16px;
+    vertical-align: middle;
+    color: var(--text-muted);
+}
+
+.update-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    min-height: 16px;
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 999px;
+    background: var(--bg-input);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: 999px;
+    background: var(--btn-primary-bg);
+    transition: width 0.2s ease;
+}
+
+.progress-bar-slim {
+    height: 4px;
+    margin-top: 8px;
+}
+
+/* Floating progress shown after the dialog is sent to the background. */
+.update-pill {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    z-index: 1200;
+    width: 260px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.28);
+    animation: fadeIn 0.15s ease;
+}
+
+.update-pill-body {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 10px;
+}
+
+.update-pill-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.update-pill-text {
+    font-size: 11px;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
