@@ -1284,14 +1284,18 @@ namespace WindowsAutoPowerManager
                     return;
                 }
 
-                PostMessage("updateStatus", new { reason = "installing" });
+                BroadcastUpdateMessage("updateStatus", new { reason = "installing" });
 
-                // The installer cannot replace a running executable, so the app has to step aside.
-                // It relaunches the app once it is done.
+                // The installer cannot replace a running executable, so the app has to step aside;
+                // it relaunches the app once it is done. This mirrors the tray exit: ExitThread
+                // ends the message loop outright, whereas Application.Exit runs the closing
+                // handlers and gets cancelled while "run in taskbar when closed" is on.
                 IsApplicationExiting = true;
+                StopSubWindowPrewarm();
+                CloseAllSubWindows();
                 Logger.DoLog(Config.ActionTypes.AppTerminated, _cachedSettings);
                 Logger.Flush();
-                Application.Exit();
+                Application.ExitThread();
             }
             catch (Exception)
             {
@@ -1973,7 +1977,11 @@ namespace WindowsAutoPowerManager
             StopSubWindowPrewarm();
 
             Settings = _cachedSettings ?? LoadSettings();
-            if (Settings.RunInTaskbarWhenClosed)
+
+            // A deliberate shutdown must never be turned into a hide. Without this guard the
+            // process survives its own exit while "run in taskbar when closed" is on, which left
+            // the executable locked and made the update installer roll itself back.
+            if (!IsApplicationExiting && Settings.RunInTaskbarWhenClosed)
             {
                 e.Cancel = true;
                 Hide();

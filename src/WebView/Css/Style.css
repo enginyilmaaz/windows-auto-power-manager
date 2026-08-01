@@ -2510,3 +2510,13 @@ body.subwindow-host .help-page-nav {
 .about-update-status-error {
     color: var(--color-error);
 }
+
+/* Footer buttons must not wrap: the longest label ("Continue in background") breaks onto a
+   second line in Turkish and German at the default dialog width. */
+.modal-footer .btn {
+    white-space: nowrap;
+}
+
+.modal-dialog.update-dialog {
+    width: 480px;
+}
