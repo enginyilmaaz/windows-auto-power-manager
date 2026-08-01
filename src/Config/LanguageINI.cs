@@ -127,6 +127,8 @@
         public string SettingsFormLabelRunInTaskbarWhenClosed { get; set; }
         public string SettingsFormLabelConfirmOnExit { get; set; }
         public string SettingsFormLabelUpdateCheck { get; set; }
+        public string SettingsFormLabelDebugLog { get; set; }
+        public string TooltipDebugLog { get; set; }
         public string SettingsFormLabelUpdateInterval { get; set; }
         public string SettingsFormUpdateHourly { get; set; }
         public string SettingsFormUpdateDaily { get; set; }

@@ -17,5 +17,8 @@ namespace WindowsAutoPowerManager
 
         /// <summary>Persisted so the interval survives restarts instead of restarting each launch.</summary>
         public DateTime? LastUpdateCheckUtc { get; set; }
+
+        /// <summary>Diagnostic trace, off by default: it is meant to be switched on while chasing a problem.</summary>
+        public bool DebugLogEnabled { get; set; }
     }
 }

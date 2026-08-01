@@ -286,11 +286,20 @@ namespace WindowsAutoPowerManager.Functions
             {
                 if (IsMonitorOffSuppressed())
                 {
+                    // The reason matters when the display cycles off and on: it separates a guard
+                    // doing its job from an attempt that reached the driver and failed.
+                    DebugLog.Write("monitor", string.Format(
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        "off suppressed (displayState={0} sinceOff={1}ms sinceWake={2}ms)",
+                        Interlocked.CompareExchange(ref _displayState, 0, 0),
+                        Environment.TickCount64 - Interlocked.Read(ref _lastMonitorOffTick),
+                        Environment.TickCount64 - Interlocked.Read(ref _lastWakeInteractionTick)));
                     return;
                 }
 
                 if (!SetMonitorState(MonitorState.OFF))
                 {
+                    DebugLog.Write("monitor", "off FAILED (driver rejected the request)");
                     // Without this the action leaves no trace at all when the display refuses to
                     // turn off, which makes the difference between "suppressed" and "attempted and
                     // failed" invisible in the log.
@@ -302,6 +311,7 @@ namespace WindowsAutoPowerManager.Functions
                 Interlocked.Exchange(ref _lastWakeInteractionTick, -MonitorWakeGuardMs);
                 Interlocked.Exchange(ref _lastMonitorOffTick, nowTick);
                 Interlocked.Exchange(ref _monitorOffInEffect, 1);
+                DebugLog.Write("monitor", "off sent");
                 Logger.DoLog(Config.ActionTypes.TurnOffMonitor);
             }
         }

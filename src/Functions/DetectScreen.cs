@@ -13,6 +13,8 @@ namespace WindowsAutoPowerManager.Functions
 
         private static void SystemEvents_SessionSwitch(object sender, SessionSwitchEventArgs e)
         {
+            DebugLog.Write("session", e.Reason.ToString());
+
             if (e.Reason == SessionSwitchReason.SessionLock)
             {
                 if (Actions.Lock.IsLockedManually())

@@ -41,6 +41,8 @@ namespace WindowsAutoPowerManager
         private bool _startupErrorShown;
         private bool _pendingOpenNewActionModal;
         private uint? _lastObservedIdleTimeSec;
+        private DateTime? _lastTickTime;
+        private DateTime _lastHeartbeatTime = DateTime.MinValue;
         private bool _updateCheckRunning;
         private bool _updateDownloadRunning;
         private bool _startupUpdateCheckStarted;
@@ -193,6 +195,7 @@ namespace WindowsAutoPowerManager
             }
 
             // 0 = off, 1 = on, 2 = dimmed. Anything other than off means the screen is visible.
+            DebugLog.Write("display", "state=" + setting.Data);
             Actions.TurnOff.NotifyDisplayStateChanged(setting.Data != 0);
         }
 
@@ -297,6 +300,9 @@ namespace WindowsAutoPowerManager
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
                 Logger.Initialize(_cachedSettings);
+                DebugLog.Configure(_cachedSettings);
+                DebugLog.Write("app", "started version=" + BuildMetadata.Version +
+                    " tray=" + _startMinimizedToTray);
                 RepairStartupRegistration(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
                 ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
@@ -516,6 +522,7 @@ namespace WindowsAutoPowerManager
                 theme = resolved.Theme,
                 updateCheckEnabled = resolved.UpdateCheckEnabled,
                 updateCheckInterval = UpdatePolicy.NormalizeInterval(resolved.UpdateCheckInterval),
+                debugLogEnabled = resolved.DebugLogEnabled,
                 appVersion = BuildMetadata.Version,
                 buildId = BuildMetadata.CommitId
             };
@@ -592,6 +599,7 @@ namespace WindowsAutoPowerManager
             // power button leaves the idle counter above the threshold, so re-arming on resume
             // made the action fire again immediately. Each action re-arms itself in DoAction once
             // the idle counter drops back below its own threshold.
+            DebugLog.Write("power", "system resumed");
             _lastObservedIdleTimeSec = null;
             NotifySystem.ResetIdleNotifications();
             Actions.TurnOff.RecordSystemResume();
@@ -650,6 +658,14 @@ namespace WindowsAutoPowerManager
 
             _cachedSettings = settings;
             Logger.UpdateSettings(settings);
+
+            bool debugLogWasEnabled = DebugLog.IsEnabled;
+            DebugLog.Configure(settings);
+            if (settings.DebugLogEnabled != debugLogWasEnabled)
+            {
+                // Written after Configure so the line recording the switch actually lands.
+                DebugLog.Write("app", "debug log " + (settings.DebugLogEnabled ? "enabled" : "disabled"));
+            }
 
             bool isDark = DetermineIfDark(settings.Theme);
             ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
@@ -1158,6 +1174,7 @@ namespace WindowsAutoPowerManager
                 Theme = data.GetProperty("theme").GetString(),
                 UpdateCheckEnabled = JsonPayload.ReadBoolean(data, "updateCheckEnabled", true),
                 UpdateCheckInterval = UpdatePolicy.NormalizeInterval(JsonPayload.ReadString(data, "updateCheckInterval")),
+                DebugLogEnabled = JsonPayload.ReadBoolean(data, "debugLogEnabled", false),
 
                 // Carried over deliberately: the payload has no such field, so rebuilding the
                 // settings from it would reset the schedule on every save and the interval would
@@ -1183,6 +1200,52 @@ namespace WindowsAutoPowerManager
         {
             var settingsObj = _cachedSettings ?? LoadSettings();
             PostMessage("settingsLoaded", BuildSettingsPayload(settingsObj));
+        }
+
+        // =============== Diagnostics ===============
+
+        /// <summary>
+        ///     The timer fires every second, so a longer gap between ticks means the UI thread was
+        ///     blocked for that long. This is what makes a freeze visible: the action log records
+        ///     only actions that ran, and Windows reports a hang only once it decides the window
+        ///     stopped responding, which a shorter stall never reaches.
+        /// </summary>
+        private void TraceTickHealth(DateTime now)
+        {
+            if (!DebugLog.IsEnabled)
+            {
+                _lastTickTime = now;
+                return;
+            }
+
+            const int stallThresholdMs = 2500;
+            const int heartbeatSeconds = 30;
+
+            if (_lastTickTime.HasValue)
+            {
+                double gapMs = (now - _lastTickTime.Value).TotalMilliseconds;
+                if (gapMs >= stallThresholdMs)
+                {
+                    DebugLog.Write("stall", string.Format(
+                        CultureInfo.InvariantCulture,
+                        "ui thread blocked for {0:F0} ms (expected ~1000); resumed at {1:HH:mm:ss.fff}",
+                        gapMs,
+                        now));
+                }
+            }
+
+            _lastTickTime = now;
+
+            if ((now - _lastHeartbeatTime).TotalSeconds >= heartbeatSeconds)
+            {
+                _lastHeartbeatTime = now;
+                DebugLog.Write("alive", string.Format(
+                    CultureInfo.InvariantCulture,
+                    "idle={0}s paused={1} actions={2}",
+                    SystemIdleDetector.GetLastInputTime(),
+                    _isPaused,
+                    ActionList.Count));
+            }
         }
 
         // =============== Update Check ===============
@@ -1219,8 +1282,11 @@ namespace WindowsAutoPowerManager
             _updateCheckRunning = true;
             try
             {
+                DebugLog.Write("update", "check started (manual=" + isManual + ")");
                 UpdateInfo info = await UpdateChecker.CheckAsync();
                 RecordUpdateCheckTime();
+                DebugLog.Write("update", "check result available=" + info.IsAvailable +
+                    " latest=" + info.LatestVersion + " reason=" + info.Reason);
 
                 if (info.IsAvailable)
                 {
@@ -1829,6 +1895,7 @@ namespace WindowsAutoPowerManager
             long perfStart = DebugPerformanceTracker.Start();
 #endif
             DateTime now = DateTime.Now;
+            TraceTickHealth(now);
 
             // Update time in UI
             string timeText = (Language.MainStatusBarCurrentTime ?? "Time") + " : " + now + "  |  Build Id: " + BuildMetadata.CommitId;
@@ -2001,6 +2068,7 @@ namespace WindowsAutoPowerManager
 
         private void mainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            DebugLog.Write("app", "closed");
             Logger.DoLog(Config.ActionTypes.AppTerminated);
         }
 

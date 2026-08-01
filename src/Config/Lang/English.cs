@@ -119,6 +119,8 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelRunInTaskbarWhenClosed = "Work in the background",
                 SettingsFormLabelConfirmOnExit = "Ask confirmation on Exit",
                 SettingsFormLabelUpdateCheck = "Check for updates",
+                SettingsFormLabelDebugLog = "Debug log",
+                TooltipDebugLog = "Writes a detailed trace next to the app for diagnosing problems.\nKeep it off unless asked: it is capped at 5 MB and overwrites itself.",
                 SettingsFormLabelUpdateInterval = "Update check interval",
                 SettingsFormUpdateHourly = "Hourly",
                 SettingsFormUpdateDaily = "Daily",

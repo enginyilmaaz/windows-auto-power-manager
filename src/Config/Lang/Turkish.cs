@@ -119,6 +119,8 @@ namespace WindowsAutoPowerManager.Lang
                 SettingsFormLabelRunInTaskbarWhenClosed = "Kapatılsa da arkaplanda çalışsın",
                 SettingsFormLabelConfirmOnExit = "Programdan çıkarken onay iste",
                 SettingsFormLabelUpdateCheck = "Güncelleme kontrolü yap",
+                SettingsFormLabelDebugLog = "Hata ayıklama kaydı",
+                TooltipDebugLog = "Sorun teşhisi için uygulamanın yanına ayrıntılı bir iz dosyası yazar.\nİstenmedikçe kapalı tutun: en fazla 5 MB olur ve üzerine yazar.",
                 SettingsFormLabelUpdateInterval = "Güncelleme kontrol aralığı",
                 SettingsFormUpdateHourly = "Saatlik",
                 SettingsFormUpdateDaily = "Günlük",

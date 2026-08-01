@@ -296,6 +296,7 @@ namespace WindowsAutoPowerManager
                 theme = resolved.Theme,
                 updateCheckEnabled = resolved.UpdateCheckEnabled,
                 updateCheckInterval = UpdatePolicy.NormalizeInterval(resolved.UpdateCheckInterval),
+                debugLogEnabled = resolved.DebugLogEnabled,
                 appVersion = BuildMetadata.Version,
                 buildId = BuildMetadata.CommitId
             };
@@ -752,7 +753,8 @@ namespace WindowsAutoPowerManager
                 Language = data.GetProperty("language").GetString(),
                 Theme = data.GetProperty("theme").GetString(),
                 UpdateCheckEnabled = JsonPayload.ReadBoolean(data, "updateCheckEnabled", true),
-                UpdateCheckInterval = UpdatePolicy.NormalizeInterval(JsonPayload.ReadString(data, "updateCheckInterval"))
+                UpdateCheckInterval = UpdatePolicy.NormalizeInterval(JsonPayload.ReadString(data, "updateCheckInterval")),
+                DebugLogEnabled = JsonPayload.ReadBoolean(data, "debugLogEnabled", false)
             };
 
             var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();

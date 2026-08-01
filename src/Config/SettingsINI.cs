@@ -16,6 +16,7 @@
                 Theme = "system",
                 UpdateCheckEnabled = true,
                 UpdateCheckInterval = UpdateCheckIntervals.Default,
+                DebugLogEnabled = false,
 
             };
 

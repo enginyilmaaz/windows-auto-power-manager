@@ -118,6 +118,17 @@ window.SettingsPage = {
                             '<option value="weekly"' + (s.updateCheckInterval === 'weekly' ? ' selected' : '') + '>' + t('SettingsFormUpdateWeekly', 'Weekly') + '</option>' +
                         '</select>' +
                     '</div>' +
+
+                    '<div class="settings-row">' +
+                        '<div class="settings-label-group">' +
+                            '<span class="settings-label">' + t('SettingsFormLabelDebugLog', 'Debug log') + '</span>' +
+                            '<span class="mi settings-info-icon" data-tooltip="' + t('TooltipDebugLog', 'Writes a detailed trace next to the app for diagnosing problems.\nKeep it off unless asked: it is capped at 5 MB and overwrites itself.').replace(/"/g, '&quot;') + '">info</span>' +
+                        '</div>' +
+                        '<label class="toggle-switch">' +
+                            '<input type="checkbox" id="set-debug-log"' + (s.debugLogEnabled ? ' checked' : '') + '>' +
+                            '<span class="toggle-slider"></span>' +
+                        '</label>' +
+                    '</div>' +
                 '</div>' +
             '</div>' +
             '<div class="settings-actions subpage-footer">' +
@@ -172,6 +183,9 @@ window.SettingsPage = {
 
             el = document.getElementById('set-update-interval');
             if (el) el.value = s.updateCheckInterval || 'daily';
+
+            el = document.getElementById('set-debug-log');
+            if (el) el.checked = !!s.debugLogEnabled;
         });
         self._registerCleanup(offSettingsLoaded);
 
@@ -246,6 +260,7 @@ window.SettingsPage = {
                 countdownNotifierSeconds: parseInt(document.getElementById('set-seconds').value) || 5,
                 updateCheckEnabled: document.getElementById('set-update-check').checked,
                 updateCheckInterval: document.getElementById('set-update-interval').value,
+                debugLogEnabled: document.getElementById('set-debug-log').checked,
                 language: document.getElementById('set-lang').value,
                 theme: document.getElementById('set-theme').value
             };
