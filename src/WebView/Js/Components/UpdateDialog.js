@@ -28,14 +28,16 @@ const UpdateDialog = {
             '<div class="modal-dialog update-dialog">' +
                 '<div class="modal-header">' +
                     '<span class="modal-title">' + this._t('UpdateAvailableTitle', 'Update available') + '</span>' +
-                    '<button type="button" class="modal-close" data-role="close">&#xe5cd;</button>' +
+                    '<button type="button" class="modal-close" data-role="close">' +
+                        '<span class="mi">close</span>' +
+                    '</button>' +
                 '</div>' +
                 '<div class="modal-body">' +
                     '<div class="update-message">' +
                         this._t('UpdateAvailableMessage', 'A newer version is available.') +
                     '</div>' +
                     '<div class="update-versions">v' + (info.current || '?') +
-                        ' <span class="update-arrow">&#xe5c8;</span> v' + (info.latest || '?') + '</div>' +
+                        ' <span class="mi update-arrow">arrow_forward</span> v' + (info.latest || '?') + '</div>' +
                     '<div class="progress-bar" data-role="progress" hidden>' +
                         '<div class="progress-fill" data-role="fill"></div>' +
                     '</div>' +
@@ -117,6 +119,10 @@ const UpdateDialog = {
     setStatus(data) {
         const reason = data && data.reason;
 
+        // Only report on a flow this dialog owns. The outcome of a check started from the About
+        // page is shown there, and repeating it as a toast here would say the same thing twice.
+        if (this._state !== 'downloading' && this._state !== 'installing') return;
+
         if (reason === 'installing') {
             this._state = 'installing';
             const message = this._t('UpdateInstalling', 'Installing, the app will restart...');
@@ -129,13 +135,7 @@ const UpdateDialog = {
             return;
         }
 
-        if (reason === 'up-to-date') {
-            Toast.show(this._t('UpdateTitle', 'Update'),
-                this._t('UpdateUpToDate', 'You are on the latest version.'), 'success', 2500);
-            return;
-        }
-
-        // Anything else is a failed check or download.
+        // Anything else here is a failed download.
         this._state = this._overlay ? 'failed' : 'idle';
         this._removePill();
         Toast.show(this._t('UpdateTitle', 'Update'),

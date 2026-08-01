@@ -101,7 +101,7 @@ namespace WindowsAutoPowerManager
             this.NotifyIconMain.BalloonTipIcon = System.Windows.Forms.ToolTipIcon.Info;
             this.NotifyIconMain.ContextMenuStrip = this.ContextMenuStripNotifyIcon;
             this.NotifyIconMain.Icon = ((System.Drawing.Icon)(resources.GetObject("NotifyIconMain.Icon")));
-            this.NotifyIconMain.Text = "notifyIcon1";
+            this.NotifyIconMain.Text = "Windows Auto Power Manager";
             this.NotifyIconMain.Visible = true;
             this.NotifyIconMain.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.NotifyIconMain_MouseDoubleClick);
 

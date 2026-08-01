@@ -289,6 +289,11 @@ namespace WindowsAutoPowerManager
                 ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
                     Language.AboutMenuItem ?? "About";
 
+                // The designer default ("notifyIcon1") was what the tray tooltip showed on hover.
+                // Capped because Windows silently drops a NotifyIcon text longer than 63 chars.
+                string trayTooltip = Language.MainFormName ?? Constants.AppName;
+                NotifyIconMain.Text = trayTooltip.Length > 63 ? trayTooltip.Substring(0, 63) : trayTooltip;
+
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
                 Logger.Initialize(_cachedSettings);
