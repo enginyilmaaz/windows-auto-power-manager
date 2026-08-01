@@ -1,4 +1,6 @@
-﻿namespace WindowsAutoPowerManager
+﻿using System;
+
+namespace WindowsAutoPowerManager
 {
     public class Settings
     {
@@ -10,6 +12,10 @@
         public int CountdownNotifierSeconds { get; set; }
         public string Language { get; set; }
         public string Theme { get; set; }
+        public bool UpdateCheckEnabled { get; set; } = true;
+        public string UpdateCheckInterval { get; set; } = Config.UpdateCheckIntervals.Default;
 
+        /// <summary>Persisted so the interval survives restarts instead of restarting each launch.</summary>
+        public DateTime? LastUpdateCheckUtc { get; set; }
     }
 }

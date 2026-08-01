@@ -14,6 +14,8 @@
                 CountdownNotifierSeconds = 5,
                 Language = "auto",
                 Theme = "system",
+                UpdateCheckEnabled = true,
+                UpdateCheckInterval = UpdateCheckIntervals.Default,
 
             };
 
