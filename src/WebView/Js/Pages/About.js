@@ -16,7 +16,7 @@ window.AboutPage = {
                     '<div class="about-content">' +
                         '<div class="about-app-name">' + (L('MainFormName') || 'Windows Auto Power Manager') + '</div>' +
                         '<img src="Assets/app-icon.png" class="about-app-icon" alt="">' +
-                        '<div class="about-row about-version-row">' +
+                        '<div class="about-row">' +
                             '<span class="about-label">' + (L('AboutLabelVersion') || 'Version') + '</span>' +
                             '<span class="about-value">' + version + '</span>' +
                             '<button class="btn btn-secondary about-update-btn" id="about-check-update">' +

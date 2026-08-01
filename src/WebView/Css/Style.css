@@ -2488,22 +2488,19 @@ body.subwindow-host .help-page-nav {
 }
 
 /* Update check row on the About page. */
-.about-version-row {
-    gap: 10px;
-}
-
-/* Sits directly beside the version number rather than on a row of its own. */
+/* Sits a fixed distance after the version number, not pushed to the far edge of the row. */
 .about-update-btn {
-    margin-left: auto;
+    margin-left: 30px;
     padding: 5px 10px;
     font-size: 12px;
     white-space: nowrap;
 }
 
+/* Indented to the version column so the result reads under the button that produced it. */
 .about-update-status {
     font-size: 12px;
     color: var(--text-muted);
-    text-align: right;
+    padding-left: 80px;
     min-height: 16px;
     margin: -2px 0 4px;
 }
@@ -2528,4 +2525,31 @@ body.subwindow-host .help-page-nav {
 
 .modal-dialog.update-dialog {
     width: 480px;
+}
+
+/* Resting colours for the row actions. They were grey until hovered, so the row gave no cue
+   about which action is destructive until the pointer was already on it. Declared after the
+   generic :hover rule so that rule cannot pull them back to the neutral colour. */
+.row-action-btn.row-action-stop,
+.row-action-btn.row-action-edit,
+.row-action-btn.row-action-delete {
+    opacity: 0.85;
+}
+
+.row-action-btn.row-action-stop {
+    color: var(--color-warn);
+}
+
+.row-action-btn.row-action-edit {
+    color: var(--accent-blue);
+}
+
+.row-action-btn.row-action-delete {
+    color: var(--color-danger-text);
+}
+
+.row-action-btn.row-action-edit:hover {
+    color: var(--accent-blue);
+    background: var(--accent-blue-bg);
+    opacity: 1;
 }
