@@ -46,6 +46,7 @@ namespace WindowsAutoPowerManager
         private bool _updateCheckRunning;
         private bool _updateDownloadRunning;
         private bool _startupUpdateCheckStarted;
+        private bool _runtimeInitialized;
         private UpdateInfo _pendingUpdate;
         private readonly ActionScheduler _scheduler = new ActionScheduler();
         private const int WM_POWERBROADCAST = 0x0218;
@@ -141,6 +142,10 @@ namespace WindowsAutoPowerManager
                     ref displayStateGuid,
                     DEVICE_NOTIFY_WINDOW_HANDLE);
             }
+
+            // The handle is created even when the app starts hidden in the tray, so this is the
+            // earliest point that is reached on both paths.
+            EnsureRuntimeInitialized();
         }
 
         protected override void OnHandleDestroyed(EventArgs e)
@@ -232,16 +237,28 @@ namespace WindowsAutoPowerManager
             Text = Language.MainFormName;
             NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
 
-            // Start WebView initialization directly -- no BeginInvoke round-trip.
-            // The first await inside yields to the message pump, allowing
-            // InitializeRuntimeState to run while EnsureCoreWebView2Async proceeds.
-            var webViewTask = InitializeWebViewSafeAsync();
+            // Already done by OnHandleCreated in the normal case; kept for the guard's sake so the
+            // ordering does not depend on which of the two runs first.
+            EnsureRuntimeInitialized();
 
-            // Queue runtime state initialization -- runs when the pump is free
-            // (immediately after the first await in webViewTask yields).
+            await InitializeWebViewSafeAsync();
+        }
+
+        /// <summary>
+        ///     Starts the scheduling runtime exactly once.
+        ///     It used to be queued from the Load event, which never fires when the app starts
+        ///     straight into the tray: the window is never shown, so the timer that runs the
+        ///     actions was never started and the app sat idle until someone opened the window.
+        /// </summary>
+        private void EnsureRuntimeInitialized()
+        {
+            if (_runtimeInitialized)
+            {
+                return;
+            }
+
+            _runtimeInitialized = true;
             BeginInvoke(new Action(InitializeRuntimeState));
-
-            await webViewTask;
         }
 
         private void CreateWebViewControl(bool isDark)
@@ -322,6 +339,10 @@ namespace WindowsAutoPowerManager
             {
                 _bootDataReady = true;
                 TrySendInitData();
+
+                // Not routed through TrySendInitData any more: that waits for the web view, which
+                // never initialises while the app sits in the tray.
+                StartStartupUpdateCheck();
 
                 Logger.DoLog(Config.ActionTypes.AppStarted, _cachedSettings);
             }
@@ -434,7 +455,19 @@ namespace WindowsAutoPowerManager
             TryDispatchPendingOpenNewActionModal();
             HideLoadingOverlay();
             StartSubWindowPrewarm();
-            StartStartupUpdateCheck();
+
+            // The check runs without the web view, so an update found while the app was still in
+            // the tray is announced here instead of being dropped.
+            if (_pendingUpdate != null)
+            {
+                PostMessage("updateAvailable", new
+                {
+                    current = _pendingUpdate.CurrentVersion,
+                    latest = _pendingUpdate.LatestVersion,
+                    assetName = _pendingUpdate.AssetName,
+                    releaseUrl = _pendingUpdate.ReleaseUrl
+                });
+            }
         }
 
         /// <summary>
