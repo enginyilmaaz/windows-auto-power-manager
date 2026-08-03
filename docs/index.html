@@ -78,6 +78,23 @@
   .theme-pick select{border:none;background:transparent;color:inherit;font:inherit;cursor:pointer;outline:none;padding-right:2px}
   .theme-pick select option{color:#212529;background:#fff}
 
+  /* ── Update dialog mockup (HTML, not a screenshot, so it always matches the page language) ── */
+  .update-mock{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+               width:100%;max-width:440px;margin:0 auto;box-shadow:0 20px 60px rgba(0,0,0,.45)}
+  .update-mock .mock-header{display:flex;align-items:center;justify-content:space-between;
+               padding:16px 18px 10px;font-size:15px;font-weight:700}
+  .update-mock .mock-close{color:var(--text-muted);font-size:18px;line-height:1;padding:2px 6px;border-radius:6px}
+  .update-mock .mock-body{padding:0 18px 16px;font-size:13px;color:var(--text-secondary)}
+  .update-mock .mock-versions{font-size:15px;font-weight:700;color:var(--text-primary);margin:8px 0 14px}
+  .update-mock .mock-versions .arrow{color:var(--accent);font-weight:400;margin:0 4px}
+  .update-mock .mock-bar{height:8px;border-radius:999px;background:var(--bg-input);overflow:hidden}
+  .update-mock .mock-fill{height:100%;width:62%;border-radius:999px;background:var(--accent)}
+  .update-mock .mock-progress{font-size:11.5px;color:var(--text-muted);margin-top:8px}
+  .update-mock .mock-footer{display:flex;justify-content:flex-end;gap:8px;padding:0 18px 16px}
+  .update-mock .mock-btn{font-size:13px;font-weight:600;padding:8px 14px;border-radius:8px;border:1px solid transparent}
+  .update-mock .mock-btn-ghost{border-color:var(--border);color:var(--text-secondary);background:transparent}
+  .update-mock .mock-btn-primary{background:var(--accent);color:#0d1020}
+
   .btn{display:inline-block;padding:11px 20px;border-radius:var(--radius-sm);font-size:14px;
        font-weight:600;border:1px solid transparent;transition:all .15s ease;cursor:pointer}
   .btn-primary{background:var(--accent);color:#0d1020}
@@ -247,7 +264,22 @@
 <!-- ═══════════ UPDATE (split: rev) ═══════════ -->
 <section>
   <div class="wrap split rev">
-    <div class="shot"><img src="assets/screenshots/update.png" alt="Update dialog"></div>
+    <div class="update-mock" role="img" aria-label="Update dialog">
+      <div class="mock-header">
+        <span>Update available</span>
+        <span class="mock-close">&#215;</span>
+      </div>
+      <div class="mock-body">
+        A newer version is available.
+        <div class="mock-versions">v1.0.114 <span class="arrow">&rarr;</span> v1.0.115</div>
+        <div class="mock-bar"><div class="mock-fill"></div></div>
+        <div class="mock-progress">62% &nbsp;(6.9 / 11.1 MB)</div>
+      </div>
+      <div class="mock-footer">
+        <span class="mock-btn mock-btn-ghost">Later</span>
+        <span class="mock-btn mock-btn-primary">Update now</span>
+      </div>
+    </div>
     <div>
       <div class="kicker">Automatic Updates</div>
       <h2>Knows when a new<br>release is out</h2>
