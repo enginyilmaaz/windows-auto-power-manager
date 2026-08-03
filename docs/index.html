@@ -5,15 +5,35 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Windows Auto Power Manager — Scheduled Power Tasks</title>
 <meta name="description" content="An open-source Windows app that shuts down, sleeps, locks or turns off your display when the system is idle, at a set time, or after a countdown.">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="assets/app-icon.png">
+<script>
+  // Applied before paint so the page never flashes the wrong theme.
+  (function () {
+    try {
+      var t = localStorage.getItem('wapm-theme') || 'system';
+      var dark = t === 'dark' || (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    } catch (e) { document.documentElement.setAttribute('data-theme', 'dark'); }
+  })();
+</script>
 <style>
-  :root{
+  :root, [data-theme="dark"]{
     --bg-body:#1a1b2e; --bg-header:#13142b; --bg-card:#232438; --bg-panel:#1e1f36;
     --border:#2d2e48; --border-gh:#3a3b55;
     --text-primary:#e0e0ef; --text-secondary:#c0c0d8; --text-muted:#9a9ab8; --text-dim:#8889a5;
     --accent:#5b9aff; --accent-hover:#4f8cff; --accent-shadow:rgba(91,154,255,.15);
     --success:#2ecc71; --warn:#f39c12; --error:#ff6b7a;
+    --band-start:#1e3a6b; --band-end:#1a1b2e;
     --radius:16px; --radius-sm:10px; --max:1120px;
+  }
+  [data-theme="light"]{
+    --bg-body:#f0f2f5; --bg-header:#ffffff; --bg-card:#ffffff; --bg-panel:#f8f9fa;
+    --border:#dee2e6; --border-gh:#d0d7de;
+    --text-primary:#212529; --text-secondary:#343a40; --text-muted:#6c757d; --text-dim:#868e96;
+    --accent:#3b82f6; --accent-hover:#2563eb; --accent-shadow:rgba(59,130,246,.12);
+    --success:#16a34a; --warn:#d97706; --error:#dc2626;
+    --band-start:#dbe8ff; --band-end:#f0f2f5;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
@@ -27,8 +47,7 @@
   .mono{font-family:"Cascadia Code","Consolas",monospace;font-size:.86em}
 
   /* ── GitHub-style header ── */
-  header{position:sticky;top:0;z-index:50;background:rgba(19,20,43,.88);backdrop-filter:blur(10px);
-         border-bottom:1px solid var(--border)}
+  header{position:sticky;top:0;z-index:50;background:var(--bg-header);border-bottom:1px solid var(--border)}
   .nav{display:flex;align-items:center;gap:14px;height:60px}
   .gh-link{display:flex;align-items:center;gap:8px;color:var(--text-secondary);font-size:13.5px;font-weight:600}
   .gh-link:hover{color:var(--text-primary)}
@@ -41,15 +60,23 @@
   .nav .links a:hover{color:var(--text-primary)}
   .star-group{display:flex;border:1px solid var(--border-gh);border-radius:7px;overflow:hidden;
               font-size:12.5px;font-weight:600;height:30px}
-  .star-group .star-btn{display:flex;align-items:center;gap:6px;padding:0 10px;background:#2d2e48;
+  .star-group .star-btn{display:flex;align-items:center;gap:6px;padding:0 10px;background:var(--bg-card);
               color:var(--text-primary);border-right:1px solid var(--border-gh)}
-  .star-group .star-btn:hover{background:#3a3b55}
+  .star-group .star-btn:hover{background:var(--bg-panel)}
   .star-group .star-btn svg{fill:currentColor}
   .star-group .star-count{display:flex;align-items:center;padding:0 10px;color:var(--text-primary);
               background:var(--bg-panel);position:relative}
   .star-group .star-count::before{content:"";position:absolute;left:-4px;top:50%;transform:translateY(-50%) rotate(45deg);
               width:7px;height:7px;background:var(--bg-panel);border-left:1px solid var(--border-gh);
               border-bottom:1px solid var(--border-gh)}
+
+  /* ── Theme picker ── */
+  .theme-pick{display:flex;align-items:center;gap:5px;height:30px;padding:0 8px;margin-right:12px;
+              border:1px solid var(--border-gh);border-radius:7px;background:var(--bg-card);color:var(--text-secondary);
+              font-size:12px;font-weight:600;cursor:pointer}
+  .theme-pick:hover{color:var(--text-primary)}
+  .theme-pick select{border:none;background:transparent;color:inherit;font:inherit;cursor:pointer;outline:none;padding-right:2px}
+  .theme-pick select option{color:#212529;background:#fff}
 
   .btn{display:inline-block;padding:11px 20px;border-radius:var(--radius-sm);font-size:14px;
        font-weight:600;border:1px solid transparent;transition:all .15s ease;cursor:pointer}
@@ -111,7 +138,7 @@
   .step p{margin:0;font-size:13.5px;color:var(--text-muted)}
 
   /* ── Download band ── */
-  .band{background:linear-gradient(120deg,#1e3a6b,#1a1b2e);border:1px solid var(--accent-shadow);
+  .band{background:linear-gradient(120deg,var(--band-start),var(--band-end));border:1px solid var(--accent-shadow);
         border-radius:var(--radius);padding:52px;text-align:center}
   .band h2{margin-bottom:12px}
   .band p{color:var(--text-secondary);max-width:520px;margin:0 auto 28px}
@@ -144,6 +171,13 @@
       <a href="#screens">Screens</a>
       <a href="#download">Download</a>
     </nav>
+    <a class="theme-pick" id="theme-pick" aria-label="Theme">
+      <select id="theme-select">
+        <option value="system">System</option>
+        <option value="dark">Dark</option>
+        <option value="light">Light</option>
+      </select>
+    </a>
     <a class="star-group" href="https://github.com/enginyilmaaz/windows-auto-power-manager/stargazers" aria-label="Star this project">
       <span class="star-btn">
         <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path fill-rule="evenodd" d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
@@ -278,6 +312,34 @@
     <span class="mono">.NET 8 · WinForms · WebView2 · Inno Setup</span>
   </div>
 </footer>
+
+<script>
+  (function () {
+    var select = document.getElementById('theme-select');
+    if (!select) return;
+
+    function apply(theme) {
+      var dark = theme === 'dark' ||
+        (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
+    }
+
+    var stored = 'system';
+    try { stored = localStorage.getItem('wapm-theme') || 'system'; } catch (e) {}
+    select.value = stored;
+    apply(stored);
+
+    select.addEventListener('change', function () {
+      try { localStorage.setItem('wapm-theme', select.value); } catch (e) {}
+      apply(select.value);
+    });
+
+    // Follow the OS only while the choice stays on System.
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function () {
+      if (select.value === 'system') apply('system');
+    });
+  })();
+</script>
 
 </body>
 </html>
