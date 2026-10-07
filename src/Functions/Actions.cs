@@ -166,13 +166,20 @@ namespace WindowsAutoPowerManager.Functions
             // 1 while a monitor off we issued has not been followed by the display coming back on.
             private static int _monitorOffInEffect;
 
-            // A display-on this soon after our own off cannot be the user. The trace shows the
-            // driver re-waking the panel 0-5 s after the request; Windows counts that as input,
-            // which resets the idle counter and restarts the whole cycle one threshold later.
-            private const long SpuriousWakeWindowMs = 5000;
-            private const long SpuriousRetryDelayMs = 3000;
+            // A display-on within a second of our own off cannot be the user: reacting, reaching
+            // for the mouse and moving it takes longer than that, while the driver blips in the
+            // trace land at 0-0.9 s. Windows counts the blip as input, which resets the idle
+            // counter and restarts the whole cycle one threshold later.
+            //
+            // A wider window (5 s) was tried and misfired: a person who woke the screen 1.5-5 s
+            // after it went dark was taken for the driver and had it switched off again in their
+            // face. Likewise the quiet period must be long: a person nudges the mouse once and
+            // then waits for the picture, so a few seconds of silence proves nothing, whereas
+            // nobody being there shows as no input at all for half a minute.
+            private const long SpuriousWakeWindowMs = 1000;
+            private const long SpuriousRetryDelayMs = 30000;
             private const int MaxSpuriousRetries = 2;
-            private const uint SpuriousRetryQuietIdleSeconds = 2;
+            private const uint SpuriousRetryQuietIdleSeconds = 25;
             private static long _spuriousWakeTick;
             private static int _spuriousRetryPending;
             private static int _spuriousRetryCount;
@@ -367,8 +374,8 @@ namespace WindowsAutoPowerManager.Functions
 
             /// <summary>
             ///     Driven by the one-second tick. Re-sends the off after a suspected spurious wake,
-            ///     but only once the blip has gone quiet: a person who woke the screen keeps
-            ///     producing input, a driver blip is a single event followed by silence.
+            ///     but only after half a minute with no input at all: a person who woke the screen
+            ///     touches something again well within that, a driver blip is followed by nothing.
             /// </summary>
             public static void TryRetryAfterSpuriousWake(uint idleSeconds)
             {
