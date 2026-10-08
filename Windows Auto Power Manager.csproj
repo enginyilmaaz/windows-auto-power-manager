@@ -47,14 +47,6 @@
     </Content>
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Update="src\Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <LogicalName>WindowsAutoPowerManager.Properties.Resources.resources</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
   <Target Name="MinifyCss" BeforeTargets="Build">
     <Exec Command="node tools/minify-css.js" ConsoleToMSBuild="true" />
   </Target>
