@@ -1,3 +1,4 @@
+using System;
 using WindowsAutoPowerManager.Functions;
 using Xunit;
 
