@@ -37,7 +37,7 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/win
 - Pause/resume all actions with preset durations (30m, 1h, 2h, 4h, end of day) or custom duration
 - Action conflict validation (prevents duplicate or conflicting actions)
 - Search and filter actions by type
-- System tray integration with context menu
+- System tray menu with quick actions (new action, pause for an hour / resume, settings), drawn in the app theme with Segoe Fluent icons
 - Built-in **Help** page with trigger usage guidance (available from hamburger menu, tray menu, and action-list right-click menu)
 - Start with Windows (startup shortcut, re-asserted on every launch so a stale entry repairs itself)
 - Run in background when window is closed
@@ -111,7 +111,12 @@ WindowsAutoPowerManager/
 │   │   ├── LanguageSelector.cs       # Language detection and loading
 │   │   ├── LanguagePayloadCache.cs   # Cached language payload for the web view
 │   │   ├── BuildMetadata.cs          # Version and commit id resolution
-│   │   ├── ModernMenuRenderer.cs     # Custom tray menu renderer
+│   │   ├── ModernMenuRenderer.cs     # Tray menu renderer (theme surface, glyph rows)
+│   │   ├── TrayMenuTheme.cs          # Tray menu colour tokens and Segoe icon glyphs
+│   │   ├── TrayMenuItem.cs           # Menu row carrying a glyph instead of a bitmap
+│   │   ├── TrayMenuLayout.cs         # Uniform row sizing and rounded popup region
+│   │   ├── TrayQuickActionStrip.cs   # Owner-drawn new action / pause / settings tiles
+│   │   ├── PauseCountdown.cs         # "1h 59m 12s" formatting shared with the web banner
 │   │   └── WebViewEnvironmentProvider.cs # WebView2 environment singleton
 │   ├── Enums/                        # UI-related enumerations
 │   └── WebView/                      # Frontend assets

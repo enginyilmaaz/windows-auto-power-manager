@@ -23,13 +23,13 @@ namespace WindowsAutoPowerManager
             this.webViewHost = new System.Windows.Forms.Panel();
             this.NotifyIconMain = new System.Windows.Forms.NotifyIcon(this.components);
             this.ContextMenuStripNotifyIcon = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.addNewActionToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.showTheLogsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.trayQuickActions = new WindowsAutoPowerManager.Functions.TrayQuickActionHost();
+            this.trayQuickActionsSeparator = new System.Windows.Forms.ToolStripSeparator();
+            this.showTheLogsToolStripMenuItem = new WindowsAutoPowerManager.Functions.TrayMenuItem();
+            this.helpToolStripMenuItem = new WindowsAutoPowerManager.Functions.TrayMenuItem();
+            this.aboutToolStripMenuItem = new WindowsAutoPowerManager.Functions.TrayMenuItem();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-            this.exitTheProgramToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitTheProgramToolStripMenuItem = new WindowsAutoPowerManager.Functions.TrayMenuItem();
 
             this.ContextMenuStripNotifyIcon.SuspendLayout();
             this.SuspendLayout();
@@ -42,9 +42,10 @@ namespace WindowsAutoPowerManager
             this.webViewHost.TabIndex = 0;
 
             // ContextMenuStripNotifyIcon
+            // The item order is mirrored by EnumCmStripNotifyIcon.
             this.ContextMenuStripNotifyIcon.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-                this.addNewActionToolStripMenuItem,
-                this.settingsToolStripMenuItem,
+                this.trayQuickActions,
+                this.trayQuickActionsSeparator,
                 this.showTheLogsToolStripMenuItem,
                 this.helpToolStripMenuItem,
                 this.aboutToolStripMenuItem,
@@ -52,48 +53,50 @@ namespace WindowsAutoPowerManager
                 this.exitTheProgramToolStripMenuItem
             });
             this.ContextMenuStripNotifyIcon.Name = "ContextMenuStripNotifyIcon";
-            this.ContextMenuStripNotifyIcon.ImageScalingSize = new System.Drawing.Size(24, 24);
-            this.ContextMenuStripNotifyIcon.Size = new System.Drawing.Size(200, 156);
+            // Rows draw their own glyphs; an image margin would push the quick action strip
+            // away from the left edge.
+            this.ContextMenuStripNotifyIcon.ShowImageMargin = false;
+            this.ContextMenuStripNotifyIcon.ShowCheckMargin = false;
+            this.ContextMenuStripNotifyIcon.ImageScalingSize = new System.Drawing.Size(16, 16);
+            this.ContextMenuStripNotifyIcon.Padding = new System.Windows.Forms.Padding(6);
+            this.ContextMenuStripNotifyIcon.Size = new System.Drawing.Size(236, 220);
+            this.ContextMenuStripNotifyIcon.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStripNotifyIcon_Opening);
+            this.ContextMenuStripNotifyIcon.Opened += new System.EventHandler(this.ContextMenuStripNotifyIcon_Opened);
 
-            // addNewActionToolStripMenuItem
-            this.addNewActionToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.add;
-            this.addNewActionToolStripMenuItem.Name = "addNewActionToolStripMenuItem";
-            this.addNewActionToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
-            this.addNewActionToolStripMenuItem.Text = "Add new action";
-            this.addNewActionToolStripMenuItem.Click += new System.EventHandler(this.addNewActionToolStripMenuItem_Click);
+            // trayQuickActions
+            this.trayQuickActions.Name = "trayQuickActions";
+            this.trayQuickActions.Strip.NewActionRequested += new System.EventHandler(this.trayQuickActions_NewActionRequested);
+            this.trayQuickActions.Strip.PauseToggleRequested += new System.EventHandler(this.trayQuickActions_PauseToggleRequested);
+            this.trayQuickActions.Strip.SettingsRequested += new System.EventHandler(this.trayQuickActions_SettingsRequested);
 
-            // settingsToolStripMenuItem
-            this.settingsToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.settings;
-            this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
-            this.settingsToolStripMenuItem.Text = "Settings";
-            this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // trayQuickActionsSeparator
+            this.trayQuickActionsSeparator.Name = "trayQuickActionsSeparator";
 
             // showTheLogsToolStripMenuItem
-            this.showTheLogsToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.logs;
+            this.showTheLogsToolStripMenuItem.Glyph = WindowsAutoPowerManager.Functions.TrayMenuGlyphs.List;
             this.showTheLogsToolStripMenuItem.Name = "showTheLogsToolStripMenuItem";
-            this.showTheLogsToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.showTheLogsToolStripMenuItem.Text = "Show logs";
             this.showTheLogsToolStripMenuItem.Click += new System.EventHandler(this.showTheLogsToolStripMenuItem_Click);
 
             // helpToolStripMenuItem
-            this.helpToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.info;
+            this.helpToolStripMenuItem.Glyph = WindowsAutoPowerManager.Functions.TrayMenuGlyphs.Help;
             this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
-            this.helpToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.helpToolStripMenuItem.Text = "Help";
             this.helpToolStripMenuItem.Click += new System.EventHandler(this.helpToolStripMenuItem_Click);
 
             // aboutToolStripMenuItem
-            this.aboutToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.about;
+            this.aboutToolStripMenuItem.Glyph = WindowsAutoPowerManager.Functions.TrayMenuGlyphs.Info;
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
 
+            // toolStripSeparator1
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+
             // exitTheProgramToolStripMenuItem
-            this.exitTheProgramToolStripMenuItem.Image = global::WindowsAutoPowerManager.Properties.Resources.exit;
+            this.exitTheProgramToolStripMenuItem.Glyph = WindowsAutoPowerManager.Functions.TrayMenuGlyphs.Power;
+            this.exitTheProgramToolStripMenuItem.IsDanger = true;
             this.exitTheProgramToolStripMenuItem.Name = "exitTheProgramToolStripMenuItem";
-            this.exitTheProgramToolStripMenuItem.Size = new System.Drawing.Size(200, 36);
             this.exitTheProgramToolStripMenuItem.Text = "Exit the program";
             this.exitTheProgramToolStripMenuItem.Click += new System.EventHandler(this.exitTheProgramToolStripMenuItem_Click);
 
@@ -129,12 +132,12 @@ namespace WindowsAutoPowerManager
         private System.Windows.Forms.Panel webViewHost;
         private System.Windows.Forms.NotifyIcon NotifyIconMain;
         private System.Windows.Forms.ContextMenuStrip ContextMenuStripNotifyIcon;
-        private System.Windows.Forms.ToolStripMenuItem addNewActionToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem showTheLogsToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private WindowsAutoPowerManager.Functions.TrayQuickActionHost trayQuickActions;
+        private System.Windows.Forms.ToolStripSeparator trayQuickActionsSeparator;
+        private WindowsAutoPowerManager.Functions.TrayMenuItem showTheLogsToolStripMenuItem;
+        private WindowsAutoPowerManager.Functions.TrayMenuItem helpToolStripMenuItem;
+        private WindowsAutoPowerManager.Functions.TrayMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripMenuItem exitTheProgramToolStripMenuItem;
+        private WindowsAutoPowerManager.Functions.TrayMenuItem exitTheProgramToolStripMenuItem;
     }
 }

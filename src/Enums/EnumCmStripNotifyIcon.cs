@@ -1,9 +1,9 @@
-﻿namespace WindowsAutoPowerManager
+namespace WindowsAutoPowerManager
 {
     public enum EnumCmStripNotifyIcon
     {
-        AddNewAction = 0,
-        Settings = 1,
+        QuickActions = 0,
+        QuickActionsSeparator = 1,
         ShowLogs = 2,
         Help = 3,
         About = 4,

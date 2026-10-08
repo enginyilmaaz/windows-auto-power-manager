@@ -1,69 +1,82 @@
+using System;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 
 namespace WindowsAutoPowerManager.Functions
 {
+    /// <summary>
+    ///     Draws the tray menu in the app's own theme: panel surface, rounded border, pill
+    ///     hover, Segoe icon glyphs tinted per state and a danger-coloured exit row.
+    /// </summary>
     public class ModernMenuRenderer : ToolStripProfessionalRenderer
     {
-        private readonly Color _bgColor;
-        private readonly Color _textColor;
-        private readonly Color _hoverBg;
-        private readonly Color _borderColor;
-        private readonly Color _separatorColor;
+        private const int HoverRadius = 5;
+        private const int GlyphLeft = 10;
+        private const int GlyphSize = 16;
+        private const int SeparatorInset = 8;
+
+        private const TextFormatFlags GlyphFormat =
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter |
+            TextFormatFlags.SingleLine | TextFormatFlags.NoPadding | TextFormatFlags.NoPrefix;
+
+        // 12 pt is 16 px at 96 dpi; shared because renderers are recreated on every theme change.
+        private static readonly Font GlyphFont = TrayMenuGlyphs.Create(12f);
+
+        private readonly TrayMenuTheme _theme;
 
         public ModernMenuRenderer(bool isDark)
             : base(new ModernMenuColorTable(isDark))
         {
-            if (isDark)
-            {
-                _bgColor = Color.FromArgb(30, 31, 54);
-                _textColor = Color.FromArgb(192, 192, 216);
-                _hoverBg = Color.FromArgb(45, 46, 72);
-                _borderColor = Color.FromArgb(58, 59, 85);
-                _separatorColor = Color.FromArgb(45, 46, 72);
-            }
-            else
-            {
-                _bgColor = Color.FromArgb(255, 255, 255);
-                _textColor = Color.FromArgb(33, 37, 41);
-                _hoverBg = Color.FromArgb(233, 236, 239);
-                _borderColor = Color.FromArgb(222, 226, 230);
-                _separatorColor = Color.FromArgb(233, 236, 239);
-            }
+            _theme = TrayMenuTheme.For(isDark);
+            RoundedEdges = false;
         }
 
         protected override void OnRenderMenuItemBackground(ToolStripItemRenderEventArgs e)
         {
-            var rect = new Rectangle(2, 0, e.Item.Size.Width - 4, e.Item.Size.Height);
-            if (e.Item.Selected)
+            var rect = new Rectangle(Point.Empty, e.Item.Size);
+            using (var brush = new SolidBrush(_theme.Panel))
             {
-                using (var brush = new SolidBrush(_hoverBg))
-                {
-                    var path = CreateRoundedRect(rect, 4);
-                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-                    e.Graphics.FillPath(brush, path);
-                }
+                e.Graphics.FillRectangle(brush, rect);
             }
-            else
+
+            if (!e.Item.Selected || !e.Item.Enabled) return;
+
+            bool danger = (e.Item as TrayMenuItem)?.IsDanger == true;
+            rect.Width -= 1;
+            rect.Height -= 1;
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var brush = new SolidBrush(danger ? _theme.DangerHover : _theme.Chip))
+            using (GraphicsPath path = TrayMenuLayout.RoundedRect(rect, Scale(HoverRadius, e.Graphics)))
             {
-                using (var brush = new SolidBrush(_bgColor))
-                {
-                    e.Graphics.FillRectangle(brush, rect);
-                }
+                e.Graphics.FillPath(brush, path);
             }
         }
 
         protected override void OnRenderItemText(ToolStripItemTextRenderEventArgs e)
         {
-            e.TextColor = _textColor;
-            e.TextFont = new Font("Segoe UI", 9.5f, FontStyle.Regular);
+            var item = e.Item as TrayMenuItem;
+            bool danger = item != null && item.IsDanger;
+
+            if (item != null && !string.IsNullOrEmpty(item.Glyph))
+            {
+                Color glyphColor = danger ? _theme.Danger : e.Item.Selected ? _theme.Accent : _theme.Muted;
+                var glyphRect = new Rectangle(Scale(GlyphLeft, e.Graphics), 0, Scale(GlyphSize, e.Graphics), e.Item.Height);
+                TextRenderer.DrawText(e.Graphics, item.Glyph, GlyphFont, glyphRect, glyphColor, GlyphFormat);
+            }
+
+            // The menu lays text out for an image margin we hide; place it after the glyph column.
+            int textLeft = Scale(TrayMenuLayout.IconColumn, e.Graphics);
+            int textWidth = Math.Max(0, e.Item.Width - textLeft - Scale(TrayMenuLayout.TextRightPadding, e.Graphics));
+            e.TextRectangle = new Rectangle(textLeft, 0, textWidth, e.Item.Height);
+            e.TextFormat |= TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine;
+            e.TextColor = danger ? _theme.Danger : _theme.Text;
             base.OnRenderItemText(e);
         }
 
         protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
         {
-            using (var brush = new SolidBrush(_bgColor))
+            using (var brush = new SolidBrush(_theme.Panel))
             {
                 e.Graphics.FillRectangle(brush, e.AffectedBounds);
             }
@@ -71,85 +84,57 @@ namespace WindowsAutoPowerManager.Functions
 
         protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
         {
-            using (var pen = new Pen(_borderColor))
+            var rect = new Rectangle(0, 0, e.AffectedBounds.Width - 1, e.AffectedBounds.Height - 1);
+            e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+            using (var pen = new Pen(_theme.Border))
+            using (GraphicsPath path = TrayMenuLayout.RoundedRect(rect, Scale(TrayMenuLayout.CornerRadius, e.Graphics)))
             {
-                var rect = new Rectangle(0, 0, e.AffectedBounds.Width - 1, e.AffectedBounds.Height - 1);
-                var path = CreateRoundedRect(rect, 6);
-                e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
                 e.Graphics.DrawPath(pen, path);
             }
         }
 
         protected override void OnRenderSeparator(ToolStripSeparatorRenderEventArgs e)
         {
-            using (var pen = new Pen(_separatorColor))
+            int inset = Scale(SeparatorInset, e.Graphics);
+            int y = e.Item.Height / 2;
+            using (var pen = new Pen(_theme.Border))
             {
-                int y = e.Item.Height / 2;
-                e.Graphics.DrawLine(pen, 8, y, e.Item.Width - 8, y);
+                e.Graphics.DrawLine(pen, inset, y, e.Item.Width - inset, y);
             }
         }
 
         protected override void OnRenderImageMargin(ToolStripRenderEventArgs e)
         {
-            using (var brush = new SolidBrush(_bgColor))
+            using (var brush = new SolidBrush(_theme.Panel))
             {
                 e.Graphics.FillRectangle(brush, e.AffectedBounds);
             }
         }
 
-        private static GraphicsPath CreateRoundedRect(Rectangle rect, int radius)
+        private static int Scale(int logicalPixels, Graphics graphics)
         {
-            var path = new GraphicsPath();
-            int d = radius * 2;
-            path.AddArc(rect.X, rect.Y, d, d, 180, 90);
-            path.AddArc(rect.Right - d, rect.Y, d, d, 270, 90);
-            path.AddArc(rect.Right - d, rect.Bottom - d, d, d, 0, 90);
-            path.AddArc(rect.X, rect.Bottom - d, d, d, 90, 90);
-            path.CloseFigure();
-            return path;
+            return TrayMenuLayout.Scale(logicalPixels, graphics.DpiX);
         }
     }
 
     public class ModernMenuColorTable : ProfessionalColorTable
     {
-        private readonly bool _isDark;
+        private readonly TrayMenuTheme _theme;
 
         public ModernMenuColorTable(bool isDark)
         {
-            _isDark = isDark;
+            _theme = TrayMenuTheme.For(isDark);
             UseSystemColors = false;
         }
 
-        public override Color MenuBorder => _isDark
-            ? Color.FromArgb(58, 59, 85)
-            : Color.FromArgb(222, 226, 230);
-
-        public override Color MenuItemSelected => _isDark
-            ? Color.FromArgb(45, 46, 72)
-            : Color.FromArgb(233, 236, 239);
-
-        public override Color ToolStripDropDownBackground => _isDark
-            ? Color.FromArgb(30, 31, 54)
-            : Color.FromArgb(255, 255, 255);
-
-        public override Color ImageMarginGradientBegin => _isDark
-            ? Color.FromArgb(30, 31, 54)
-            : Color.FromArgb(255, 255, 255);
-
-        public override Color ImageMarginGradientMiddle => _isDark
-            ? Color.FromArgb(30, 31, 54)
-            : Color.FromArgb(255, 255, 255);
-
-        public override Color ImageMarginGradientEnd => _isDark
-            ? Color.FromArgb(30, 31, 54)
-            : Color.FromArgb(255, 255, 255);
-
-        public override Color SeparatorDark => _isDark
-            ? Color.FromArgb(45, 46, 72)
-            : Color.FromArgb(233, 236, 239);
-
-        public override Color SeparatorLight => _isDark
-            ? Color.FromArgb(45, 46, 72)
-            : Color.FromArgb(245, 245, 245);
+        public override Color MenuBorder => _theme.Border;
+        public override Color MenuItemBorder => _theme.Chip;
+        public override Color MenuItemSelected => _theme.Chip;
+        public override Color ToolStripDropDownBackground => _theme.Panel;
+        public override Color ImageMarginGradientBegin => _theme.Panel;
+        public override Color ImageMarginGradientMiddle => _theme.Panel;
+        public override Color ImageMarginGradientEnd => _theme.Panel;
+        public override Color SeparatorDark => _theme.Border;
+        public override Color SeparatorLight => _theme.Border;
     }
 }

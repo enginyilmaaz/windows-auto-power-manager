@@ -296,18 +296,7 @@ namespace WindowsAutoPowerManager
                 Timer.Start();
 
                 // Setup notify icon context menu text
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
-                    Language.ContextMenuStripNotifyIconAddNewAction;
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
-                    Language.ContextMenuStripNotifyIconExitProgram;
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
-                    Language.ContextMenuStripNotifyIconShowSettings;
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
-                    Language.ContextMenuStripNotifyIconShowLogs;
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Help].Text =
-                    Language.ContextMenuStripNotifyIconShowHelp ?? "Help";
-                ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
-                    Language.AboutMenuItem ?? "About";
+                ApplyTrayMenuLanguage();
 
                 // The designer default ("notifyIcon1") was what the tray tooltip showed on hover.
                 // Capped because Windows silently drops a NotifyIcon text longer than 63 chars.
@@ -322,7 +311,7 @@ namespace WindowsAutoPowerManager
                     " tray=" + _startMinimizedToTray);
                 RepairStartupRegistration(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
-                ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
+                ApplyTrayMenuTheme(isDark);
                 ContextMenuStripNotifyIcon.Font = new System.Drawing.Font("Segoe UI", 9.5f, System.Drawing.FontStyle.Regular);
                 BackColor = isDark
                     ? System.Drawing.Color.FromArgb(26, 27, 46)
@@ -701,7 +690,7 @@ namespace WindowsAutoPowerManager
             }
 
             bool isDark = DetermineIfDark(settings.Theme);
-            ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
+            ApplyTrayMenuTheme(isDark);
             BackColor = isDark
                 ? System.Drawing.Color.FromArgb(26, 27, 46)
                 : System.Drawing.Color.FromArgb(240, 242, 245);
@@ -888,7 +877,7 @@ namespace WindowsAutoPowerManager
                     HandlePauseActions(data);
                     break;
                 case "resumeActions":
-                    HandleResumeActions();
+                    ResumeActions();
                     break;
                 case "exportSettingsConfig":
                     HandleExportSettingsConfig();
@@ -1673,7 +1662,7 @@ namespace WindowsAutoPowerManager
             Logger.UpdateSettings(resolved);
 
             bool isDark = DetermineIfDark(resolved.Theme);
-            ContextMenuStripNotifyIcon.Renderer = new WindowsAutoPowerManager.Functions.ModernMenuRenderer(isDark);
+            ApplyTrayMenuTheme(isDark);
             BackColor = isDark
                 ? System.Drawing.Color.FromArgb(26, 27, 46)
                 : System.Drawing.Color.FromArgb(240, 242, 245);
@@ -1759,7 +1748,12 @@ namespace WindowsAutoPowerManager
 
         private void HandlePauseActions(JsonElement data)
         {
-            int minutes = data.GetProperty("minutes").GetInt32();
+            PauseActions(data.GetProperty("minutes").GetInt32());
+        }
+
+        /// <summary>Shared by the web toolbar and the tray menu's quick action tile.</summary>
+        private void PauseActions(int minutes)
+        {
             _isPaused = true;
             _pauseUntilTime = DateTime.Now.AddMinutes(minutes);
 
@@ -1772,9 +1766,10 @@ namespace WindowsAutoPowerManager
             });
 
             SendPauseStatus();
+            RefreshTrayPauseState();
         }
 
-        private void HandleResumeActions()
+        private void ResumeActions()
         {
             _isPaused = false;
             _pauseUntilTime = null;
@@ -1788,6 +1783,7 @@ namespace WindowsAutoPowerManager
             });
 
             SendPauseStatus();
+            RefreshTrayPauseState();
         }
 
         private void SendPauseStatus()
@@ -1940,6 +1936,7 @@ namespace WindowsAutoPowerManager
                 _isPaused = false;
                 _pauseUntilTime = null;
                 SendPauseStatus();
+                RefreshTrayPauseState();
                 PostMessage("showToast", new
                 {
                     title = Language.MessageTitleInfo ?? "Info",
@@ -1953,6 +1950,10 @@ namespace WindowsAutoPowerManager
             if (_isPaused)
             {
                 SendPauseStatus();
+                if (ContextMenuStripNotifyIcon.Visible)
+                {
+                    RefreshTrayPauseState();
+                }
 #if DEBUG
                 DebugPerformanceTracker.Record("MainForm.TimerTick", perfStart);
 #endif
@@ -2137,13 +2138,80 @@ namespace WindowsAutoPowerManager
             Application.ExitThread();
         }
 
-        private void addNewActionToolStripMenuItem_Click(object sender, EventArgs e)
+        // =============== Tray Menu ===============
+
+        /// <summary>One click on the tray tile pauses for this long; finer choices stay in the main window.</summary>
+        private const int TrayPauseMinutes = 60;
+
+        private void ContextMenuStripNotifyIcon_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            RefreshTrayPauseState();
+            TrayMenuLayout.Apply(ContextMenuStripNotifyIcon);
+        }
+
+        private void ContextMenuStripNotifyIcon_Opened(object sender, EventArgs e)
+        {
+            TrayMenuLayout.ApplyRoundedCorners(ContextMenuStripNotifyIcon);
+        }
+
+        private void ApplyTrayMenuLanguage()
+        {
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
+                Language.ContextMenuStripNotifyIconShowLogs;
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Help].Text =
+                Language.ContextMenuStripNotifyIconShowHelp ?? "Help";
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
+                Language.AboutMenuItem ?? "About";
+            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
+                Language.ContextMenuStripNotifyIconExitProgram;
+
+            trayQuickActions.Strip.SetCaptions(
+                Language.ToolbarAddAction ?? "New Action",
+                Language.ToolbarPause ?? "Pause",
+                Language.Pause1hour ?? "1 hour",
+                Language.ToolbarResume ?? "Resume",
+                Language.ContextMenuStripNotifyIconShowSettings ?? "Settings");
+            RefreshTrayPauseState();
+        }
+
+        private void ApplyTrayMenuTheme(bool isDark)
+        {
+            ContextMenuStripNotifyIcon.Renderer = new ModernMenuRenderer(isDark);
+            trayQuickActions.Strip.ApplyTheme(TrayMenuTheme.For(isDark));
+        }
+
+        private void RefreshTrayPauseState()
+        {
+            double remaining = _isPaused && _pauseUntilTime.HasValue
+                ? Math.Max(0, (_pauseUntilTime.Value - DateTime.Now).TotalSeconds)
+                : 0;
+            trayQuickActions.Strip.SetPauseState(_isPaused, PauseCountdown.Format(remaining));
+        }
+
+        private void trayQuickActions_NewActionRequested(object sender, EventArgs e)
+        {
+            ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
             ShowMainAndOpenNewActionModal();
         }
 
-        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void trayQuickActions_PauseToggleRequested(object sender, EventArgs e)
         {
+            ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
+            if (_isPaused)
+            {
+                DebugLog.Write("tray", "resume");
+                ResumeActions();
+            }
+            else
+            {
+                DebugLog.Write("tray", "pause " + TrayPauseMinutes + " min");
+                PauseActions(TrayPauseMinutes);
+            }
+        }
+
+        private void trayQuickActions_SettingsRequested(object sender, EventArgs e)
+        {
+            ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
             OpenSubWindow("settings");
         }
 
@@ -2173,18 +2241,7 @@ namespace WindowsAutoPowerManager
             Text = Language.MainFormName;
             NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
 
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.AddNewAction].Text =
-                Language.ContextMenuStripNotifyIconAddNewAction;
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ExitTheProgram].Text =
-                Language.ContextMenuStripNotifyIconExitProgram;
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Settings].Text =
-                Language.ContextMenuStripNotifyIconShowSettings;
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.ShowLogs].Text =
-                Language.ContextMenuStripNotifyIconShowLogs;
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.Help].Text =
-                Language.ContextMenuStripNotifyIconShowHelp ?? "Help";
-            ContextMenuStripNotifyIcon.Items[(int)EnumCmStripNotifyIcon.About].Text =
-                Language.AboutMenuItem ?? "About";
+            ApplyTrayMenuLanguage();
 
             // Update sub-window titles
             foreach (var kvp in _subWindows)
