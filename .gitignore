@@ -341,3 +341,6 @@ healthchecksdb
 
 # Local .NET SDK (installed by tools/create-build)
 tools/dotnet/
+
+# Brainstorm companion session files
+.superpowers/
