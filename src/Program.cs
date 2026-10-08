@@ -44,6 +44,8 @@ namespace WindowsAutoPowerManager
         {
             try
             {
+                StartupTrace.Mark("main");
+
                 if (!File.Exists(SettingsStorage.SettingsPath))
                 {
                     SettingsStorage.Save(SettingsINI.DefaulSettingFile());
@@ -56,7 +58,16 @@ namespace WindowsAutoPowerManager
 
                 Application.EnableVisualStyles();
                 Application.SetCompatibleTextRenderingDefault(false);
-                WebViewEnvironmentProvider.Prewarm();
+
+                // A tray start may never show the window; the browser process would then sit
+                // idle for hours. The environment is created on the first show instead.
+                bool startInTray = StartWithWindows.IsRunInTaskBarRequested(Environment.GetCommandLineArgs());
+                if (!startInTray)
+                {
+                    WebViewEnvironmentProvider.Prewarm();
+                }
+                StartupTrace.Mark(startInTray ? "webview environment deferred (tray start)" : "webview environment requested");
+
                 Application.Run(new MainForm());
             }
             catch (Exception ex)

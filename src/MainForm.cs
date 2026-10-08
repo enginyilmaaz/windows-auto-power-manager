@@ -38,6 +38,10 @@ namespace WindowsAutoPowerManager
         private Label _loadingLabel;
         private readonly string[] _subWindowPrewarmPages = { "settings", "logs", "help", "about" };
         private bool _subWindowPrewarmStarted;
+        private const int SubWindowPrewarmInitialDelayMs = 3000;
+        private const int SubWindowPrewarmStepMs = 1500;
+        private System.Windows.Forms.Timer _subWindowPrewarmTimer;
+        private Queue<string> _subWindowPrewarmQueue;
         private bool _startupErrorShown;
         private bool _pendingOpenNewActionModal;
         private uint? _lastObservedIdleTimeSec;
@@ -91,8 +95,14 @@ namespace WindowsAutoPowerManager
             _startMinimizedToTray = StartWithWindows.IsRunInTaskBarRequested(Environment.GetCommandLineArgs());
 
             bool isDark = ReadCachedThemeIsDark();
-            CreateWebViewControl(isDark);
+            // In the tray the window may never be shown, so the WebView2 control (and with it
+            // the browser process) is created on the first Load instead.
+            if (!_startMinimizedToTray)
+            {
+                CreateWebViewControl(isDark);
+            }
             InitializeLoadingOverlay(isDark);
+            StartupTrace.Mark("main form constructed");
         }
 
         private void ApplyExecutableIcon()
@@ -145,6 +155,7 @@ namespace WindowsAutoPowerManager
 
             // The handle is created even when the app starts hidden in the tray, so this is the
             // earliest point that is reached on both paths.
+            StartupTrace.Mark("handle created");
             EnsureRuntimeInitialized();
         }
 
@@ -237,9 +248,16 @@ namespace WindowsAutoPowerManager
             Text = Language.MainFormName;
             NotifyIconMain.Text = Language.MainFormName + " " + Language.NotifyIconMain;
 
+            StartupTrace.Mark("main form load");
+
             // Already done by OnHandleCreated in the normal case; kept for the guard's sake so the
             // ordering does not depend on which of the two runs first.
             EnsureRuntimeInitialized();
+
+            // No-op after a visible start; a tray start reaches here on the first show.
+            CreateWebViewControl(_cachedSettings != null
+                ? DetermineIfDark(_cachedSettings.Theme)
+                : ReadCachedThemeIsDark());
 
             await InitializeWebViewSafeAsync();
         }
@@ -284,6 +302,7 @@ namespace WindowsAutoPowerManager
         {
             try
             {
+                StartupTrace.Mark("runtime init");
                 DetectScreen.ManuelLockingActionLogger();
                 ActionList = LoadActionList();
                 DeleteExpriedAction();
@@ -309,6 +328,7 @@ namespace WindowsAutoPowerManager
                 DebugLog.Configure(_cachedSettings);
                 DebugLog.Write("app", "started version=" + BuildMetadata.Version +
                     " tray=" + _startMinimizedToTray);
+                StartupTrace.Flush();
                 RepairStartupRegistration(_cachedSettings);
                 bool isDark = DetermineIfDark(_cachedSettings.Theme);
                 ApplyTrayMenuTheme(isDark);
@@ -334,6 +354,7 @@ namespace WindowsAutoPowerManager
                 StartStartupUpdateCheck();
 
                 Logger.DoLog(Config.ActionTypes.AppStarted, _cachedSettings);
+                StartupTrace.Mark("runtime ready");
             }
         }
 
@@ -392,6 +413,7 @@ namespace WindowsAutoPowerManager
         {
             if (_webViewReady) return;
             _webViewReady = true;
+            StartupTrace.Mark("web view ready");
             TrySendInitData();
         }
 
@@ -441,6 +463,7 @@ namespace WindowsAutoPowerManager
             if (_initSent || !_webViewReady || !_bootDataReady) return;
             _initSent = true;
             SendInitData();
+            StartupTrace.Mark("init data sent");
             TryDispatchPendingOpenNewActionModal();
             HideLoadingOverlay();
             StartSubWindowPrewarm();
@@ -490,25 +513,50 @@ namespace WindowsAutoPowerManager
             if (_subWindowPrewarmStarted || IsApplicationExiting || IsDisposed) return;
             _subWindowPrewarmStarted = true;
 
-            BeginInvoke(new Action(() =>
-            {
-                foreach (var pageName in _subWindowPrewarmPages)
-                {
-                    if (IsApplicationExiting || IsDisposed) break;
-                    var win = GetOrCreateSubWindow(pageName);
-                    win.PrewarmInBackground();
-                }
+            // One window per tick: starting five WebView2 instances at once right after the main
+            // page appeared used to stall the UI thread for seconds. Settings goes first because
+            // it is opened most, the countdown notifier last.
+            _subWindowPrewarmQueue = new Queue<string>(_subWindowPrewarmPages);
+            _subWindowPrewarmTimer = new System.Windows.Forms.Timer { Interval = SubWindowPrewarmInitialDelayMs };
+            _subWindowPrewarmTimer.Tick += SubWindowPrewarmTick;
+            _subWindowPrewarmTimer.Start();
+        }
 
-                if (_cachedSettings?.IsCountdownNotifierEnabled == true)
-                {
-                    NotifySystem.PrewarmCountdownNotifier();
-                }
-            }));
+        private void SubWindowPrewarmTick(object sender, EventArgs e)
+        {
+            if (IsApplicationExiting || IsDisposed)
+            {
+                StopSubWindowPrewarm();
+                return;
+            }
+
+            _subWindowPrewarmTimer.Interval = SubWindowPrewarmStepMs;
+
+            if (_subWindowPrewarmQueue.Count > 0)
+            {
+                string pageName = _subWindowPrewarmQueue.Dequeue();
+                GetOrCreateSubWindow(pageName).PrewarmInBackground();
+                StartupTrace.Mark("prewarm " + pageName);
+                return;
+            }
+
+            StopSubWindowPrewarm();
+            if (_cachedSettings?.IsCountdownNotifierEnabled == true)
+            {
+                NotifySystem.PrewarmCountdownNotifier();
+                StartupTrace.Mark("prewarm countdown notifier");
+            }
         }
 
         private void StopSubWindowPrewarm()
         {
             _subWindowPrewarmStarted = true;
+            if (_subWindowPrewarmTimer != null)
+            {
+                _subWindowPrewarmTimer.Stop();
+                _subWindowPrewarmTimer.Dispose();
+                _subWindowPrewarmTimer = null;
+            }
         }
 
         private void SendInitData()
@@ -781,7 +829,7 @@ namespace WindowsAutoPowerManager
 
         private void PostMessage(string type, object data)
         {
-            if (!_webViewReady || webView.CoreWebView2 == null) return;
+            if (!_webViewReady || webView == null || webView.CoreWebView2 == null) return;
             var msg = JsonSerializer.Serialize(new { type, data });
             webView.CoreWebView2.PostWebMessageAsJson(msg);
         }
