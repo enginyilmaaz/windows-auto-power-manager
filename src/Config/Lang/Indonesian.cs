@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Filter Tab",
                 HelpCh6Menu3 = "Gunakan tab untuk menyaring aksi berdasarkan jenis.",
                 HelpCh6Sub5 = "Ikon Baki Sistem",
-                HelpCh6Menu4 = "Ikon muncul di baki sistem saat berjalan di latar belakang.",
+                HelpCh6Menu4 = "Saat aplikasi berjalan di latar belakang, sebuah ikon muncul di baki sistem (pojok kanan bawah bilah tugas). Klik kanan ikon itu untuk membuka menu cepat: di atas tiga ubin besar — Aksi Baru, Jeda (30 menit, 1, 2, atau 4 jam, atau sampai akhir hari; saat dijeda ubin menampilkan Lanjutkan dan sisa waktu) dan Pengaturan — lalu Tampilkan Log, Bantuan, Tentang, dan Keluar dari Program.",
 
                 // Help Ch7 - Logs
                 HelpCh7Title = "Log dan Riwayat",

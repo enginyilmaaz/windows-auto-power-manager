@@ -305,7 +305,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Tab Filters",
                 HelpCh6Menu3 = "Use the tabs above the action list to filter actions by type: <b>All</b> (all actions), <b>Shutdown</b> (shutdown actions), <b>Restart</b> (restart), <b>Sleep</b> (sleep), <b>Lock</b> (lock), <b>Monitor</b> (monitor off), <b>Log Off</b> (log off). The active tab is highlighted in blue.",
                 HelpCh6Sub5 = "System Tray Icon",
-                HelpCh6Menu4 = "When the application runs in the background, an icon appears in the system tray (lower-right corner of the taskbar). Right-click this icon to access the quick menu: Create New Action, Settings, Show Logs, Help, and Exit The Program.",
+                HelpCh6Menu4 = "When the application runs in the background, an icon appears in the system tray (lower-right corner of the taskbar). Right-click it to open the quick menu: three large tiles at the top — New Action, Pause (30 minutes, 1, 2 or 4 hours, or until end of day; while paused the tile reads Resume and shows the remaining time) and Settings — followed by Show Logs, Help, About and Exit The Program.",
 
                 // Help Ch7 - Logs
                 HelpCh7Title = "Logs and History",

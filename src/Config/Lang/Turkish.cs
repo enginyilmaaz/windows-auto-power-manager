@@ -306,7 +306,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Sekme Filtreleri",
                 HelpCh6Menu3 = "Görev listesinin üstündeki sekmeler ile görevleri türlerine göre filtreleyebilirsiniz: <b>Tümü</b> (tüm görevler), <b>Kapat</b> (kapatma görevleri), <b>Y. Başlat</b> (yeniden başlatma), <b>Uyku</b> (uyutma), <b>Kilitle</b> (kilitleme), <b>Monitör</b> (ekran kapatma), <b>Oturum Kapat</b> (oturum kapatma). Aktif sekme mavi renkte vurgulanır.",
                 HelpCh6Sub5 = "Sistem Tepsisi (Tray Icon)",
-                HelpCh6Menu4 = "Uygulama arka planda çalışırken görev çubuğunun sağ alt köşesindeki sistem tepsisinde bir ikon görünür. Bu ikona sağ tıklayarak hızlı menüye erişebilirsiniz: Yeni Görev Oluştur, Ayarlar, Kayıtları Göster, Yardım ve Programdan Çık.",
+                HelpCh6Menu4 = "Uygulama arka planda çalışırken görev çubuğunun sağ alt köşesindeki sistem tepsisinde bir ikon görünür. Bu ikona sağ tıklayınca hızlı menü açılır: üstte üç büyük kare — Yeni Görev, Durdur (30 dakika, 1, 2 ya da 4 saat veya gün sonuna kadar seçilir; duraklatılmışken kare Devam Et yazar ve kalan süreyi gösterir) ve Ayarlar — altında Kayıtları Göster, Yardım, Hakkında ve Programdan çık.",
 
                 // Help Ch7 - Kayıtlar
                 HelpCh7Title = "Kayıtlar ve İşlem Geçmişi",

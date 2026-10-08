@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Filtros por Abas",
                 HelpCh6Menu3 = "Use as abas acima da lista de ações para filtrar ações por tipo.",
                 HelpCh6Sub5 = "Ícone na Bandeja do Sistema",
-                HelpCh6Menu4 = "Quando o aplicativo funciona em segundo plano, um ícone aparece na bandeja do sistema.",
+                HelpCh6Menu4 = "Quando o aplicativo funciona em segundo plano, um ícone aparece na bandeja do sistema (canto inferior direito da barra de tarefas). Clique com o botão direito nele para abrir o menu rápido: no topo três blocos grandes — Nova Ação, Pausar (30 minutos, 1, 2 ou 4 horas, ou até o fim do dia; durante a pausa o bloco mostra Retomar e o tempo restante) e Configurações — e abaixo Mostrar Logs, Ajuda, Sobre e Sair do Programa.",
 
                 // Help Ch7 - Logs
                 HelpCh7Title = "Logs e Histórico",

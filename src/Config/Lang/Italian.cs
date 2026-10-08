@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Filtri per schede",
                 HelpCh6Menu3 = "Usa le schede sopra la lista delle azioni per filtrare per tipo: <b>Tutti</b>, <b>Spegnimento</b>, <b>Riavvio</b>, <b>Sospensione</b>, <b>Blocco</b>, <b>Monitor</b>, <b>Disconnetti</b>.",
                 HelpCh6Sub5 = "Icona nell'area di notifica",
-                HelpCh6Menu4 = "Quando l'applicazione è in background, un'icona appare nell'area di notifica. Clic destro per accedere al menu rapido: Crea Nuova Azione, Impostazioni, Mostra Log, Aiuto e Esci dal Programma.",
+                HelpCh6Menu4 = "Quando l'applicazione è in background, un'icona appare nell'area di notifica (angolo inferiore destro della barra delle applicazioni). Il clic destro apre il menu rapido: in alto tre riquadri grandi — Nuova Azione, Pausa (30 minuti, 1, 2 o 4 ore, oppure fino a fine giornata; durante la pausa il riquadro mostra Riprendi e il tempo rimanente) e Impostazioni — poi Mostra Log, Aiuto, Informazioni ed Esci dal Programma.",
 
                 // Help Ch7
                 HelpCh7Title = "Log e cronologia",

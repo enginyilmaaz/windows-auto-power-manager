@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Filtros de Pestañas",
                 HelpCh6Menu3 = "Use las pestañas sobre la lista de acciones para filtrar acciones por tipo: <b>Todos</b> (todas las acciones), <b>Apagar</b> (acciones de apagado), <b>Reiniciar</b> (reinicio), <b>Suspender</b> (suspensión), <b>Bloquear</b> (bloqueo), <b>Monitor</b> (apagar monitor), <b>Cerrar Sesión</b> (cierre de sesión). La pestaña activa se resalta en azul.",
                 HelpCh6Sub5 = "Icono de Bandeja del Sistema",
-                HelpCh6Menu4 = "Cuando la aplicación se ejecuta en segundo plano, aparece un icono en la bandeja del sistema (esquina inferior derecha de la barra de tareas). Haga clic derecho en este icono para acceder al menú rápido: Crear Nueva Acción, Configuración, Mostrar Registros, Ayuda y Salir del Programa.",
+                HelpCh6Menu4 = "Cuando la aplicación se ejecuta en segundo plano, aparece un icono en la bandeja del sistema (esquina inferior derecha de la barra de tareas). Haga clic derecho en él para abrir el menú rápido: arriba tres mosaicos grandes — Nueva Acción, Pausar (30 minutos, 1, 2 o 4 horas, o hasta el final del día; durante la pausa el mosaico muestra Reanudar y el tiempo restante) y Configuración — y debajo Mostrar Registros, Ayuda, Acerca de y Salir del Programa.",
 
                 // Help Ch7 - Logs
                 HelpCh7Title = "Registros e Historial",

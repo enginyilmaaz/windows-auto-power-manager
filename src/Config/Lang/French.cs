@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Filtres par onglets",
                 HelpCh6Menu3 = "Utilisez les onglets au-dessus de la liste pour filtrer les actions par type : <b>Tout</b>, <b>Arrêter</b>, <b>Redémarrer</b>, <b>Veille</b>, <b>Verrouiller</b>, <b>Moniteur</b>, <b>Déconnecter</b>.",
                 HelpCh6Sub5 = "Icône de la zone de notification",
-                HelpCh6Menu4 = "Quand l'application s'exécute en arrière-plan, une icône apparaît dans la zone de notification. Cliquez droit pour accéder au menu rapide : Créer une action, Paramètres, Journal, Aide et Quitter.",
+                HelpCh6Menu4 = "Quand l'application s'exécute en arrière-plan, une icône apparaît dans la zone de notification (coin inférieur droit de la barre des tâches). Un clic droit ouvre le menu rapide : en haut trois grandes tuiles — Nouvelle Action, Pause (30 minutes, 1, 2 ou 4 heures, ou jusqu'à la fin du jour ; pendant la pause la tuile affiche Reprendre et le temps restant) et Paramètres — puis Afficher les journaux, Aide, À propos et Quitter le programme.",
 
                 // Help Ch7
                 HelpCh7Title = "Journaux et historique",

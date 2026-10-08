@@ -282,7 +282,7 @@ namespace WindowsAutoPowerManager.Lang
                 HelpCh6Sub4 = "Tab-Filter",
                 HelpCh6Menu3 = "Verwenden Sie die Tabs über der Aktionsliste, um Aktionen nach Typ zu filtern: <b>Alle</b> (alle Aktionen), <b>Herunterfahren</b>, <b>Neustart</b>, <b>Ruhezustand</b>, <b>Sperren</b>, <b>Monitor</b> (Monitor aus), <b>Abmelden</b>. Der aktive Tab ist blau hervorgehoben.",
                 HelpCh6Sub5 = "Systemtray-Symbol",
-                HelpCh6Menu4 = "Wenn die Anwendung im Hintergrund läuft, erscheint ein Symbol im Systemtray (untere rechte Ecke der Taskleiste). Rechtsklicken Sie auf dieses Symbol, um das Schnellmenü zu öffnen: Neue Aktion erstellen, Einstellungen, Protokolle anzeigen, Hilfe und Programm beenden.",
+                HelpCh6Menu4 = "Wenn die Anwendung im Hintergrund läuft, erscheint ein Symbol im Systemtray (untere rechte Ecke der Taskleiste). Ein Rechtsklick darauf öffnet das Schnellmenü: oben drei große Kacheln — Neue Aktion, Pausieren (30 Minuten, 1, 2 oder 4 Stunden oder bis Tagesende; während der Pause zeigt die Kachel Fortsetzen und die Restzeit) und Einstellungen — darunter Protokolle anzeigen, Hilfe, Über und Programm beenden.",
 
                 // Help Ch7 - Protokolle
                 HelpCh7Title = "Protokolle und Verlauf",
