@@ -2188,8 +2188,7 @@ namespace WindowsAutoPowerManager
 
         // =============== Tray Menu ===============
 
-        /// <summary>One click on the tray tile pauses for this long; finer choices stay in the main window.</summary>
-        private const int TrayPauseMinutes = 60;
+        private ToolStripDropDownMenu _trayPauseMenu;
 
         private void ContextMenuStripNotifyIcon_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -2216,16 +2215,99 @@ namespace WindowsAutoPowerManager
             trayQuickActions.Strip.SetCaptions(
                 Language.ToolbarAddAction ?? "New Action",
                 Language.ToolbarPause ?? "Pause",
-                Language.Pause1hour ?? "1 hour",
                 Language.ToolbarResume ?? "Resume",
                 Language.ContextMenuStripNotifyIconShowSettings ?? "Settings");
             RefreshTrayPauseState();
+            DropTrayPauseMenu();
         }
 
         private void ApplyTrayMenuTheme(bool isDark)
         {
             ContextMenuStripNotifyIcon.Renderer = new ModernMenuRenderer(isDark);
             trayQuickActions.Strip.ApplyTheme(TrayMenuTheme.For(isDark));
+            DropTrayPauseMenu();
+        }
+
+        /// <summary>The duration list is rebuilt on demand, so a language or theme change just discards it.</summary>
+        private void DropTrayPauseMenu()
+        {
+            _trayPauseMenu?.Dispose();
+            _trayPauseMenu = null;
+        }
+
+        private ToolStripDropDownMenu CreateTrayPauseMenu()
+        {
+            var menu = new ToolStripDropDownMenu
+            {
+                ShowImageMargin = false,
+                ShowCheckMargin = false,
+                ImageScalingSize = new System.Drawing.Size(16, 16),
+                Padding = new Padding(6),
+                Font = ContextMenuStripNotifyIcon.Font,
+                Renderer = new ModernMenuRenderer(DetermineIfDark(_cachedSettings?.Theme)),
+                // Owned by the strip's item so the tray menu treats the list as its own child
+                // and stays open underneath it.
+                OwnerItem = trayQuickActions
+            };
+
+            AddTrayPauseItem(menu, Language.Pause30min ?? "30 minutes", TrayMenuGlyphs.Clock, 30);
+            AddTrayPauseItem(menu, Language.Pause1hour ?? "1 hour", TrayMenuGlyphs.Clock, 60);
+            AddTrayPauseItem(menu, Language.Pause2hours ?? "2 hours", TrayMenuGlyphs.Clock, 120);
+            AddTrayPauseItem(menu, Language.Pause4hours ?? "4 hours", TrayMenuGlyphs.Clock, 240);
+            AddTrayPauseItem(menu, Language.PauseUntilEndOfDay ?? "Until end of day", TrayMenuGlyphs.Calendar, 0);
+
+            menu.Opening += (s, e) => TrayMenuLayout.Apply(menu);
+            menu.Opened += (s, e) => TrayMenuLayout.ApplyRoundedCorners(menu);
+            menu.Closed += (s, e) => trayQuickActions.Strip.SetExpanded(false);
+            return menu;
+        }
+
+        /// <param name="minutes">Zero stands for "until end of day", resolved when clicked.</param>
+        private void AddTrayPauseItem(ToolStripDropDownMenu menu, string text, string glyph, int minutes)
+        {
+            var item = new TrayMenuItem { Text = text, Glyph = glyph, Tag = minutes };
+            item.Click += TrayPauseItem_Click;
+            menu.Items.Add(item);
+        }
+
+        private void TrayPauseItem_Click(object sender, EventArgs e)
+        {
+            int minutes = (int)((ToolStripItem)sender).Tag;
+            if (minutes <= 0)
+            {
+                minutes = PauseCountdown.MinutesUntilEndOfDay(DateTime.Now);
+            }
+
+            _trayPauseMenu?.Close(ToolStripDropDownCloseReason.ItemClicked);
+            ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
+            DebugLog.Write("tray", "pause " + minutes + " min");
+            PauseActions(minutes);
+        }
+
+        private void ShowTrayPauseMenu()
+        {
+            if (_trayPauseMenu == null || _trayPauseMenu.IsDisposed)
+            {
+                _trayPauseMenu = CreateTrayPauseMenu();
+            }
+
+            TrayQuickActionStrip strip = trayQuickActions.Strip;
+            System.Drawing.Rectangle tile = strip.PauseTileBounds;
+            strip.SetExpanded(true);
+
+            // Opens upward and grows to the left: the tray menu sits in the bottom-right corner
+            // of the screen, so that is where the room is.
+            _trayPauseMenu.Show(strip, new System.Drawing.Point(tile.Right, tile.Top - 10),
+                ToolStripDropDownDirection.AboveLeft);
+        }
+
+        private void ContextMenuStripNotifyIcon_Closed(object sender, ToolStripDropDownClosedEventArgs e)
+        {
+            // A row click closes the tray menu; the duration list must not outlive it.
+            if (_trayPauseMenu != null && !_trayPauseMenu.IsDisposed && _trayPauseMenu.Visible)
+            {
+                _trayPauseMenu.Close(ToolStripDropDownCloseReason.CloseCalled);
+            }
         }
 
         private void RefreshTrayPauseState()
@@ -2244,17 +2326,15 @@ namespace WindowsAutoPowerManager
 
         private void trayQuickActions_PauseToggleRequested(object sender, EventArgs e)
         {
-            ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
             if (_isPaused)
             {
+                ContextMenuStripNotifyIcon.Close(ToolStripDropDownCloseReason.ItemClicked);
                 DebugLog.Write("tray", "resume");
                 ResumeActions();
+                return;
             }
-            else
-            {
-                DebugLog.Write("tray", "pause " + TrayPauseMinutes + " min");
-                PauseActions(TrayPauseMinutes);
-            }
+
+            ShowTrayPauseMenu();
         }
 
         private void trayQuickActions_SettingsRequested(object sender, EventArgs e)

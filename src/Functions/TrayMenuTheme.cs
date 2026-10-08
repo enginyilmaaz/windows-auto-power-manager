@@ -73,6 +73,9 @@ namespace WindowsAutoPowerManager.Functions
         public const string Help = "";
         public const string Info = "";
         public const string Power = "";
+        public const string Clock = "";
+        public const string Calendar = "";
+        public const string ChevronUp = "";
 
         private static readonly string[] Candidates = { "Segoe Fluent Icons", "Segoe MDL2 Assets" };
         private static string _familyName;

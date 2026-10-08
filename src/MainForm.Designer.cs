@@ -62,6 +62,7 @@ namespace WindowsAutoPowerManager
             this.ContextMenuStripNotifyIcon.Size = new System.Drawing.Size(236, 220);
             this.ContextMenuStripNotifyIcon.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStripNotifyIcon_Opening);
             this.ContextMenuStripNotifyIcon.Opened += new System.EventHandler(this.ContextMenuStripNotifyIcon_Opened);
+            this.ContextMenuStripNotifyIcon.Closed += new System.Windows.Forms.ToolStripDropDownClosedEventHandler(this.ContextMenuStripNotifyIcon_Closed);
 
             // trayQuickActions
             this.trayQuickActions.Name = "trayQuickActions";

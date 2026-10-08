@@ -28,5 +28,26 @@ namespace WindowsAutoPowerManager.Tests
         {
             Assert.Equal("0s", PauseCountdown.Format(-5));
         }
+
+        [Fact]
+        public void MinutesUntilEndOfDay_RoundsUpToTheLastSecondOfTheDay()
+        {
+            var now = new DateTime(2030, 5, 5, 23, 30, 0);
+
+            // 29 min 59 s remain; the web view rounds that up to a full 30 minutes.
+            Assert.Equal(30, PauseCountdown.MinutesUntilEndOfDay(now));
+        }
+
+        [Fact]
+        public void MinutesUntilEndOfDay_CoversAWholeDayAtMidnight()
+        {
+            Assert.Equal(1440, PauseCountdown.MinutesUntilEndOfDay(new DateTime(2030, 5, 5, 0, 0, 0)));
+        }
+
+        [Fact]
+        public void MinutesUntilEndOfDay_NeverReturnsZero()
+        {
+            Assert.Equal(1, PauseCountdown.MinutesUntilEndOfDay(new DateTime(2030, 5, 5, 23, 59, 59)));
+        }
     }
 }

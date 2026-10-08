@@ -21,5 +21,16 @@ namespace WindowsAutoPowerManager.Functions
             if (m > 0 || h > 0) text += m + "m ";
             return text + s + "s";
         }
+
+        /// <summary>
+        ///     Minutes from <paramref name="now" /> to 23:59:59 of the same day, rounded up like
+        ///     the web view's "until end of day" choice; never less than one so the pause is
+        ///     not already over when it starts.
+        /// </summary>
+        public static int MinutesUntilEndOfDay(DateTime now)
+        {
+            DateTime endOfDay = now.Date.AddDays(1).AddSeconds(-1);
+            return Math.Max(1, (int)Math.Ceiling((endOfDay - now).TotalMinutes));
+        }
     }
 }

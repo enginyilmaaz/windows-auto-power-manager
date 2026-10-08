@@ -55,6 +55,8 @@ namespace WindowsAutoPowerManager.Functions
         private const int CaptionHeight = 14;
         private const int SubTop = 48;
         private const int SubHeight = 12;
+        private const int ChevronSize = 10;
+        private const int ChevronInset = 5;
 
         private const int NewActionTile = 0;
         private const int PauseTile = 1;
@@ -67,16 +69,19 @@ namespace WindowsAutoPowerManager.Functions
         private readonly Font _captionFont = new Font("Segoe UI", 8.25f, FontStyle.Regular, GraphicsUnit.Point);
         private readonly Font _subFont = new Font("Segoe UI", 7.5f, FontStyle.Regular, GraphicsUnit.Point);
         private readonly Font _glyphFont = TrayMenuGlyphs.Create(15f);
+        private readonly Font _chevronFont = TrayMenuGlyphs.Create(7.5f);
 
         private TrayMenuTheme _theme = TrayMenuTheme.For(true);
         private readonly string[] _glyphs = { TrayMenuGlyphs.Add, TrayMenuGlyphs.Pause, TrayMenuGlyphs.Settings };
         private readonly string[] _captions = { "New Action", "Pause", "Settings" };
-        private readonly string[] _subs = { null, "1 hour", null };
+        private readonly string[] _subs = { null, null, null };
 
         private string _pauseCaption = "Pause";
-        private string _pauseDuration = "1 hour";
         private string _resumeCaption = "Resume";
         private bool _paused;
+
+        /// <summary>True while the pause duration list is open above the tile.</summary>
+        private bool _expanded;
 
         private int _hover = -1;
         private int _pressed = -1;
@@ -99,12 +104,11 @@ namespace WindowsAutoPowerManager.Functions
             Invalidate();
         }
 
-        public void SetCaptions(string newAction, string pause, string pauseDuration, string resume, string settings)
+        public void SetCaptions(string newAction, string pause, string resume, string settings)
         {
             _captions[NewActionTile] = newAction;
             _captions[SettingsTile] = settings;
             _pauseCaption = pause;
-            _pauseDuration = pauseDuration;
             _resumeCaption = resume;
             ApplyPauseTile(_paused, _subs[PauseTile]);
         }
@@ -115,12 +119,26 @@ namespace WindowsAutoPowerManager.Functions
             ApplyPauseTile(paused, remaining);
         }
 
+        /// <summary>Keeps the pause tile highlighted while its duration list is open.</summary>
+        public void SetExpanded(bool expanded)
+        {
+            if (_expanded == expanded) return;
+            _expanded = expanded;
+            Invalidate();
+        }
+
+        /// <summary>Where the duration list is anchored, in this control's coordinates.</summary>
+        public Rectangle PauseTileBounds
+        {
+            get { return Tiles()[PauseTile]; }
+        }
+
         private void ApplyPauseTile(bool paused, string remaining)
         {
             _paused = paused;
             _glyphs[PauseTile] = paused ? TrayMenuGlyphs.Play : TrayMenuGlyphs.Pause;
             _captions[PauseTile] = paused ? _resumeCaption : _pauseCaption;
-            _subs[PauseTile] = paused ? remaining : _pauseDuration;
+            _subs[PauseTile] = paused ? remaining : null;
             Invalidate();
         }
 
@@ -151,8 +169,9 @@ namespace WindowsAutoPowerManager.Functions
         {
             if (rect.Width <= 0 || rect.Height <= 0) return;
 
-            bool hot = index == _hover || index == _pressed || (Focused && index == _focus);
-            bool pausedTile = _paused && index == PauseTile;
+            bool pauseTile = index == PauseTile;
+            bool hot = index == _hover || index == _pressed || (Focused && index == _focus) || (pauseTile && _expanded);
+            bool pausedTile = _paused && pauseTile;
 
             Rectangle fill = rect;
             if (index == _pressed)
@@ -192,6 +211,16 @@ namespace WindowsAutoPowerManager.Functions
                 var subRect = new Rectangle(fill.X, fill.Y + Scale(SubTop), fill.Width, Scale(SubHeight));
                 TextRenderer.DrawText(g, sub, _subFont, subRect, pausedTile ? _theme.Success : _theme.Muted,
                     CenteredText | TextFormatFlags.EndEllipsis);
+            }
+
+            if (pauseTile && !pausedTile)
+            {
+                // The list opens upward, so the hint points the same way.
+                int size = Scale(ChevronSize);
+                int inset = Scale(ChevronInset);
+                var chevronRect = new Rectangle(fill.Right - inset - size, fill.Y + inset, size, size);
+                TextRenderer.DrawText(g, TrayMenuGlyphs.ChevronUp, _chevronFont, chevronRect,
+                    hot ? _theme.Accent : _theme.Muted, CenteredText);
             }
         }
 
@@ -328,6 +357,7 @@ namespace WindowsAutoPowerManager.Functions
                 _captionFont.Dispose();
                 _subFont.Dispose();
                 _glyphFont.Dispose();
+                _chevronFont.Dispose();
             }
             base.Dispose(disposing);
         }
