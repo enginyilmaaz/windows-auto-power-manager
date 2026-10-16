@@ -140,17 +140,26 @@ namespace WindowsAutoPowerManager.Functions
             }
 
             [Flags]
-            private enum SendMessageTimeoutFlags : uint
+            internal enum SendMessageTimeoutFlags : uint
             {
                 Block = 0x0001,
                 AbortIfHung = 0x0002,
                 NoTimeoutIfNotHung = 0x0008
             }
 
+            // NoTimeoutIfNotHung waives the timeout for as long as the receiving thread keeps
+            // pumping, and Block stops this thread servicing sent messages while it waits. Sent to
+            // HWND_BROADCAST that pair left the call unbounded, because the wait repeated for every
+            // top-level window on the desktop: one off held the UI thread for 61 seconds with the
+            // keyboard and mouse dead, and the display notifications that flooded back were each
+            // read as a spurious wake. AbortIfHung alone still keeps a hung receiver from eating
+            // the whole budget, and the budget now applies.
+            internal const SendMessageTimeoutFlags MonitorPowerSendFlags =
+                SendMessageTimeoutFlags.AbortIfHung;
+
             private const uint WM_SYSCOMMAND = 0x0112;
             private static readonly IntPtr SC_MONITORPOWER = new IntPtr(0xF170);
-            private static readonly IntPtr HWND_BROADCAST = new IntPtr(0xFFFF);
-            private const uint MonitorPowerCallTimeoutMs = 1500;
+            internal const uint MonitorPowerCallTimeoutMs = 1500;
             private const long MonitorOffCooldownMs = 8000;
             private const long MonitorWakeGuardMs = 15000;
             private const int DisplayStateUnknown = -1;
@@ -201,30 +210,37 @@ namespace WindowsAutoPowerManager.Functions
                     return false;
                 }
 
+                // ponytail: sent on the UI thread, so a receiver that stalls can still hold the
+                // tick for the timeout. Bounded at MonitorPowerCallTimeoutMs, which the traces say
+                // is enough. Move the send to a worker (capture the handle first, the state is all
+                // Interlocked already) if stalls that long show up in the log again.
                 IntPtr lResult;
                 IntPtr sendResult = SendMessageTimeout(
                     windowHandle,
                     WM_SYSCOMMAND,
                     SC_MONITORPOWER,
                     new IntPtr((int)state),
-                    SendMessageTimeoutFlags.Block |
-                    SendMessageTimeoutFlags.AbortIfHung |
-                    SendMessageTimeoutFlags.NoTimeoutIfNotHung,
+                    MonitorPowerSendFlags,
                     MonitorPowerCallTimeoutMs,
                     out lResult);
 
                 return sendResult != IntPtr.Zero;
             }
 
+            /// <summary>
+            ///     Sent through one window of our own, never broadcast. DefWindowProc hands
+            ///     SC_MONITORPOWER to the system, so a single top-level window carries out the
+            ///     whole request; a broadcast adds nothing but a wait on every other window on the
+            ///     desktop and the burst of display notifications that comes with it.
+            /// </summary>
             public static bool SetMonitorState(MonitorState state)
             {
-                if (TrySendMonitorPowerMessage(HWND_BROADCAST, state))
+                // Indexed rather than enumerated: a form opening or closing on another part of the
+                // tick would invalidate an enumerator, and this is now the only path to the system.
+                FormCollection forms = Application.OpenForms;
+                for (int index = 0; index < forms.Count; ++index)
                 {
-                    return true;
-                }
-
-                foreach (Form form in Application.OpenForms)
-                {
+                    Form form = forms[index];
                     if (form == null || !form.IsHandleCreated)
                     {
                         continue;
@@ -347,7 +363,7 @@ namespace WindowsAutoPowerManager.Functions
             {
                 if (!SetMonitorState(MonitorState.OFF))
                 {
-                    DebugLog.Write("monitor", "off FAILED (driver rejected the request)");
+                    DebugLog.Write("monitor", "off FAILED (no window carried the request through)");
                     if (recordInActionLog)
                     {
                         // Without this the action leaves no trace at all when the display refuses
