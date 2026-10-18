@@ -324,8 +324,11 @@ namespace WindowsAutoPowerManager
 
                 // Apply modern tray menu renderer based on theme
                 _cachedSettings = LoadSettings();
-                Logger.Initialize(_cachedSettings);
+
+                // Configured before the history is touched: Logger.Initialize loads and prunes the
+                // store, and with the order reversed none of that reached the trace.
                 DebugLog.Configure(_cachedSettings);
+                Logger.Initialize(_cachedSettings);
                 DebugLog.Write("app", "started version=" + BuildMetadata.Version +
                     " tray=" + _startMinimizedToTray);
                 StartupTrace.Flush();

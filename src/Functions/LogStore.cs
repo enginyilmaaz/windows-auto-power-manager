@@ -45,6 +45,13 @@ namespace WindowsAutoPowerManager.Functions
 
         private static List<LogSystem> _cache;
 
+        /// <summary>
+        ///     Set when a file that plainly holds records yielded none. While it is set, nothing
+        ///     rewrites the file: a rewrite driven by a cache that failed to load is exactly how a
+        ///     history gets erased, and an append-only store has no need to take that risk.
+        /// </summary>
+        private static bool _loadUntrusted;
+
         /// <summary>Entries held in memory, oldest first. Loaded from disk on first use.</summary>
         public static List<LogSystem> ReadAll()
         {
@@ -102,7 +109,7 @@ namespace WindowsAutoPowerManager.Functions
             lock (SyncRoot)
             {
                 _cache = Normalize(entries);
-                WriteWholeFileLocked(_cache);
+                WriteWholeFileLocked(_cache, "import");
             }
         }
 
@@ -110,7 +117,12 @@ namespace WindowsAutoPowerManager.Functions
         {
             lock (SyncRoot)
             {
+                // Traced because this is the only path that is meant to destroy the history, so a
+                // history that vanished either names itself here or was lost to something else.
+                DebugLog.Write("logs", "clear requested, dropping " + (_cache?.Count ?? 0) + " entries");
+
                 _cache = new List<LogSystem>();
+                _loadUntrusted = false;
 
                 try
                 {
@@ -157,7 +169,7 @@ namespace WindowsAutoPowerManager.Functions
                 if (removed > 0)
                 {
                     _cache = kept;
-                    WriteWholeFileLocked(kept);
+                    WriteWholeFileLocked(kept, "prune");
                 }
 
                 return removed;
@@ -204,7 +216,7 @@ namespace WindowsAutoPowerManager.Functions
                 }
 
                 _cache = converted;
-                WriteWholeFileLocked(converted);
+                WriteWholeFileLocked(converted, "migration");
 
                 try
                 {
@@ -276,13 +288,36 @@ namespace WindowsAutoPowerManager.Functions
                 // overwritten: appends go to the end and the existing lines stay as they are.
             }
 
-            // Logged unconditionally: "loaded 0" against a file that has lines is the symptom that
+            long fileBytes = 0;
+            try
+            {
+                fileBytes = new FileInfo(JsonlPath).Length;
+            }
+            catch
+            {
+            }
+
+            _loadUntrusted = _cache.Count == 0 && fileBytes > 0;
+
+            // Logged unconditionally: "loaded 0" against a file that has bytes is the symptom that
             // matters, and it leaves no other trace.
-            DebugLog.Write("logs", "loaded " + _cache.Count + " entries, skipped " + skipped);
+            DebugLog.Write("logs", string.Format(
+                CultureInfo.InvariantCulture,
+                "loaded {0} entries, skipped {1}, file {2} bytes{3}",
+                _cache.Count, skipped, fileBytes,
+                _loadUntrusted ? " — UNTRUSTED, rewrites blocked" : string.Empty));
         }
 
-        private static void WriteWholeFileLocked(List<LogSystem> entries)
+        private static void WriteWholeFileLocked(List<LogSystem> entries, string reason)
         {
+            if (_loadUntrusted)
+            {
+                DebugLog.Write("logs", "rewrite refused (" + reason + "): the load was untrusted");
+                return;
+            }
+
+            DebugLog.Write("logs", "rewriting " + entries.Count + " entries (" + reason + ")");
+
             // Written through a temporary file and moved into place, so an interruption leaves the
             // previous file intact instead of a half-written one.
             string tempPath = JsonlPath + ".tmp";
