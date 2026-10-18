@@ -70,6 +70,11 @@ namespace WindowsAutoPowerManager.Functions
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Error { get; set; }
 
+        /// <summary>
+        ///     Derived from <see cref="Outcome"/>, so it is never written: a computed value stored
+        ///     next to the value it is computed from is one more thing that can disagree.
+        /// </summary>
+        [JsonIgnore]
         public bool IsError => string.Equals(Outcome, LogOutcomes.Error, StringComparison.Ordinal);
 
         public static string NewId() => Guid.NewGuid().ToString("N").Substring(0, 8);
