@@ -40,9 +40,16 @@ namespace WindowsAutoPowerManager.Functions
                 {
                     item.Size = new Size(width, Scale(SeparatorHeight, dpi));
                 }
-                else if (item is ToolStripControlHost)
+                else if (item is ToolStripControlHost host)
                 {
-                    item.Size = new Size(width, Scale(TrayQuickActionStrip.DefaultHeight, dpi));
+                    // Asked of the strip, because it is only as tall as the countdown line makes
+                    // it. Applied on every Opening, so a pause started since the last open is
+                    // already reflected the next time the menu appears.
+                    int stripHeight = host.Control is TrayQuickActionStrip strip
+                        ? strip.PreferredLogicalHeight
+                        : TrayQuickActionStrip.DefaultHeight;
+
+                    item.Size = new Size(width, Scale(stripHeight, dpi));
                 }
                 else
                 {

@@ -27,6 +27,31 @@ namespace WindowsAutoPowerManager.Functions
             return rects;
         }
 
+        /// <summary>
+        ///     How tall the strip has to be. The countdown line exists only while actions are
+        ///     paused, and holding its room open the rest of the time left a band of dead space
+        ///     under the captions that read as the menu being padded at the top.
+        /// </summary>
+        public static int PreferredHeight(bool hasCountdown)
+        {
+            return hasCountdown ? TrayQuickActionStrip.DefaultHeight : TrayQuickActionStrip.CompactHeight;
+        }
+
+        /// <summary>
+        ///     Where the glyph, caption and countdown sit inside a tile, as one centred block.
+        ///     Measured for the whole strip rather than per tile: only the pause tile ever carries a
+        ///     countdown, and sizing its block alone would drop its caption below the other two.
+        /// </summary>
+        public static void ContentRows(
+            int tileHeight, int glyphHeight, int captionHeight, int subHeight, int gap,
+            out int glyphTop, out int captionTop, out int subTop)
+        {
+            int block = glyphHeight + gap + captionHeight + subHeight;
+            glyphTop = Math.Max(0, (tileHeight - block) / 2);
+            captionTop = glyphTop + glyphHeight + gap;
+            subTop = captionTop + captionHeight;
+        }
+
         public static int HitTest(Rectangle[] tiles, Point point)
         {
             for (int i = 0; i < tiles.Length; i++)
@@ -45,16 +70,19 @@ namespace WindowsAutoPowerManager.Functions
     internal sealed class TrayQuickActionStrip : Control
     {
         public const int DefaultWidth = TrayMenuLayout.MinWidth;
+
+        /// <summary>Tall enough for the countdown line, which only appears while paused.</summary>
         public const int DefaultHeight = 62;
+
+        /// <summary>Glyph and caption only, which is how the strip looks nearly all the time.</summary>
+        public const int CompactHeight = 50;
 
         private const int Gap = 7;
         private const int Radius = 7;
-        private const int GlyphTop = 9;
         private const int GlyphHeight = 22;
-        private const int CaptionTop = 35;
         private const int CaptionHeight = 14;
-        private const int SubTop = 48;
         private const int SubHeight = 12;
+        private const int GlyphCaptionGap = 3;
         private const int ChevronSize = 10;
         private const int ChevronInset = 5;
 
@@ -147,6 +175,33 @@ namespace WindowsAutoPowerManager.Functions
             return TrayQuickActionLayout.TileRects(Width, Height, Scale(Gap));
         }
 
+        /// <summary>
+        ///     The height the strip needs as it currently stands. The countdown line exists only
+        ///     while actions are paused, and holding its room open the rest of the time left a band
+        ///     of dead space under the captions, which read as the menu being padded at the top.
+        /// </summary>
+        public int PreferredLogicalHeight => TrayQuickActionLayout.PreferredHeight(HasSubCaption);
+
+        /// <summary>
+        ///     Asked of the whole strip rather than one tile: only the pause tile ever carries a
+        ///     countdown, and sizing its block alone would drop its caption below the other two.
+        /// </summary>
+        private bool HasSubCaption
+        {
+            get
+            {
+                foreach (string sub in _subs)
+                {
+                    if (!string.IsNullOrEmpty(sub))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+        }
+
         private int Scale(int logicalPixels)
         {
             return TrayMenuLayout.Scale(logicalPixels, DeviceDpi);
@@ -197,28 +252,43 @@ namespace WindowsAutoPowerManager.Functions
                 }
             }
 
+            // Centred as one block rather than pinned to fixed offsets: the offsets were measured
+            // against the tall paused layout, so without a countdown they left the content high
+            // with a band of nothing beneath it.
+            int glyphHeight = Scale(GlyphHeight);
+            int captionHeight = Scale(CaptionHeight);
+            TrayQuickActionLayout.ContentRows(
+                fill.Height, glyphHeight, captionHeight,
+                HasSubCaption ? Scale(SubHeight) : 0, Scale(GlyphCaptionGap),
+                out int glyphTop, out int captionTop, out int subTop);
+
             Color glyphColor = pausedTile ? _theme.Success : hot ? _theme.Accent : _theme.Muted;
-            var glyphRect = new Rectangle(fill.X, fill.Y + Scale(GlyphTop), fill.Width, Scale(GlyphHeight));
+            var glyphRect = new Rectangle(fill.X, fill.Y + glyphTop, fill.Width, glyphHeight);
             TextRenderer.DrawText(g, _glyphs[index], _glyphFont, glyphRect, glyphColor, CenteredText);
 
-            var captionRect = new Rectangle(fill.X, fill.Y + Scale(CaptionTop), fill.Width, Scale(CaptionHeight));
+            var captionRect = new Rectangle(
+                fill.X, fill.Y + captionTop, fill.Width, captionHeight);
             TextRenderer.DrawText(g, _captions[index] ?? string.Empty, _captionFont, captionRect, _theme.Text,
                 CenteredText | TextFormatFlags.EndEllipsis);
 
             string sub = _subs[index];
             if (!string.IsNullOrEmpty(sub))
             {
-                var subRect = new Rectangle(fill.X, fill.Y + Scale(SubTop), fill.Width, Scale(SubHeight));
+                var subRect = new Rectangle(fill.X, fill.Y + subTop, fill.Width, Scale(SubHeight));
                 TextRenderer.DrawText(g, sub, _subFont, subRect, pausedTile ? _theme.Success : _theme.Muted,
                     CenteredText | TextFormatFlags.EndEllipsis);
             }
 
             if (pauseTile && !pausedTile)
             {
-                // The list opens upward, so the hint points the same way.
+                // The list opens upward, so the hint points the same way. Levelled with the glyph
+                // instead of the tile corner, where it read as a mark floating above the tile.
                 int size = Scale(ChevronSize);
                 int inset = Scale(ChevronInset);
-                var chevronRect = new Rectangle(fill.Right - inset - size, fill.Y + inset, size, size);
+                var chevronRect = new Rectangle(
+                    fill.Right - inset - size,
+                    glyphRect.Y + (glyphHeight - size) / 2,
+                    size, size);
                 TextRenderer.DrawText(g, TrayMenuGlyphs.ChevronUp, _chevronFont, chevronRect,
                     hot ? _theme.Accent : _theme.Muted, CenteredText);
             }
@@ -372,7 +442,9 @@ namespace WindowsAutoPowerManager.Functions
             AutoSize = false;
             Margin = Padding.Empty;
             Padding = Padding.Empty;
-            Size = new Size(TrayQuickActionStrip.DefaultWidth, TrayQuickActionStrip.DefaultHeight);
+            // The unpaused height, which is what the strip shows nearly all the time; Apply resizes
+            // it on every Opening anyway.
+            Size = new Size(TrayQuickActionStrip.DefaultWidth, TrayQuickActionStrip.CompactHeight);
         }
 
         public TrayQuickActionStrip Strip

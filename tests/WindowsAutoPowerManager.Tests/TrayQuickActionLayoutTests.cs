@@ -51,5 +51,57 @@ namespace WindowsAutoPowerManager.Tests
 
             Assert.Equal(-1, TrayQuickActionLayout.HitTest(tiles, new Point(x, y)));
         }
+
+        /// <summary>
+        ///     The strip used to reserve the countdown line at all times, which left a band of dead
+        ///     space under the captions and read, on screen, as the menu being padded at the top.
+        /// </summary>
+        [Fact]
+        public void PreferredHeight_OnlyReservesTheCountdownLineWhileItIsShown()
+        {
+            Assert.Equal(TrayQuickActionStrip.CompactHeight, TrayQuickActionLayout.PreferredHeight(false));
+            Assert.Equal(TrayQuickActionStrip.DefaultHeight, TrayQuickActionLayout.PreferredHeight(true));
+            Assert.True(
+                TrayQuickActionStrip.CompactHeight < TrayQuickActionStrip.DefaultHeight,
+                "The compact strip must be the shorter of the two.");
+        }
+
+        [Fact]
+        public void ContentRows_CentreTheBlockAndLeaveEqualSpaceAboveAndBelow()
+        {
+            TrayQuickActionLayout.ContentRows(
+                TrayQuickActionStrip.CompactHeight, 22, 14, 0, 3,
+                out int glyphTop, out int captionTop, out int subTop);
+
+            Assert.Equal(glyphTop, captionTop - 22 - 3);
+            Assert.Equal(captionTop + 14, subTop);
+
+            int below = TrayQuickActionStrip.CompactHeight - (captionTop + 14);
+            Assert.InRange(below - glyphTop, -1, 1);
+        }
+
+        [Fact]
+        public void ContentRows_KeepTheCaptionOnTheSameLineWithAndWithoutACountdown()
+        {
+            // Both states centre their own block, so the caption must not jump when the countdown
+            // appears: the compact strip is exactly the countdown's height shorter.
+            TrayQuickActionLayout.ContentRows(
+                TrayQuickActionStrip.CompactHeight, 22, 14, 0, 3,
+                out int idleGlyphTop, out int idleCaptionTop, out _);
+            TrayQuickActionLayout.ContentRows(
+                TrayQuickActionStrip.DefaultHeight, 22, 14, 12, 3,
+                out int pausedGlyphTop, out int pausedCaptionTop, out _);
+
+            Assert.Equal(idleGlyphTop, pausedGlyphTop);
+            Assert.Equal(idleCaptionTop, pausedCaptionTop);
+        }
+
+        [Fact]
+        public void ContentRows_NeverGoNegativeOnATileTooShortForItsContent()
+        {
+            TrayQuickActionLayout.ContentRows(10, 22, 14, 12, 3, out int glyphTop, out _, out _);
+
+            Assert.Equal(0, glyphTop);
+        }
     }
 }
