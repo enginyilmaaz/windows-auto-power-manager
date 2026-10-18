@@ -168,6 +168,7 @@
         public string MainTimeUnitSeconds { get; set; }
         public string MainTimeUnitMinutes { get; set; }
         public string MainTimeUnitHours { get; set; }
+        public string MainTimeUnitDays { get; set; }
 
         public string SettingsFormLabelTheme { get; set; }
         public string SettingsFormThemeDark { get; set; }
@@ -338,6 +339,47 @@
         public string HelpCh8Faq2A { get; set; }
         public string HelpCh8Faq3Q { get; set; }
         public string HelpCh8Faq3A { get; set; }
+
+        // ─── Action history viewer ───
+        // The source and outcome of an action are recorded from this version on, and the viewer
+        // filters by time window and facet instead of by "how many rows to fetch".
+        public string LogViewerFormSourceManual { get; set; }
+        public string LogViewerFormSourceTray { get; set; }
+        public string LogViewerFormSourceSystem { get; set; }
+        public string LogViewerFormFilterApp { get; set; }
+        public string LogViewerFormColumnSource { get; set; }
+        public string LogViewerFormColumnOutcome { get; set; }
+        public string LogViewerFormOutcomeOk { get; set; }
+        public string LogViewerFormOutcomeError { get; set; }
+        public string LogViewerFormWindowToday { get; set; }
+        public string LogViewerFormWindowLast7 { get; set; }
+        public string LogViewerFormWindowLast30 { get; set; }
+        public string LogViewerFormWindowAll { get; set; }
+        public string LogViewerFormWindowCustom { get; set; }
+        public string LogViewerFormGroupTime { get; set; }
+        public string LogViewerFormGroupType { get; set; }
+        public string LogViewerFormOnlyErrors { get; set; }
+        public string LogViewerFormEmptyHint { get; set; }
+        public string LogViewerFormNoMatchTitle { get; set; }
+        public string LogViewerFormNoMatchHint { get; set; }
+        public string LogViewerFormSearchAllHistory { get; set; }
+        public string LogViewerFormExport { get; set; }
+        public string LogViewerFormExportCsv { get; set; }
+        public string LogViewerFormExportJsonl { get; set; }
+        public string LogViewerFormExportVisible { get; set; }
+        public string LogViewerFormExported { get; set; }
+        public string LogViewerFormClearConfirmBody { get; set; }
+        public string LogViewerFormClearConfirmWarning { get; set; }
+        public string LogViewerFormDetailFullTime { get; set; }
+        public string LogViewerFormDetailRule { get; set; }
+        public string LogViewerFormDayToday { get; set; }
+        public string LogViewerFormDayYesterday { get; set; }
+        public string LogViewerFormRecordCount { get; set; }
+        public string LogViewerFormHistoryNote { get; set; }
+        public string LogViewerFormFilterButton { get; set; }
+        public string LogViewerFormLoadMore { get; set; }
+        public string SettingsFormLabelLogRetention { get; set; }
+        public string SettingsFormLogRetentionUnlimited { get; set; }
 
     }
 }

@@ -1461,77 +1461,411 @@ body.subwindow-host .card {
     flex-direction: column;
 }
 
-#log-table-wrap {
+/* Sidebar plus list. The filter is a structure to browse rather than a form to submit, so the
+   facets stay on screen with their counts instead of hiding inside dropdowns. */
+.logs-body {
+    display: flex;
+    gap: 12px;
+    flex: 1;
     min-height: 0;
+    position: relative;
+}
+
+.logs-facets {
+    width: 196px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+    overflow-y: auto;
+}
+
+.logs-facet-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.logs-facet-title {
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    margin-bottom: 5px;
+    padding: 0 8px;
+}
+
+.logs-facet-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border: none;
+    border-radius: 7px;
+    background: none;
+    font-family: inherit;
+    font-size: 12px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.15s, color 0.15s;
+}
+
+.logs-facet-row:hover {
+    background: var(--accent-blue-row-hover);
+}
+
+.logs-facet-row.is-on {
+    background: var(--accent-blue-row-selected);
+    color: var(--accent-blue);
+    font-weight: 600;
+}
+
+/* Dimmed, not disabled: a facet with nothing in the current window can still be selected, which
+   is how you widen a search rather than guess at it. */
+.logs-facet-row.is-empty {
+    opacity: 0.45;
+}
+
+.logs-facet-row .mi {
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.logs-facet-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.logs-facet-count {
+    font-size: 11px;
+    color: var(--text-faint);
+    font-variant-numeric: tabular-nums;
+    flex-shrink: 0;
+}
+
+.logs-facet-row.is-on .logs-facet-count {
+    color: var(--accent-blue);
+}
+
+.logs-facet-icon.tone-lock { color: var(--accent-blue); }
+.logs-facet-icon.tone-unlock { color: var(--color-success); }
+.logs-facet-icon.tone-mon { color: var(--text-dim); }
+.logs-facet-icon.tone-app { color: var(--color-warn); }
+.logs-facet-icon.tone-err { color: var(--color-danger-text); }
+
+.logs-checkbox {
+    width: 13px;
+    height: 13px;
+    border-radius: 3px;
+    border: 1.5px solid var(--border-input);
+    flex-shrink: 0;
+    position: relative;
+}
+
+.logs-checkbox.is-on {
+    background: var(--accent-blue);
+    border-color: var(--accent-blue);
+}
+
+.logs-checkbox.is-on::after {
+    content: "";
+    position: absolute;
+    left: 3.5px;
+    top: 1px;
+    width: 3px;
+    height: 6px;
+    border-right: 2px solid #fff;
+    border-bottom: 2px solid #fff;
+    transform: rotate(42deg);
+}
+
+.logs-date-range {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    padding: 8px 8px 2px;
+}
+
+.logs-date-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 10.5px;
+    color: var(--text-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+
+.logs-date-field .form-input {
+    width: 100%;
+    flex: none;
+}
+
+.logs-facet-reset {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 7px 8px;
+    border: 1px solid var(--border-input);
+    border-radius: 7px;
+    background: none;
+    font-family: inherit;
+    font-size: 11.5px;
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.logs-facet-reset:hover {
+    background: var(--bg-btn-secondary);
+}
+
+.logs-facet-reset .mi {
+    font-size: 14px;
+}
+
+.logs-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.logs-toolbar {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.logs-toolbar-search {
+    flex: 1;
+    max-width: none;
+    height: 34px;
+}
+
+.logs-search-clear {
+    background: none;
+    border: none;
+    padding: 0 0 0 4px;
+    cursor: pointer;
+    color: var(--text-faint);
+    display: flex;
+    align-items: center;
+}
+
+.logs-search-clear .mi {
+    font-size: 16px;
+}
+
+.logs-sort {
+    flex: none;
+    width: 150px;
 }
 
 .logs-table-card {
     border: 1px solid var(--border-row);
     background: var(--bg-panel);
     border-radius: 10px;
-    padding: 10px;
-}
-
-.logs-filter-panel {
-    border: none;
-    background: transparent;
-    border-radius: 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
     padding: 0;
-    margin-bottom: 14px;
 }
 
-.logs-search-row {
-    margin-bottom: 10px;
+/* Left aligned throughout: centred cells scattered the reading line once the window got wide. */
+.logs-table th,
+.logs-table td {
+    text-align: left;
+    padding: 7px 10px;
+    white-space: nowrap;
 }
 
-.logs-toolbar-search {
-    width: 100%;
-    max-width: none;
-    height: 34px;
+.logs-table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--bg-body);
 }
 
-.logs-filter-grid {
+.logs-table .logs-col-icon {
+    width: 28px;
+    padding-right: 0;
+}
+
+.logs-table .logs-col-time {
+    width: 76px;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-muted);
+}
+
+.logs-table .logs-col-source {
+    width: 170px;
+    color: var(--text-muted);
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.logs-row-label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 0;
+}
+
+.logs-row-icon {
+    font-size: 15px;
+}
+
+.logs-row-icon.tone-lock { color: var(--accent-blue); }
+.logs-row-icon.tone-unlock { color: var(--color-success); }
+.logs-row-icon.tone-mon { color: var(--text-dim); }
+.logs-row-icon.tone-app { color: var(--color-warn); }
+.logs-row-icon.tone-err { color: var(--color-danger-text); }
+
+.logs-day-row td {
+    background: var(--bg-body);
+    color: var(--text-faint);
+    font-size: 10.5px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    cursor: default;
+}
+
+.logs-day-row:hover td {
+    background: var(--bg-body);
+}
+
+.logs-row.is-open td {
+    background: var(--accent-blue-row-selected);
+}
+
+.logs-detail-row td {
+    background: var(--bg-body);
+    padding: 0;
+    cursor: default;
+}
+
+.logs-detail-row:hover td {
+    background: var(--bg-body);
+}
+
+.logs-detail {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-    gap: 10px;
-    align-items: end;
+    grid-template-columns: auto 1fr;
+    gap: 4px 16px;
+    margin: 0;
+    padding: 11px 14px 13px 48px;
+    font-size: 11.5px;
+    white-space: normal;
 }
 
-.logs-filter-item {
+.logs-detail dt {
+    color: var(--text-faint);
+    white-space: nowrap;
+}
+
+.logs-detail dd {
+    margin: 0;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+.logs-detail code {
+    font-size: 11px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-row);
+    border-radius: 4px;
+    padding: 1px 5px;
+}
+
+.logs-outcome {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.logs-outcome .mi {
+    font-size: 13px;
+}
+
+.logs-outcome.is-ok { color: var(--color-success); }
+.logs-outcome.is-error { color: var(--color-danger-text); }
+
+.logs-load-more {
+    display: block;
+    width: 100%;
+    padding: 9px;
+    border: none;
+    border-top: 1px solid var(--border-row);
+    background: none;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent-blue);
+    cursor: pointer;
+}
+
+.logs-load-more:hover {
+    background: var(--accent-blue-row-hover);
+}
+
+.logs-empty {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 40px 20px;
+    min-height: 180px;
+    color: var(--text-hint);
 }
 
-.logs-filter-item .form-label {
-    min-width: 0;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.4px;
+.logs-empty .mi {
+    font-size: 38px;
+    opacity: 0.55;
+}
+
+.logs-empty-title {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+.logs-empty-hint {
+    font-size: 11.5px;
     color: var(--text-faint);
-    text-transform: uppercase;
+    max-width: 38ch;
+    text-align: center;
+    line-height: 1.5;
 }
 
-.logs-filter-item .form-select,
-.logs-filter-item .form-input {
-    width: 100%;
+.logs-empty-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 5px;
 }
 
-.logs-filter-actions-row {
-    align-self: end;
-}
-
-.logs-filter-reset {
-    width: 100%;
-    padding: 8px 10px;
+.logs-empty-actions .btn {
+    padding: 7px 13px;
+    font-size: 12px;
 }
 
 .logs-result-meta {
-    margin-top: 10px;
-    text-align: right;
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 9px;
     color: var(--text-dim);
-    font-size: 12px;
+    font-size: 11.5px;
     font-variant-numeric: tabular-nums;
 }
 
@@ -1539,24 +1873,173 @@ body.subwindow-host .card {
     display: flex;
     gap: 10px;
     margin-top: 14px;
-    justify-content: flex-end;
+    align-items: center;
+    position: relative;
+}
+
+.logs-actions-spacer {
+    flex: 1;
+}
+
+.logs-export-menu {
+    position: absolute;
+    left: 0;
+    bottom: calc(100% + 6px);
+    background: var(--bg-card);
+    border: 1px solid var(--border-main);
+    border-radius: 8px;
+    box-shadow: var(--shadow-ctx);
+    padding: 5px;
+    min-width: 186px;
+    z-index: 30;
+}
+
+.logs-export-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 8px 10px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.logs-export-item:hover {
+    background: var(--accent-blue-row-hover);
+    color: var(--accent-blue);
+}
+
+.logs-export-item .mi {
+    font-size: 16px;
+    color: var(--text-dim);
+}
+
+.logs-export-item:hover .mi {
+    color: var(--accent-blue);
+}
+
+.logs-export-divider {
+    height: 1px;
+    margin: 4px 7px;
+    background: var(--border-row);
+}
+
+/* The filter panel folds away below this width: at the window's default size a fixed 196 px
+   column leaves the list too narrow to read. */
+.logs-filter-toggle {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 11px;
+    font-size: 12px;
+}
+
+.logs-filter-badge {
+    background: var(--accent-blue);
+    color: #fff;
+    border-radius: 999px;
+    padding: 0 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+}
+
+@media (max-width: 700px) {
+    .logs-filter-toggle {
+        display: inline-flex;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 20;
+    }
+
+    .logs-body {
+        padding-top: 44px;
+    }
+
+    .logs-facets {
+        position: absolute;
+        top: 40px;
+        left: 0;
+        width: 238px;
+        max-height: calc(100% - 46px);
+        background: var(--bg-card);
+        border: 1px solid var(--border-main);
+        border-radius: 10px;
+        box-shadow: var(--shadow-menu);
+        padding: 11px;
+        z-index: 25;
+        display: none;
+    }
+
+    body.logs-panel-open .logs-facets {
+        display: flex;
+    }
+
+    .logs-table .logs-col-source {
+        display: none;
+    }
+
+    .logs-sort {
+        width: 120px;
+    }
+}
+
+.logs-actions .btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-input);
+}
+
+.logs-actions .btn-ghost:hover {
+    background: var(--bg-btn-secondary);
+}
+
+.btn-ghost {
+    background: transparent;
+    color: var(--text-muted);
+    border: 1px solid var(--border-input);
+}
+
+.btn-ghost:hover {
+    background: var(--bg-btn-secondary);
+}
+
+/* Confirm dialog body: a destructive action states what it removes, and offers a way out. */
+.confirm-text {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+}
+
+.confirm-warning {
+    margin-top: 13px;
+    padding: 11px 13px;
+    border-radius: 8px;
+    background: var(--color-danger-bg-hover);
+    border: 1px solid var(--color-danger-text);
+    font-size: 12px;
+    color: var(--color-danger-text);
+    display: flex;
+    gap: 9px;
+    align-items: flex-start;
+    line-height: 1.55;
+}
+
+.confirm-warning .mi {
+    font-size: 16px;
+    flex-shrink: 0;
 }
 
 body.subwindow-host .logs-page-card {
     margin-bottom: 0;
 }
 
-body.subwindow-host .logs-page-card #log-table-wrap {
-    flex: 1;
-}
-
-body.subwindow-host .logs-page-card .logs-table-card {
-    display: flex;
-    flex-direction: column;
+body.subwindow-host .logs-page-card .logs-body {
     flex: 1;
     min-height: 0;
 }
-
 body.subwindow-host .settings-page-card,
 body.subwindow-host .help-page-card,
 body.subwindow-host .about-page-card {
@@ -1605,14 +2088,16 @@ body.subwindow-host.footer-layout-active .subpage-footer {
 }
 
 body.subwindow-host.footer-layout-active .settings-scroll,
-body.subwindow-host.footer-layout-active .about-shell,
-body.subwindow-host.footer-layout-active .logs-scroll {
+body.subwindow-host.footer-layout-active .about-shell {
     overflow-y: auto;
 }
 
-body.subwindow-host.footer-layout-active .logs-scroll {
-    display: flex;
-    flex-direction: column;
+/* The history page does not scroll as a whole: the facet column and the table scroll on their
+   own, so the filter stays put while the list moves. */
+body.subwindow-host.footer-layout-active .logs-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
 }
 
 body.subwindow-host.footer-layout-active .settings-actions {
@@ -1620,12 +2105,13 @@ body.subwindow-host.footer-layout-active .settings-actions {
 }
 
 @media (max-width: 640px) {
-    .logs-filter-grid {
-        grid-template-columns: 1fr;
-    }
-
     .logs-actions {
         flex-direction: column;
+    }
+
+    /* Stacked, the spacer would stretch the row vertically instead of pushing buttons apart. */
+    .logs-actions-spacer {
+        display: none;
     }
 
     .logs-actions .btn {

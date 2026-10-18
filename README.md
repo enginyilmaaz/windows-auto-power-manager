@@ -67,7 +67,7 @@ Get the latest installer from the [Releases](https://github.com/enginyilmaaz/win
 | UI Framework | WinForms + WebView2 |
 | Frontend | HTML / CSS / JavaScript (SPA) |
 | UI Font | Material Icons (Round) |
-| Data Storage | JSON files (Settings.json, ActionList.json, Logs.json) |
+| Data Storage | JSON files (Settings.json, ActionList.json) + append-only Logs.jsonl |
 | Tests | xUnit |
 | Installer | Inno Setup 6 |
 | CI/CD | GitHub Actions |
@@ -86,6 +86,7 @@ WindowsAutoPowerManager/
 │   ├── Config/
 │   │   ├── ActionTypes.cs            # Action type constants
 │   │   ├── TriggerTypes.cs           # Trigger type constants
+│   │   ├── LogFacets.cs              # Action type groups the history filters by
 │   │   ├── UpdateCheckIntervals.cs   # Update interval constants
 │   │   ├── Constants.cs              # App name, startup switch, update repository
 │   │   ├── SettingsINI.cs            # Default settings
@@ -101,7 +102,13 @@ WindowsAutoPowerManager/
 │   │   ├── UpdatePolicy.cs           # Version comparison, asset choice, interval rules
 │   │   ├── UpdateChecker.cs          # GitHub release check, download, installer launch
 │   │   ├── UpdateInfo.cs             # Update check result model
-│   │   ├── Logger.cs                 # JSON-based action logging
+│   │   ├── Logger.cs                 # Action history front end (enable/retention)
+│   │   ├── LogStore.cs               # Append-only JSONL store, retention, migration
+│   │   ├── LogSystem.cs              # History entry model (ISO time, outcome, source)
+│   │   ├── LogQuery.cs               # Filter / sort / page / facet counts over the history
+│   │   ├── LogViewPayload.cs         # Viewer request parsing and row shaping
+│   │   ├── LogExport.cs              # History export to CSV / JSONL
+│   │   ├── LogContext.cs             # Carries what triggered the running action
 │   │   ├── DebugLog.cs               # Opt-in rolling diagnostic trace
 │   │   ├── JsonWriter.cs             # JSON file writer
 │   │   ├── JsonPayload.cs            # Tolerant readers for web view payloads

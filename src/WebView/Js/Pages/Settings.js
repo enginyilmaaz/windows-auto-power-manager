@@ -3,6 +3,23 @@ window.SettingsPage = {
     _languageList: [],
     _cleanupFns: [],
 
+    // Days of action history to keep. 0 means keep everything; pruning is skipped at that value.
+    _retentionChoices: [30, 90, 365, 0],
+
+    _renderRetentionOptions(selected) {
+        var L = Bridge.lang.bind(Bridge);
+        var current = selected === undefined || selected === null ? 90 : Number(selected);
+        var unlimited = L('SettingsFormLogRetentionUnlimited') || 'Unlimited';
+        var dayWord = L('MainTimeUnitDays');
+        if (!dayWord || dayWord === 'MainTimeUnitDays') dayWord = '';
+
+        return this._retentionChoices.map(function (days) {
+            var label = days === 0 ? unlimited : (dayWord ? days + ' ' + dayWord : String(days));
+            return '<option value="' + days + '"' + (days === current ? ' selected' : '') + '>' +
+                label + '</option>';
+        }).join('');
+    },
+
     _registerCleanup(fn) {
         if (typeof fn === 'function') {
             this._cleanupFns.push(fn);
@@ -60,6 +77,15 @@ window.SettingsPage = {
                             '<input type="checkbox" id="set-logs"' + (s.logsEnabled ? ' checked' : '') + '>' +
                             '<span class="toggle-slider"></span>' +
                         '</label>' +
+                    '</div>' +
+
+                    '<div class="settings-row">' +
+                        '<span class="settings-label">' +
+                            (L('SettingsFormLabelLogRetention') || 'Keep history for') +
+                        '</span>' +
+                        '<select id="set-log-retention" class="form-select" style="max-width:200px">' +
+                            this._renderRetentionOptions(s.logRetentionDays) +
+                        '</select>' +
                     '</div>' +
 
                     '<div class="settings-row">' +
@@ -167,6 +193,8 @@ window.SettingsPage = {
             if (el) el.value = s.theme || 'system';
             el = document.getElementById('set-logs');
             if (el) el.checked = !!s.logsEnabled;
+            el = document.getElementById('set-log-retention');
+            if (el) el.value = String(s.logRetentionDays === undefined ? 90 : s.logRetentionDays);
             el = document.getElementById('set-startup');
             if (el) el.checked = !!s.startWithWindows;
             el = document.getElementById('set-taskbar');
@@ -253,6 +281,7 @@ window.SettingsPage = {
         var onSaveClick = function () {
             var payload = {
                 logsEnabled: document.getElementById('set-logs').checked,
+                logRetentionDays: parseInt(document.getElementById('set-log-retention').value, 10) || 0,
                 startWithWindows: document.getElementById('set-startup').checked,
                 runInTaskbarWhenClosed: document.getElementById('set-taskbar').checked,
                 confirmExitOnProgramExit: document.getElementById('set-confirm-exit').checked,

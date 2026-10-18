@@ -19,15 +19,21 @@ namespace WindowsAutoPowerManager.Functions
             {
                 if (Actions.Lock.IsLockedManually())
                 {
-                    Logger.DoLog(Config.ActionTypes.LockComputerManually); 
+                    using (LogContext.Use(LogSources.Manual))
+                    {
+                        Logger.DoLog(Config.ActionTypes.LockComputerManually);
+                    }
+
                     IsLocked = true;
                 }
-
-             
             }
             else if (e.Reason == SessionSwitchReason.SessionUnlock)
             {
-                Logger.DoLog(Config.ActionTypes.UnlockComputer);
+                using (LogContext.Use(LogSources.Manual))
+                {
+                    Logger.DoLog(Config.ActionTypes.UnlockComputer);
+                }
+
                 IsLocked = false;
             }
         }

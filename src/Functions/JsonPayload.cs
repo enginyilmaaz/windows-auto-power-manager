@@ -25,6 +25,27 @@ namespace WindowsAutoPowerManager.Functions
                 : fallback;
         }
 
+        /// <summary>
+        ///     Null when the property is absent, so a caller can tell "not sent" from a sent zero.
+        /// </summary>
+        public static int? ReadNullableInt(JsonElement data, string propertyName)
+        {
+            if (!data.TryGetProperty(propertyName, out JsonElement element))
+            {
+                return null;
+            }
+
+            if (element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out int number))
+            {
+                return number;
+            }
+
+            return element.ValueKind == JsonValueKind.String &&
+                   int.TryParse(element.GetString(), out int parsed)
+                ? parsed
+                : (int?)null;
+        }
+
         public static string ReadString(JsonElement data, string propertyName)
         {
             return data.TryGetProperty(propertyName, out JsonElement element) &&

@@ -5,6 +5,13 @@ namespace WindowsAutoPowerManager
     public class Settings
     {
         public bool LogsEnabled { get; set; }
+
+        /// <summary>
+        ///     How many days of action history to keep. Null means the setting predates this
+        ///     version and the default applies; <c>0</c> means keep everything. Nullable because
+        ///     those two cases are different and both arrive as zero otherwise.
+        /// </summary>
+        public int? LogRetentionDays { get; set; }
         public bool StartWithWindows { get; set; }
         public bool RunInTaskbarWhenClosed { get; set; }
         public bool ConfirmExitOnProgramExit { get; set; } = true;

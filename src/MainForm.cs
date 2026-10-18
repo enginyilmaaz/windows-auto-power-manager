@@ -583,6 +583,8 @@ namespace WindowsAutoPowerManager
             return new
             {
                 logsEnabled = resolved.LogsEnabled,
+
+                logRetentionDays = Config.SettingsINI.ResolveLogRetentionDays(resolved.LogRetentionDays),
                 startWithWindows = resolved.StartWithWindows,
                 runInTaskbarWhenClosed = resolved.RunInTaskbarWhenClosed,
                 confirmExitOnProgramExit = resolved.ConfirmExitOnProgramExit,
@@ -898,6 +900,9 @@ namespace WindowsAutoPowerManager
                     break;
                 case "clearLogs":
                     HandleClearLogs();
+                    break;
+                case "exportLogs":
+                    HandleExportLogs(data);
                     break;
                 case "getLanguageList":
                     HandleGetLanguageList();
@@ -1235,6 +1240,9 @@ namespace WindowsAutoPowerManager
             var newSettings = new Settings
             {
                 LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
+
+                LogRetentionDays = Config.SettingsINI.ResolveLogRetentionDays(
+                    JsonPayload.ReadNullableInt(data, "logRetentionDays")),
                 StartWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
                 RunInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
                 ConfirmExitOnProgramExit = confirmExitOnProgramExit,
@@ -1435,7 +1443,6 @@ namespace WindowsAutoPowerManager
                 StopSubWindowPrewarm();
                 CloseAllSubWindows();
                 Logger.DoLog(Config.ActionTypes.AppTerminated, _cachedSettings);
-                Logger.Flush();
                 Application.ExitThread();
             }
             catch (Exception)
@@ -1458,54 +1465,87 @@ namespace WindowsAutoPowerManager
 #if DEBUG
             long perfStart = DebugPerformanceTracker.Start();
 #endif
-            int limit = ResolveLogsLimit(data);
-            var rawLogs = Logger.GetRecentLogs(limit);
-            var logs = rawLogs.Select(l => new
-            {
-                id = l.Id ?? "",
-                actionExecutedDate = l.ActionExecutedDate,
-                actionType = TranslateLogAction(l.ActionType),
-                actionTypeRaw = l.ActionType
-            }).ToList();
-
-            PostMessage("logsLoaded", logs);
+            PostMessage("logsLoaded", BuildLogsPayload(data));
 #if DEBUG
             DebugPerformanceTracker.Record("MainForm.HandleLoadLogs", perfStart);
 #endif
         }
 
-        private static int ResolveLogsLimit(JsonElement data)
+        /// <summary>
+        ///     Runs the viewer's filter over the whole stored history. Both windows show the same
+        ///     page, so the request parsing and the row shaping live in <see cref="LogViewPayload"/>.
+        /// </summary>
+        internal object BuildLogsPayload(JsonElement data)
         {
-            const int defaultLimit = 250;
-            const int maxLimit = Logger.MaxLogCount;
-            int limit = defaultLimit;
+            LogQueryRequest request = LogViewPayload.ParseRequest(data);
+            LogQueryResult result = Logger.Query(request, TranslateLogAction);
 
-            if (data.ValueKind == JsonValueKind.Object &&
-                data.TryGetProperty("limit", out JsonElement limitElement))
+            return LogViewPayload.Build(
+                result, TranslateLogAction, TranslateLogSource, Logger.CurrentRetentionDays);
+        }
+
+        /// <summary>
+        ///     Renders a stored source token in the current language, reusing the trigger and unit
+        ///     wording the action list already uses so the history reads the same as the rules do.
+        /// </summary>
+        internal string TranslateLogSource(string source)
+        {
+            if (string.IsNullOrWhiteSpace(source) || source == LogSources.System)
             {
-                if (limitElement.ValueKind == JsonValueKind.Number &&
-                    limitElement.TryGetInt32(out int numericLimit))
-                {
-                    limit = numericLimit;
-                }
-                else if (limitElement.ValueKind == JsonValueKind.String &&
-                         int.TryParse(limitElement.GetString(), out int stringLimit))
-                {
-                    limit = stringLimit;
-                }
+                return Language.LogViewerFormSourceSystem ?? "System";
             }
 
-            if (limit < 1)
+            if (source == LogSources.Manual)
             {
-                return 1;
+                return Language.LogViewerFormSourceManual ?? "Manual";
             }
 
-            if (limit > maxLimit)
+            if (source == LogSources.Tray)
             {
-                return maxLimit;
+                return Language.LogViewerFormSourceTray ?? "Tray menu";
             }
 
-            return limit;
+            if (source == LogSources.Countdown || source == LogSources.Once)
+            {
+                return Language.MainCboxTriggerTypeItemFromNow ?? "Countdown";
+            }
+
+            if (source.StartsWith("idle:", StringComparison.Ordinal))
+            {
+                string label = Language.MainCboxTriggerTypeItemSystemIdle ?? "System idle";
+                return uint.TryParse(
+                    source.Substring(5), NumberStyles.Integer, CultureInfo.InvariantCulture, out uint seconds)
+                    ? label + " · " + DescribeDuration(seconds)
+                    : label;
+            }
+
+            if (source.StartsWith("time:", StringComparison.Ordinal))
+            {
+                string label = Language.MainCboxTriggerTypeItemCertainTime ?? "Every day by hour";
+                string time = source.Substring(5);
+                return string.IsNullOrWhiteSpace(time) ? label : label + " · " + time;
+            }
+
+            return source;
+        }
+
+        /// <summary>Whole minutes read better than a seconds count once past a minute.</summary>
+        private string DescribeDuration(uint seconds)
+        {
+            if (seconds >= 3600 && seconds % 3600 == 0)
+            {
+                return (seconds / 3600).ToString(CultureInfo.CurrentCulture) + " " +
+                       (Language.MainTimeUnitHours ?? "Hours");
+            }
+
+            if (seconds >= 60 && seconds % 60 == 0)
+            {
+                return (seconds / 60).ToString(CultureInfo.CurrentCulture) + " " +
+                       (Language.MainTimeUnitMinutes ?? "Minutes");
+            }
+
+            return seconds.ToString(CultureInfo.CurrentCulture) + " " +
+                   (Language.MainTimeUnitSeconds ?? "Seconds");
         }
 
         private string TranslateLogAction(string raw)
@@ -1523,6 +1563,92 @@ namespace WindowsAutoPowerManager
             if (raw == Config.ActionTypes.AppStarted) return Language.LogViewerFormAppStarted;
             if (raw == Config.ActionTypes.AppTerminated) return Language.LogViewerFormAppTerminated;
             return raw;
+        }
+
+        private void HandleExportLogs(JsonElement data)
+        {
+            ExportLogsTo(this, data, PostMessage);
+        }
+
+        /// <summary>
+        ///     Writes the history to a file the person picks. Shared with the detached history
+        ///     window, which owns neither the active language nor the translators.
+        /// </summary>
+        internal void ExportLogsTo(IWin32Window owner, JsonElement data, Action<string, object> postMessage)
+        {
+            string format = JsonPayload.ReadString(data, "format") == LogExportFormats.Jsonl
+                ? LogExportFormats.Jsonl
+                : LogExportFormats.Csv;
+
+            // A request carrying a filter exports exactly what the viewer is showing; without one
+            // it exports the whole history.
+            List<LogSystem> entries;
+            if (data.ValueKind == JsonValueKind.Object &&
+                (data.TryGetProperty("window", out _) || data.TryGetProperty("facets", out _)))
+            {
+                LogQueryRequest request = LogViewPayload.ParseRequest(data);
+                request.Offset = 0;
+                request.Limit = LogQuery.MaxLimit;
+                entries = Logger.Query(request, TranslateLogAction).Rows;
+            }
+            else
+            {
+                entries = Logger.GetAll();
+            }
+
+            string filterLabel = format == LogExportFormats.Jsonl ? "JSONL" : "CSV";
+            using var dialog = new SaveFileDialog
+            {
+                Title = Language.LogViewerFormExport ?? "Export",
+                Filter = filterLabel + " (*." + format + ")|*." + format,
+                DefaultExt = format,
+                AddExtension = true,
+                OverwritePrompt = true,
+                FileName = LogExport.BuildDefaultFileName(format),
+                InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory)
+            };
+
+            if (dialog.ShowDialog(owner) != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                LogExport.Write(
+                    dialog.FileName, format, entries, TranslateLogAction, TranslateLogSource,
+                    new Dictionary<string, string>(StringComparer.Ordinal)
+                    {
+                        ["date"] = Language.LogViewerFormDateFrom ?? "Date",
+                        ["time"] = Language.LogViewerFormActionExecutionTime ?? "Time",
+                        ["action"] = Language.LogViewerFormActionType ?? "Action",
+                        ["source"] = Language.LogViewerFormColumnSource ?? "Source",
+                        ["outcome"] = Language.LogViewerFormColumnOutcome ?? "Outcome",
+                        ["rule"] = Language.LogViewerFormDetailRule ?? "Rule",
+                        ["error"] = Language.LogViewerFormOutcomeError ?? "Error",
+                        ["succeeded"] = Language.LogViewerFormOutcomeOk ?? "Succeeded",
+                        ["failed"] = Language.LogViewerFormOutcomeError ?? "Failed"
+                    });
+            }
+            catch (Exception ex)
+            {
+                postMessage("showToast", new
+                {
+                    title = Language.MessageTitleError,
+                    message = ex.Message,
+                    type = "error",
+                    duration = 3500
+                });
+                return;
+            }
+
+            postMessage("showToast", new
+            {
+                title = Language.MessageTitleSuccess,
+                message = Language.LogViewerFormExported ?? "History exported",
+                type = "success",
+                duration = 2500
+            });
         }
 
         private void HandleClearLogs()
@@ -1644,8 +1770,8 @@ namespace WindowsAutoPowerManager
                 List<ActionModel> actionsSnapshot = ActionList
                     .Where(action => action != null)
                     .ToList();
-                List<LogSystem> logsSnapshot = Logger.GetRecentLogs(Logger.MaxLogCount);
-                logsSnapshot.Reverse();
+                // Already oldest first, which is the order the package stores.
+                List<LogSystem> logsSnapshot = Logger.GetAll();
 
                 AppDataTransfer.ExportToFile(
                     filePath,
@@ -1772,22 +1898,18 @@ namespace WindowsAutoPowerManager
             }
         }
 
+        /// <summary>
+        ///     Tells open history windows the stored history changed, rather than pushing rows at
+        ///     them: each window holds its own filter, and sending a default page would silently
+        ///     throw away whatever the person had selected there.
+        /// </summary>
         private void BroadcastSubWindowLogs()
         {
-            var rawLogs = Logger.GetRecentLogs(250);
-            var logs = rawLogs.Select(l => new
-            {
-                id = l.Id ?? "",
-                actionExecutedDate = l.ActionExecutedDate,
-                actionType = TranslateLogAction(l.ActionType),
-                actionTypeRaw = l.ActionType
-            }).ToList();
-
             foreach (SubWindow subWindow in _subWindows.Values.ToList())
             {
                 if (!subWindow.IsDisposed)
                 {
-                    subWindow.BroadcastLogs(logs);
+                    subWindow.BroadcastLogsInvalidated();
                 }
             }
         }

@@ -166,6 +166,8 @@
 
     ensurePageLoaded(pageName).catch(function () { });
 
+    var confirmCallback = null;
+
     window.App = {
         navigate: navigate,
         openEditActionModal: function (editableAction) {
@@ -191,7 +193,53 @@
                 modalOverlay.classList.remove('hidden');
             }).catch(function () { });
         },
+        // Mirrors App.openConfirmModal so a page shown in this window can confirm a destructive
+        // action the same way it does in the main window. The history page is opened here, so
+        // without it "clear records" would have no confirmation in the window people actually use.
+        openConfirmModal: function (options) {
+            options = options || {};
+
+            var modalOverlay = document.getElementById('modal-overlay');
+            var modalTitle = document.getElementById('modal-title');
+            var modalBody = document.getElementById('modal-body');
+            if (!modalOverlay || !modalTitle || !modalBody) return;
+
+            var L = Bridge.lang.bind(Bridge);
+            modalTitle.textContent = options.title || (L('MessageTitleWarn') || 'Confirm');
+
+            modalBody.innerHTML = '' +
+                '<div class="confirm-text">' + (options.message || '') + '</div>' +
+                (options.warning
+                    ? '<div class="confirm-warning"><span class="mi">warning_amber</span><span>' +
+                      options.warning + '</span></div>'
+                    : '') +
+                '<div class="settings-actions">' +
+                    '<button class="btn btn-secondary" id="confirm-cancel">' +
+                        (options.cancelText || L('SettingsFormButtonCancel') || 'Cancel') +
+                    '</button>' +
+                    '<button class="btn btn-danger" id="confirm-approve">' +
+                        (options.confirmText || 'OK') +
+                    '</button>' +
+                '</div>';
+
+            confirmCallback = typeof options.onConfirm === 'function' ? options.onConfirm : null;
+
+            document.getElementById('confirm-cancel').addEventListener('click', function () {
+                window.App.closeModal();
+            });
+
+            document.getElementById('confirm-approve').addEventListener('click', function () {
+                var callback = confirmCallback;
+                window.App.closeModal();
+                if (callback) {
+                    callback();
+                }
+            });
+
+            modalOverlay.classList.remove('hidden');
+        },
         closeModal: function () {
+            confirmCallback = null;
             var modalOverlay = document.getElementById('modal-overlay');
             if (modalOverlay) {
                 modalOverlay.classList.add('hidden');

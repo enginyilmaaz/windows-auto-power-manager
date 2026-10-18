@@ -20,6 +20,10 @@ namespace WindowsAutoPowerManager.Functions
     {
         public static void DoActionByTypes(ActionModel action)
         {
+            // Opened around the whole dispatch so each action method records what set it off
+            // without taking the rule as a parameter it has no other use for.
+            using IDisposable scope = LogContext.Use(DescribeTrigger(action), action?.CreatedDate);
+
             if (action.ActionType == Config.ActionTypes.LockComputer)
             {
                 Lock.Computer();
@@ -49,6 +53,26 @@ namespace WindowsAutoPowerManager.Functions
             {
                 LogOff.Windows();
             }
+        }
+
+        /// <summary>Names the rule kind behind an action, with its own threshold or time.</summary>
+        private static string DescribeTrigger(ActionModel action)
+        {
+            if (action?.TriggerType == Config.TriggerTypes.SystemIdle)
+            {
+                return ActionScheduler.TryGetSystemIdleSeconds(action, out uint seconds)
+                    ? LogSources.Idle(seconds)
+                    : LogSources.System;
+            }
+
+            if (action?.TriggerType == Config.TriggerTypes.CertainTime)
+            {
+                return LogSources.Time(action.Value);
+            }
+
+            return action?.TriggerType == Config.TriggerTypes.FromNow
+                ? LogSources.Once
+                : LogSources.System;
         }
 
         public static void ShutdownComputer()
@@ -369,7 +393,9 @@ namespace WindowsAutoPowerManager.Functions
                         // Without this the action leaves no trace at all when the display refuses
                         // to turn off, which makes the difference between "suppressed" and
                         // "attempted and failed" invisible in the log.
-                        Logger.DoLog(Config.ActionTypes.TurnOffMonitorFailed);
+                        Logger.DoLogFailure(
+                            Config.ActionTypes.TurnOffMonitorFailed,
+                            "No window carried the monitor power request through.");
                     }
                     return;
                 }

@@ -1,26 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
-using System.Threading;
 
 namespace WindowsAutoPowerManager.Functions
 {
+    /// <summary>
+    ///     Records executed actions. A thin front for <see cref="LogStore"/>: the entries go to disk
+    ///     as they happen, so there is no cache to merge, no timer to flush and nothing pending when
+    ///     the session ends.
+    /// </summary>
     public class Logger
     {
         private static readonly object SyncRoot = new object();
-        private static readonly string LogPath = Path.Combine(AppContext.BaseDirectory, "Logs.json");
-        private static readonly TimeSpan FlushDelay = TimeSpan.FromSeconds(1);
-        // Every flush rewrites the whole file, so retention directly sets the write cost of each
-        // logged action. The viewer requests 250 by default, so this still keeps ample history.
-        public const int MaxLogCount = 1000;
 
-        private static List<LogSystem> _logCache = new List<LogSystem>();
-        private static Timer _flushTimer;
         private static bool _initialized;
-        private static bool _logsLoaded;
         private static bool _logsEnabled = true;
+        private static int _retentionDays = Config.SettingsINI.DefaultLogRetentionDays;
 
         public static void Initialize(Settings settings)
         {
@@ -29,13 +23,45 @@ namespace WindowsAutoPowerManager.Functions
 
         public static void UpdateSettings(Settings settings)
         {
+            if (settings == null)
+            {
+                return;
+            }
+
+            bool retentionChanged;
+            int retentionDays;
+
             lock (SyncRoot)
             {
-                _logsEnabled = settings?.LogsEnabled ?? true;
+                _logsEnabled = settings.LogsEnabled;
+                retentionDays = NormalizeRetention(settings.LogRetentionDays);
+                retentionChanged = retentionDays != _retentionDays;
+                _retentionDays = retentionDays;
+            }
+
+            // A shortened window takes effect at once rather than at the next launch.
+            if (retentionChanged)
+            {
+                Prune(retentionDays);
             }
         }
 
+        /// <summary>
+        ///     Records a successful action, taking what triggered it from the ambient
+        ///     <see cref="LogContext"/>.
+        /// </summary>
         public static void DoLog(string actionType, Settings cachedSettings = null)
+        {
+            Record(actionType, LogOutcomes.Ok, null, cachedSettings);
+        }
+
+        /// <summary>Records an action that was attempted and failed, with the reason.</summary>
+        public static void DoLogFailure(string actionType, string error, Settings cachedSettings = null)
+        {
+            Record(actionType, LogOutcomes.Error, error, cachedSettings);
+        }
+
+        private static void Record(string actionType, string outcome, string error, Settings cachedSettings)
         {
             if (string.IsNullOrWhiteSpace(actionType))
             {
@@ -44,226 +70,115 @@ namespace WindowsAutoPowerManager.Functions
 
             EnsureInitialized(cachedSettings);
 
-            bool flushImmediately = false;
             lock (SyncRoot)
             {
                 if (!_logsEnabled)
                 {
                     return;
                 }
-
-                _logCache.Add(new LogSystem
-                {
-                    Id = Guid.NewGuid().ToString("N").Substring(0, 8),
-                    ActionType = actionType,
-                    ActionExecutedDate = DateTime.Now.ToString("dd.MM.yyyy HH:mm:ss")
-                });
-
-                TrimToLimitLocked();
-                ScheduleFlushLocked();
-                flushImmediately =
-                    string.Equals(actionType, Config.ActionTypes.AppTerminated, StringComparison.Ordinal) ||
-                    string.Equals(actionType, Config.ActionTypes.ShutdownComputer, StringComparison.Ordinal) ||
-                    string.Equals(actionType, Config.ActionTypes.RestartComputer, StringComparison.Ordinal) ||
-                    string.Equals(actionType, Config.ActionTypes.LogOffWindows, StringComparison.Ordinal) ||
-                    string.Equals(actionType, Config.ActionTypes.SleepComputer, StringComparison.Ordinal);
             }
 
-            if (flushImmediately)
+            LogStore.Append(new LogSystem
             {
-                Flush();
-            }
+                Id = LogSystem.NewId(),
+                Type = actionType,
+                At = LogSystem.Timestamp(DateTimeOffset.Now),
+                Outcome = outcome,
+                Source = LogContext.Source,
+                Rule = LogContext.Rule,
+                Error = string.IsNullOrWhiteSpace(error) ? null : error
+            });
         }
 
-        public static List<LogSystem> GetRecentLogs(int limit)
+        /// <summary>Answers a viewer request against the whole stored history.</summary>
+        internal static LogQueryResult Query(LogQueryRequest request, Func<string, string> translate = null)
         {
             EnsureInitialized(null);
-            if (limit <= 0)
+            return LogQuery.Evaluate(LogStore.ReadAll(), request, DateTimeOffset.Now, translate);
+        }
+
+        /// <summary>Everything on disk, oldest first. Used by configuration export.</summary>
+        public static List<LogSystem> GetAll()
+        {
+            EnsureInitialized(null);
+            return LogStore.ReadAll();
+        }
+
+        public static int Count
+        {
+            get
             {
-                return new List<LogSystem>();
-            }
-
-            lock (SyncRoot)
-            {
-                EnsureLogsLoadedLocked();
-
-                int startIndex = Math.Max(0, _logCache.Count - limit);
-                var result = new List<LogSystem>(_logCache.Count - startIndex);
-
-                for (int i = _logCache.Count - 1; i >= startIndex; --i)
-                {
-                    result.Add(_logCache[i]);
-                }
-
-                return result;
+                EnsureInitialized(null);
+                return LogStore.Count;
             }
         }
 
         public static void Clear()
         {
             EnsureInitialized(null);
-
-            lock (SyncRoot)
-            {
-                // The file is deleted below, so there is nothing left worth loading from disk.
-                _logsLoaded = true;
-                _logCache.Clear();
-                _flushTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            }
-
-            try
-            {
-                if (File.Exists(LogPath))
-                {
-                    File.Delete(LogPath);
-                }
-            }
-            catch
-            {
-                // Ignore clear errors to keep UI responsive.
-            }
+            LogStore.Clear();
         }
 
         public static void ReplaceLogs(IEnumerable<LogSystem> logs)
         {
             EnsureInitialized(null);
-
-            lock (SyncRoot)
-            {
-                // The incoming set replaces the history outright, so a disk load would be discarded.
-                _logsLoaded = true;
-                _logCache = logs?
-                    .Where(log => log != null)
-                    .Select(log => new LogSystem
-                    {
-                        Id = !string.IsNullOrWhiteSpace(log.Id) ? log.Id : Guid.NewGuid().ToString("N").Substring(0, 8),
-                        ActionType = log.ActionType,
-                        ActionExecutedDate = log.ActionExecutedDate
-                    })
-                    .ToList() ?? new List<LogSystem>();
-
-                TrimToLimitLocked();
-                _flushTimer?.Change(Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            }
-
-            Flush();
+            LogStore.ReplaceAll(logs);
+            Prune(CurrentRetentionDays);
         }
 
-        public static void Flush()
+        public static int CurrentRetentionDays
         {
-            List<LogSystem> snapshot;
-            lock (SyncRoot)
+            get
             {
-                if (!_initialized)
+                lock (SyncRoot)
                 {
-                    return;
+                    return _retentionDays;
                 }
-
-                // Without this the stored history would be replaced by the entries added since
-                // startup, because the flush rewrites the whole file from the cache.
-                EnsureLogsLoadedLocked();
-                snapshot = new List<LogSystem>(_logCache);
             }
+        }
 
-            // Written compact: the log is machine-read, and indenting roughly doubles the bytes
-            // rewritten on every flush.
-            JsonWriter.WriteJson(LogPath, false, snapshot);
+        private static void Prune(int retentionDays)
+        {
+            int removed = LogStore.Prune(retentionDays);
+            if (removed > 0)
+            {
+                DebugLog.Write("logs", "pruned " + removed + " entries past " + retentionDays + " days");
+            }
         }
 
         private static void EnsureInitialized(Settings settings)
         {
-            if (_initialized)
-            {
-                if (settings != null)
-                {
-                    UpdateSettings(settings);
-                }
-
-                return;
-            }
+            bool runMaintenance = false;
+            int retentionDays;
 
             lock (SyncRoot)
             {
-                if (_initialized)
+                if (!_initialized)
                 {
-                    if (settings != null)
-                    {
-                        _logsEnabled = settings.LogsEnabled;
-                    }
-
-                    return;
+                    Settings resolved = settings ?? SettingsStorage.LoadOrDefault();
+                    _logsEnabled = resolved?.LogsEnabled ?? true;
+                    _retentionDays = NormalizeRetention(resolved?.LogRetentionDays);
+                    _initialized = true;
+                    runMaintenance = true;
+                }
+                else if (settings != null)
+                {
+                    _logsEnabled = settings.LogsEnabled;
+                    _retentionDays = NormalizeRetention(settings.LogRetentionDays);
                 }
 
-                Settings resolvedSettings = settings ?? SettingsStorage.LoadOrDefault();
-                _logsEnabled = resolvedSettings?.LogsEnabled ?? true;
-                _flushTimer = new Timer(_ => Flush(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-                _initialized = true;
+                retentionDays = _retentionDays;
+            }
+
+            if (runMaintenance)
+            {
+                // Outside the lock: both touch the file, and LogStore has its own.
+                LogStore.MigrateLegacyIfNeeded();
+                Prune(retentionDays);
             }
         }
 
-        // The log file grows to thousands of entries, and appending one line at startup does not
-        // need any of them. Reading is deferred to the first flush (which runs on the timer's
-        // thread pool thread) or to the first reader, keeping the parse off the startup path.
-        private static void EnsureLogsLoadedLocked()
-        {
-            if (_logsLoaded)
-            {
-                return;
-            }
-
-            _logsLoaded = true;
-
-            List<LogSystem> fromDisk = ReadLogsFromDisk();
-            if (fromDisk.Count > 0)
-            {
-                // Entries recorded before the load keep their order after the stored history.
-                fromDisk.AddRange(_logCache);
-                _logCache = fromDisk;
-            }
-
-            TrimToLimitLocked();
-        }
-
-        private static List<LogSystem> ReadLogsFromDisk()
-        {
-            if (!File.Exists(LogPath))
-            {
-                return new List<LogSystem>();
-            }
-
-            try
-            {
-                string raw = File.ReadAllText(LogPath);
-                if (string.IsNullOrWhiteSpace(raw))
-                {
-                    return new List<LogSystem>();
-                }
-
-                return JsonSerializer.Deserialize<List<LogSystem>>(raw) ?? new List<LogSystem>();
-            }
-            catch
-            {
-                return new List<LogSystem>();
-            }
-        }
-
-        private static void TrimToLimitLocked()
-        {
-            int excess = _logCache.Count - MaxLogCount;
-            if (excess > 0)
-            {
-                _logCache.RemoveRange(0, excess);
-            }
-        }
-
-        private static void ScheduleFlushLocked()
-        {
-            if (_flushTimer == null)
-            {
-                _flushTimer = new Timer(_ => Flush(), null, Timeout.InfiniteTimeSpan, Timeout.InfiniteTimeSpan);
-            }
-
-            _flushTimer.Change(FlushDelay, Timeout.InfiniteTimeSpan);
-        }
+        private static int NormalizeRetention(int? days) =>
+            Config.SettingsINI.ResolveLogRetentionDays(days);
     }
 }

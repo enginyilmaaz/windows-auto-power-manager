@@ -475,9 +475,11 @@ const App = {
 
         var modalBody = document.getElementById('modal-body');
         modalBody.innerHTML = '' +
-            '<div class="form-row">' +
-                '<span class="form-label">' + (options.message || '') + '</span>' +
-            '</div>' +
+            '<div class="confirm-text">' + (options.message || '') + '</div>' +
+            (options.warning
+                ? '<div class="confirm-warning"><span class="mi">warning_amber</span><span>' +
+                  options.warning + '</span></div>'
+                : '') +
             '<div class="settings-actions">' +
                 '<button class="btn btn-secondary" id="confirm-cancel">' +
                     (options.cancelText || L('SettingsFormButtonCancel') || 'Cancel') +

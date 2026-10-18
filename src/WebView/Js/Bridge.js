@@ -105,6 +105,11 @@ if (window.chrome && window.chrome.webview) {
             case 'logsLoaded':
                 Bridge._emit('logsLoaded', msg.data);
                 break;
+            // The stored history changed. Rows are not pushed with it: the page re-runs its own
+            // query so whatever filter is on screen survives.
+            case 'logsInvalidated':
+                Bridge._emit('logsInvalidated', msg.data);
+                break;
             case 'showToast':
                 Toast.show(msg.data.title, msg.data.message, msg.data.type, msg.data.duration);
                 break;

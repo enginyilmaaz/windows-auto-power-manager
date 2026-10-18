@@ -287,6 +287,8 @@ namespace WindowsAutoPowerManager
             return new
             {
                 logsEnabled = resolved.LogsEnabled,
+
+                logRetentionDays = Config.SettingsINI.ResolveLogRetentionDays(resolved.LogRetentionDays),
                 startWithWindows = resolved.StartWithWindows,
                 runInTaskbarWhenClosed = resolved.RunInTaskbarWhenClosed,
                 confirmExitOnProgramExit = resolved.ConfirmExitOnProgramExit,
@@ -321,10 +323,11 @@ namespace WindowsAutoPowerManager
             PostMessage("settingsLoaded", BuildSettingsPayload(settings));
         }
 
-        public void BroadcastLogs(object logs)
+        /// <summary>Asks the page to re-run its own query, keeping the filter it already has.</summary>
+        public void BroadcastLogsInvalidated()
         {
             if (!_webViewReady) return;
-            PostMessage("logsLoaded", logs);
+            PostMessage("logsInvalidated", new { });
         }
 
         public void BroadcastFullRefresh(object langDict, object actions, object settings)
@@ -396,6 +399,9 @@ namespace WindowsAutoPowerManager
                     break;
                 case "clearLogs":
                     HandleClearLogs();
+                    break;
+                case "exportLogs":
+                    HandleExportLogs(data);
                     break;
                 case "exportSettingsConfig":
                     HandleExportSettingsConfig();
@@ -745,6 +751,9 @@ namespace WindowsAutoPowerManager
             var newSettings = new Settings
             {
                 LogsEnabled = data.GetProperty("logsEnabled").GetBoolean(),
+
+                LogRetentionDays = Config.SettingsINI.ResolveLogRetentionDays(
+                    JsonPayload.ReadNullableInt(data, "logRetentionDays")),
                 StartWithWindows = data.GetProperty("startWithWindows").GetBoolean(),
                 RunInTaskbarWhenClosed = data.GetProperty("runInTaskbarWhenClosed").GetBoolean(),
                 ConfirmExitOnProgramExit = confirmExitOnProgramExit,
@@ -818,49 +827,21 @@ namespace WindowsAutoPowerManager
 
         private void HandleLoadLogs(JsonElement data)
         {
-            int limit = ResolveLogsLimit(data);
-            var rawLogs = Logger.GetRecentLogs(limit);
-            var logs = rawLogs.Select(l => new
+            // Shaped by the main window so both hosts answer the same request the same way; it owns
+            // the active language, which the row labels are rendered in.
+            var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
+            if (main == null)
             {
-                actionExecutedDate = l.ActionExecutedDate,
-                actionType = TranslateLogAction(l.ActionType),
-                actionTypeRaw = l.ActionType
-            }).ToList();
-            PostMessage("logsLoaded", logs);
+                return;
+            }
+
+            PostMessage("logsLoaded", main.BuildLogsPayload(data));
         }
 
-        private static int ResolveLogsLimit(JsonElement data)
+        private void HandleExportLogs(JsonElement data)
         {
-            const int defaultLimit = 250;
-            const int maxLimit = Logger.MaxLogCount;
-            int limit = defaultLimit;
-
-            if (data.ValueKind == JsonValueKind.Object &&
-                data.TryGetProperty("limit", out JsonElement limitElement))
-            {
-                if (limitElement.ValueKind == JsonValueKind.Number &&
-                    limitElement.TryGetInt32(out int numericLimit))
-                {
-                    limit = numericLimit;
-                }
-                else if (limitElement.ValueKind == JsonValueKind.String &&
-                         int.TryParse(limitElement.GetString(), out int stringLimit))
-                {
-                    limit = stringLimit;
-                }
-            }
-
-            if (limit < 1)
-            {
-                return 1;
-            }
-
-            if (limit > maxLimit)
-            {
-                return maxLimit;
-            }
-
-            return limit;
+            var main = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
+            main?.ExportLogsTo(this, data, PostMessage);
         }
 
         private void HandleClearLogs()
@@ -1094,21 +1075,5 @@ namespace WindowsAutoPowerManager
             return raw;
         }
 
-        private string TranslateLogAction(string raw)
-        {
-            if (raw == Config.ActionTypes.LockComputer) return MainForm.Language.LogViewerFormLockComputer;
-            if (raw == Config.ActionTypes.LockComputerManually) return MainForm.Language.LogViewerFormLockComputerManually;
-            if (raw == Config.ActionTypes.UnlockComputer) return MainForm.Language.LogViewerFormUnlockComputer;
-            if (raw == Config.ActionTypes.ShutdownComputer) return MainForm.Language.LogViewerFormShutdownComputer;
-            if (raw == Config.ActionTypes.RestartComputer) return MainForm.Language.LogViewerFormRestartComputer;
-            if (raw == Config.ActionTypes.LogOffWindows) return MainForm.Language.LogViewerFormLogOffWindows;
-            if (raw == Config.ActionTypes.SleepComputer) return MainForm.Language.LogViewerFormSleepComputer;
-            if (raw == Config.ActionTypes.TurnOffMonitor) return MainForm.Language.LogViewerFormTurnOffMonitor;
-            // Languages whose stored file predates this key fall back to the raw type.
-            if (raw == Config.ActionTypes.TurnOffMonitorFailed) return MainForm.Language.LogViewerFormTurnOffMonitorFailed ?? raw;
-            if (raw == Config.ActionTypes.AppStarted) return MainForm.Language.LogViewerFormAppStarted;
-            if (raw == Config.ActionTypes.AppTerminated) return MainForm.Language.LogViewerFormAppTerminated;
-            return raw;
-        }
     }
 }
