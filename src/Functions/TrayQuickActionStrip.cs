@@ -71,11 +71,22 @@ namespace WindowsAutoPowerManager.Functions
     {
         public const int DefaultWidth = TrayMenuLayout.MinWidth;
 
+        /// <summary>
+        ///     Breathing room between the tiles and the popup's edges, on all four sides. The
+        ///     tiles used to run edge to edge, which left them touching the frame.
+        /// </summary>
+        public const int TileInset = 8;
+
         /// <summary>Tall enough for the countdown line, which only appears while paused.</summary>
-        public const int DefaultHeight = 62;
+        private const int PausedTileHeight = 62;
 
         /// <summary>Glyph and caption only, which is how the strip looks nearly all the time.</summary>
-        public const int CompactHeight = 50;
+        private const int CompactTileHeight = 50;
+
+        /// <summary>The strip carries the tiles plus their inset above and below.</summary>
+        public const int DefaultHeight = PausedTileHeight + TileInset * 2;
+
+        public const int CompactHeight = CompactTileHeight + TileInset * 2;
 
         private const int Gap = 7;
         private const int Radius = 7;
@@ -172,7 +183,16 @@ namespace WindowsAutoPowerManager.Functions
 
         private Rectangle[] Tiles()
         {
-            return TrayQuickActionLayout.TileRects(Width, Height, Scale(Gap));
+            int inset = Scale(TileInset);
+            Rectangle[] tiles = TrayQuickActionLayout.TileRects(
+                Width - inset * 2, Height - inset * 2, Scale(Gap));
+
+            for (int i = 0; i < tiles.Length; ++i)
+            {
+                tiles[i].Offset(inset, inset);
+            }
+
+            return tiles;
         }
 
         /// <summary>

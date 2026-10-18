@@ -69,14 +69,17 @@ namespace WindowsAutoPowerManager.Tests
         [Fact]
         public void ContentRows_CentreTheBlockAndLeaveEqualSpaceAboveAndBelow()
         {
+            // The rows are placed inside a tile, which is the strip minus its inset.
+            int tileHeight = TrayQuickActionStrip.CompactHeight - TrayQuickActionStrip.TileInset * 2;
+
             TrayQuickActionLayout.ContentRows(
-                TrayQuickActionStrip.CompactHeight, 22, 14, 0, 3,
+                tileHeight, 22, 14, 0, 3,
                 out int glyphTop, out int captionTop, out int subTop);
 
             Assert.Equal(glyphTop, captionTop - 22 - 3);
             Assert.Equal(captionTop + 14, subTop);
 
-            int below = TrayQuickActionStrip.CompactHeight - (captionTop + 14);
+            int below = tileHeight - (captionTop + 14);
             Assert.InRange(below - glyphTop, -1, 1);
         }
 
@@ -85,15 +88,32 @@ namespace WindowsAutoPowerManager.Tests
         {
             // Both states centre their own block, so the caption must not jump when the countdown
             // appears: the compact strip is exactly the countdown's height shorter.
+            int inset = TrayQuickActionStrip.TileInset * 2;
+
             TrayQuickActionLayout.ContentRows(
-                TrayQuickActionStrip.CompactHeight, 22, 14, 0, 3,
+                TrayQuickActionStrip.CompactHeight - inset, 22, 14, 0, 3,
                 out int idleGlyphTop, out int idleCaptionTop, out _);
             TrayQuickActionLayout.ContentRows(
-                TrayQuickActionStrip.DefaultHeight, 22, 14, 12, 3,
+                TrayQuickActionStrip.DefaultHeight - inset, 22, 14, 12, 3,
                 out int pausedGlyphTop, out int pausedCaptionTop, out _);
 
             Assert.Equal(idleGlyphTop, pausedGlyphTop);
             Assert.Equal(idleCaptionTop, pausedCaptionTop);
+        }
+
+        /// <summary>
+        ///     The inset is taken out of the strip, so raising it past the room the glyph and
+        ///     caption need would squeeze them against the tile's edge instead of padding it.
+        /// </summary>
+        [Fact]
+        public void TheTileInsetLeavesRoomForTheContentBlock()
+        {
+            int tileHeight = TrayQuickActionStrip.CompactHeight - TrayQuickActionStrip.TileInset * 2;
+
+            TrayQuickActionLayout.ContentRows(
+                tileHeight, 22, 14, 0, 3, out int glyphTop, out _, out _);
+
+            Assert.True(glyphTop > 0, "The inset left the glyph no room inside the tile.");
         }
 
         [Fact]
