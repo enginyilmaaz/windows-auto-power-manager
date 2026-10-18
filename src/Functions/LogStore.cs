@@ -276,10 +276,9 @@ namespace WindowsAutoPowerManager.Functions
                 // overwritten: appends go to the end and the existing lines stay as they are.
             }
 
-            if (skipped > 0)
-            {
-                DebugLog.Write("logs", "skipped " + skipped + " unreadable line(s)");
-            }
+            // Logged unconditionally: "loaded 0" against a file that has lines is the symptom that
+            // matters, and it leaves no other trace.
+            DebugLog.Write("logs", "loaded " + _cache.Count + " entries, skipped " + skipped);
         }
 
         private static void WriteWholeFileLocked(List<LogSystem> entries)

@@ -1480,6 +1480,19 @@ namespace WindowsAutoPowerManager
             LogQueryRequest request = LogViewPayload.ParseRequest(data);
             LogQueryResult result = Logger.Query(request, TranslateLogAction);
 
+            // Traced because an empty viewer and an empty store look identical from the outside:
+            // this separates "nothing stored", "nothing in the window" and "nothing on this page".
+            DebugLog.Write("logs", string.Format(
+                CultureInfo.InvariantCulture,
+                "query window={0} facets={1} errors={2} q='{3}' -> stored={4} matched={5} page={6}",
+                request.Window,
+                request.Types == null ? "all" : request.Types.Count.ToString(CultureInfo.InvariantCulture),
+                request.OnlyErrors,
+                request.Query ?? string.Empty,
+                result.GrandTotal,
+                result.Total,
+                result.Rows.Count));
+
             return LogViewPayload.Build(
                 result, TranslateLogAction, TranslateLogSource, Logger.CurrentRetentionDays);
         }
