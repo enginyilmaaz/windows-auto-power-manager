@@ -30,6 +30,13 @@ namespace WindowsAutoPowerManager.Functions
                 {
                     int textWidth = TextRenderer.MeasureText(item.Text ?? string.Empty, menu.Font).Width;
                     width = Math.Max(width, textWidth + Scale(IconColumn + TextRightPadding, dpi));
+
+                    // The popup stretches its text rows to the widest row's preferred width, which
+                    // adds the menu's own per-item overhead on top of the text. Measuring the text
+                    // alone left the strip short of that band, and unlike a text row it paints
+                    // nothing outside its own bounds, so the shortfall showed as a bare band down
+                    // the right-hand side of the tiles.
+                    width = Math.Max(width, item.GetPreferredSize(Size.Empty).Width);
                 }
             }
 
