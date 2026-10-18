@@ -15,6 +15,13 @@ namespace WindowsAutoPowerManager.Functions
         public const int MinWidth = 224;
         public const int RowHeight = 30;
         public const int SeparatorHeight = 13;
+
+        /// <summary>
+        ///     The popup pads its left, right and bottom edges but lays the first item flush
+        ///     against the top, so the tiles sat on the border while every other edge breathed.
+        ///     Matches the inset the tiles already have on their left.
+        /// </summary>
+        public const int StripTopMargin = 5;
         public const int IconColumn = 36;
         public const int TextRightPadding = 12;
         public const int CornerRadius = 8;
@@ -56,6 +63,7 @@ namespace WindowsAutoPowerManager.Functions
                         ? strip.PreferredLogicalHeight
                         : TrayQuickActionStrip.DefaultHeight;
 
+                    item.Margin = new Padding(0, Scale(StripTopMargin, dpi), 0, 0);
                     item.Size = new Size(width, Scale(stripHeight, dpi));
                 }
                 else
